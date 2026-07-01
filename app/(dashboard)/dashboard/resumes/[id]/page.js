@@ -32,6 +32,9 @@ export default function ResumeEditor() {
   const [aiLoading, setAiLoading] = useState(false);
   const [showAts, setShowAts] = useState(false);
   const [atsResult, setAtsResult] = useState(null);
+  const [showJobOptimizer, setShowJobOptimizer] = useState(false)
+  const [jobDescription, setJobDescription] = useState('')
+  const [jobResult, setJobResult] = useState(null)
 
   useEffect(() => {
     if (user?.id) {
@@ -229,6 +232,32 @@ export default function ResumeEditor() {
     setAiLoading(false);
   };
 
+  const optimizeForJob = async () => {
+    setAiLoading(true)
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'job_optimizer',
+          data: { jobDescription, skills, summary }
+        })
+      })
+      const result = await response.json()
+      if (result.success) {
+        const cleaned = result.result
+          .replace(/```json/g, '')
+          .replace(/```/g, '')
+          .trim()
+        const parsed = JSON.parse(cleaned)
+        setJobResult(parsed)
+      }
+    } catch (error) {
+      console.error('AI error:', error)
+    }
+    setAiLoading(false)
+  }
+
   const saveResume = async () => {
     setSaving(true);
     const updatedContent = {
@@ -277,6 +306,13 @@ export default function ResumeEditor() {
             className="border border-border px-5 py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
           >
             {aiLoading ? "⏳ Checking..." : "🎯 ATS Score"}
+          </button>
+          <button
+            onClick={() => setShowJobOptimizer(true)}
+            disabled={aiLoading}
+            className="border border-border px-5 py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
+          >
+            💼 Job Optimizer
           </button>
           <button
             onClick={() => setShowPreview(true)}
@@ -767,6 +803,106 @@ export default function ResumeEditor() {
                   ))}
                 </ul>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Job Optimizer Modal */}
+      {showJobOptimizer && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+          <div className="bg-background rounded-xl max-w-lg w-full">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 className="font-semibold">Job Description Optimizer</h3>
+              <button
+                onClick={() => { setShowJobOptimizer(false); setJobResult(null) }}
+                className="text-foreground/60 hover:text-foreground text-sm"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <div className="p-6">
+              {!jobResult ? (
+                <>
+                  <p className="text-sm text-foreground/60 mb-4">
+                    Paste a job description below and we'll analyze how well your resume matches it.
+                  </p>
+                  <textarea
+                    placeholder="Paste the job description here..."
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    rows={8}
+                    className="w-full border border-border rounded-lg px-4 py-3 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none mb-4"
+                  />
+                  <button
+                    onClick={optimizeForJob}
+                    disabled={aiLoading || !jobDescription.trim()}
+                    className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+                  >
+                    {aiLoading ? '⏳ Analyzing...' : '🔍 Analyze Match'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* Match Score */}
+                  <div className="text-center mb-6">
+                    <div className={`text-6xl font-bold mb-2 ${
+                      jobResult.matchScore >= 80 ? 'text-green-500' :
+                      jobResult.matchScore >= 60 ? 'text-yellow-500' : 'text-red-500'
+                    }`}>
+                      {jobResult.matchScore}%
+                    </div>
+                    <p className="text-foreground/60 text-sm">match with job description</p>
+                    <div className="w-full bg-border rounded-full h-2 mt-3">
+                      <div
+                        className={`h-2 rounded-full transition-all ${
+                          jobResult.matchScore >= 80 ? 'bg-green-500' :
+                          jobResult.matchScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}
+                        style={{ width: `${jobResult.matchScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Missing Keywords */}
+                  {jobResult.missingKeywords?.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold mb-2">🔑 Missing Keywords</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {jobResult.missingKeywords.map((keyword, i) => (
+                          <span
+                            key={i}
+                            className="text-xs bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-full"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Suggestions */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-semibold mb-2">💡 Suggestions</h4>
+                    <ul className="flex flex-col gap-2">
+                      {jobResult.suggestions?.map((item, i) => (
+                        <li key={i} className="text-sm text-foreground/70 flex items-start gap-2">
+                          <span className="text-accent mt-0.5">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={() => setJobResult(null)}
+                    className="w-full border border-border py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors"
+                  >
+                    ← Try Another Job Description
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
