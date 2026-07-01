@@ -29,6 +29,9 @@ export default function ResumeEditor() {
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAts, setShowAts] = useState(false);
+  const [atsResult, setAtsResult] = useState(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -146,6 +149,86 @@ export default function ResumeEditor() {
     }
   };
 
+  const generateSummary = async () => {
+    setAiLoading(true);
+    try {
+      const jobTitle = experience[0]?.jobTitle || "Professional";
+      const expText = experience
+        .map((e) => `${e.jobTitle} at ${e.company}`)
+        .join(", ");
+
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "summary",
+          data: { jobTitle, experience: expText },
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSummary(result.result);
+      }
+    } catch (error) {
+      console.error("AI error:", error);
+    }
+    setAiLoading(false);
+  };
+
+  const suggestSkills = async () => {
+    setAiLoading(true);
+    try {
+      const jobTitle = experience[0]?.jobTitle || "Virtual Assistant";
+
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "skills",
+          data: { jobTitle },
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        const suggestedSkills = result.result
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s && !skills.includes(s));
+        setSkills([...skills, ...suggestedSkills]);
+      }
+    } catch (error) {
+      console.error("AI error:", error);
+    }
+    setAiLoading(false);
+  };
+
+  const checkATSScore = async () => {
+    setAiLoading(true);
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "ats_score",
+          data: { personalInfo, summary, experience, education, skills },
+        }),
+      });
+      const result = await response.json()
+      if (result.success) {
+        const cleaned = result.result
+          .replace(/```json/g, '')
+          .replace(/```/g, '')
+          .trim()
+        const parsed = JSON.parse(cleaned)
+        setAtsResult(parsed)
+        setShowAts(true)
+      }
+    } catch (error) {
+      console.error("AI error:", error);
+    }
+    setAiLoading(false);
+  };
+
   const saveResume = async () => {
     setSaving(true);
     const updatedContent = {
@@ -188,6 +271,13 @@ export default function ResumeEditor() {
           className="text-2xl font-bold bg-transparent border-none focus:outline-none focus:border-b focus:border-accent"
         />
         <div className="flex items-center gap-3">
+          <button
+            onClick={checkATSScore}
+            disabled={aiLoading}
+            className="border border-border px-5 py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
+          >
+            {aiLoading ? "⏳ Checking..." : "🎯 ATS Score"}
+          </button>
           <button
             onClick={() => setShowPreview(true)}
             className="border border-border px-5 py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors"
@@ -278,8 +368,12 @@ export default function ResumeEditor() {
       <div className="border border-border rounded-xl p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Professional Summary</h2>
-          <button className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors flex items-center gap-1.5">
-            ✨ Generate with AI
+          <button
+            onClick={generateSummary}
+            disabled={aiLoading}
+            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+          >
+            {aiLoading ? "⏳ Generating..." : "✨ Generate with AI"}
           </button>
         </div>
 
@@ -539,8 +633,12 @@ export default function ResumeEditor() {
       <div className="border border-border rounded-xl p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Skills</h2>
-          <button className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors">
-            ✨ Suggest Skills
+          <button
+            onClick={suggestSkills}
+            disabled={aiLoading}
+            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors disabled:opacity-50"
+          >
+            {aiLoading ? "⏳ Suggesting..." : "✨ Suggest Skills"}
           </button>
         </div>
 
@@ -592,6 +690,87 @@ export default function ResumeEditor() {
           {saving ? "Saving..." : "Save section"}
         </button>
       </div>
+
+      {/* ATS Score Modal */}
+      {showAts && atsResult && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+          <div className="bg-background rounded-xl max-w-lg w-full">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 className="font-semibold">ATS Score</h3>
+              <button
+                onClick={() => setShowAts(false)}
+                className="text-foreground/60 hover:text-foreground text-sm"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Score Circle */}
+              <div className="text-center mb-6">
+                <div
+                  className={`text-6xl font-bold mb-2 ${
+                    atsResult.score >= 80
+                      ? "text-green-500"
+                      : atsResult.score >= 60
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                  }`}
+                >
+                  {atsResult.score}
+                </div>
+                <p className="text-foreground/60 text-sm">out of 100</p>
+                <div className="w-full bg-border rounded-full h-2 mt-3">
+                  <div
+                    className={`h-2 rounded-full transition-all ${
+                      atsResult.score >= 80
+                        ? "bg-green-500"
+                        : atsResult.score >= 60
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
+                    }`}
+                    style={{ width: `${atsResult.score}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Feedback */}
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold mb-2">
+                  ✅ What's working
+                </h4>
+                <ul className="flex flex-col gap-2">
+                  {atsResult.feedback?.map((item, i) => (
+                    <li
+                      key={i}
+                      className="text-sm text-foreground/70 flex items-start gap-2"
+                    >
+                      <span className="text-green-500 mt-0.5">•</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Improvements */}
+              <div>
+                <h4 className="text-sm font-semibold mb-2">🔧 Improvements</h4>
+                <ul className="flex flex-col gap-2">
+                  {atsResult.improvements?.map((item, i) => (
+                    <li
+                      key={i}
+                      className="text-sm text-foreground/70 flex items-start gap-2"
+                    >
+                      <span className="text-accent mt-0.5">•</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Preview Modal */}
       {showPreview && (
