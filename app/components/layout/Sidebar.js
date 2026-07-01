@@ -1,0 +1,69 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+
+const menuItems = [
+  { name: 'Overview', href: '/dashboard', icon: '🏠' },
+  { name: 'Resumes', href: '/dashboard/resumes', icon: '📄' },
+  { name: 'Portfolio', href: '/dashboard/portfolio', icon: '🌐' },
+  { name: 'AI Tools', href: '/dashboard/ai-tools', icon: '🤖' },
+  { name: 'Billing', href: '/dashboard/billing', icon: '💳' },
+  { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
+]
+
+export default function Sidebar() {
+  const pathname = usePathname()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
+
+  return (
+    <aside className="w-64 border-r border-border h-screen sticky top-0 flex flex-col">
+      
+      {/* Logo */}
+      <div className="px-6 py-5 border-b border-border">
+        <Link href="/" className="text-accent font-bold text-xl tracking-tight">
+          ForgeCV
+        </Link>
+      </div>
+
+      {/* Menu */}
+      <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-accent/10 text-accent'
+                  : 'text-foreground/70 hover:bg-foreground/5'
+              }`}
+            >
+              <span>{item.icon}</span>
+              {item.name}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Sign out */}
+      <div className="px-3 py-4 border-t border-border">
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground/70 hover:bg-foreground/5 transition-colors w-full"
+        >
+          <span>🚪</span>
+          Sign out
+        </button>
+      </div>
+    </aside>
+  )
+}
