@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { getUserEntitlements } from "@/lib/entitlements";
+import Link from "next/link";
 
 const slugify = (text) =>
   text
@@ -21,6 +23,7 @@ export default function PortfolioEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishError, setPublishError] = useState(null);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
 
   const [personalInfo, setPersonalInfo] = useState({
     fullName: "",
@@ -64,7 +67,8 @@ export default function PortfolioEditor() {
     if (data.content?.services) setServices(data.content.services);
     if (data.content?.experience) setExperience(data.content.experience);
     if (data.content?.tools) setTools(data.content.tools);
-    if (data.content?.portfolioItems) setPortfolioItems(data.content.portfolioItems);
+    if (data.content?.portfolioItems)
+      setPortfolioItems(data.content.portfolioItems);
     if (data.content?.testimonials) setTestimonials(data.content.testimonials);
     if (data.content?.contact) setContact(data.content.contact);
     setLoading(false);
@@ -82,7 +86,9 @@ export default function PortfolioEditor() {
     setServices([...services, { id: Date.now(), name: "", description: "" }]);
   };
   const updateService = (id, field, value) => {
-    setServices(services.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
+    setServices(
+      services.map((s) => (s.id === id ? { ...s, [field]: value } : s)),
+    );
   };
   const removeService = (id) => {
     setServices(services.filter((s) => s.id !== id));
@@ -103,7 +109,11 @@ export default function PortfolioEditor() {
     ]);
   };
   const updateExperience = (id, field, value) => {
-    setExperience(experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)));
+    setExperience(
+      experience.map((exp) =>
+        exp.id === id ? { ...exp, [field]: value } : exp,
+      ),
+    );
   };
   const removeExperience = (id) => {
     setExperience(experience.filter((exp) => exp.id !== id));
@@ -133,7 +143,7 @@ export default function PortfolioEditor() {
   };
   const updatePortfolioItem = (id, field, value) => {
     setPortfolioItems(
-      portfolioItems.map((p) => (p.id === id ? { ...p, [field]: value } : p))
+      portfolioItems.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
     );
   };
   const removePortfolioItem = (id) => {
@@ -148,7 +158,7 @@ export default function PortfolioEditor() {
   };
   const updateTestimonial = (id, field, value) => {
     setTestimonials(
-      testimonials.map((t) => (t.id === id ? { ...t, [field]: value } : t))
+      testimonials.map((t) => (t.id === id ? { ...t, [field]: value } : t)),
     );
   };
   const removeTestimonial = (id) => {
@@ -183,6 +193,30 @@ export default function PortfolioEditor() {
     setSaving(false);
   };
 
+  const handlePublishClick = async () => {
+    const entitlements = await getUserEntitlements(user.id);
+
+    const { count, error: countError } = await supabase
+      .from("portfolios")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_published", true);
+
+    if (countError) {
+      setPublishError(
+        "Something went wrong checking your plan. Please try again.",
+      );
+      return;
+    }
+
+    if (count >= entitlements.totalPublishSlots) {
+      setShowPaywallModal(true);
+      return;
+    }
+
+    publishPortfolio();
+  };
+
   const publishPortfolio = async () => {
     setPublishError(null);
     const finalSlug = slugify(slugInput || portfolio.title);
@@ -205,9 +239,13 @@ export default function PortfolioEditor() {
 
     if (error) {
       if (error.code === "23505") {
-        setPublishError("That URL is already taken. Please choose a different one.");
+        setPublishError(
+          "That URL is already taken. Please choose a different one.",
+        );
       } else {
-        setPublishError("Something went wrong publishing your portfolio. Please try again.");
+        setPublishError(
+          "Something went wrong publishing your portfolio. Please try again.",
+        );
       }
       setSaving(false);
       return;
@@ -262,7 +300,9 @@ export default function PortfolioEditor() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Full Name</label>
+            <label className="text-sm font-medium mb-1.5 block">
+              Full Name
+            </label>
             <input
               type="text"
               placeholder="Juan Dela Cruz"
@@ -314,31 +354,44 @@ export default function PortfolioEditor() {
         </div>
 
         {services.length === 0 && (
-          <p className="text-sm text-foreground/40 text-center py-6">No services added yet</p>
+          <p className="text-sm text-foreground/40 text-center py-6">
+            No services added yet
+          </p>
         )}
 
         <div className="flex flex-col gap-4">
           {services.map((service) => (
-            <div key={service.id} className="border border-border rounded-lg p-4 relative">
+            <div
+              key={service.id}
+              className="border border-border rounded-lg p-4 relative"
+            >
               <button
                 onClick={() => removeService(service.id)}
                 className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
               >
                 ✕
               </button>
-              <label className="text-sm font-medium mb-1.5 block">Service Name</label>
+              <label className="text-sm font-medium mb-1.5 block">
+                Service Name
+              </label>
               <input
                 type="text"
                 placeholder="Inbox & Calendar Management"
                 value={service.name}
-                onChange={(e) => updateService(service.id, "name", e.target.value)}
+                onChange={(e) =>
+                  updateService(service.id, "name", e.target.value)
+                }
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors mb-3"
               />
-              <label className="text-sm font-medium mb-1.5 block">Description</label>
+              <label className="text-sm font-medium mb-1.5 block">
+                Description
+              </label>
               <textarea
                 placeholder="Briefly describe this service..."
                 value={service.description}
-                onChange={(e) => updateService(service.id, "description", e.target.value)}
+                onChange={(e) =>
+                  updateService(service.id, "description", e.target.value)
+                }
                 rows={2}
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none"
               />
@@ -368,12 +421,17 @@ export default function PortfolioEditor() {
         </div>
 
         {experience.length === 0 && (
-          <p className="text-sm text-foreground/40 text-center py-6">No work experience added yet</p>
+          <p className="text-sm text-foreground/40 text-center py-6">
+            No work experience added yet
+          </p>
         )}
 
         <div className="flex flex-col gap-4">
           {experience.map((exp) => (
-            <div key={exp.id} className="border border-border rounded-lg p-4 relative">
+            <div
+              key={exp.id}
+              className="border border-border rounded-lg p-4 relative"
+            >
               <button
                 onClick={() => removeExperience(exp.id)}
                 className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
@@ -383,59 +441,81 @@ export default function PortfolioEditor() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">Job Title</label>
+                  <label className="text-sm font-medium mb-1.5 block">
+                    Job Title
+                  </label>
                   <input
                     type="text"
                     placeholder="Customer Service Representative"
                     value={exp.jobTitle}
-                    onChange={(e) => updateExperience(exp.id, "jobTitle", e.target.value)}
+                    onChange={(e) =>
+                      updateExperience(exp.id, "jobTitle", e.target.value)
+                    }
                     className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">Company</label>
+                  <label className="text-sm font-medium mb-1.5 block">
+                    Company
+                  </label>
                   <input
                     type="text"
                     placeholder="ABC Company"
                     value={exp.company}
-                    onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
+                    onChange={(e) =>
+                      updateExperience(exp.id, "company", e.target.value)
+                    }
                     className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">Start Date</label>
+                  <label className="text-sm font-medium mb-1.5 block">
+                    Start Date
+                  </label>
                   <input
                     type="month"
                     value={exp.startDate}
-                    onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
+                    onChange={(e) =>
+                      updateExperience(exp.id, "startDate", e.target.value)
+                    }
                     className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">End Date</label>
+                  <label className="text-sm font-medium mb-1.5 block">
+                    End Date
+                  </label>
                   <input
                     type="month"
                     value={exp.endDate}
                     disabled={exp.current}
-                    onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
+                    onChange={(e) =>
+                      updateExperience(exp.id, "endDate", e.target.value)
+                    }
                     className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors disabled:opacity-50"
                   />
                   <label className="flex items-center gap-2 mt-2 text-xs text-foreground/60">
                     <input
                       type="checkbox"
                       checked={exp.current}
-                      onChange={(e) => updateExperience(exp.id, "current", e.target.checked)}
+                      onChange={(e) =>
+                        updateExperience(exp.id, "current", e.target.checked)
+                      }
                     />
                     I currently work here
                   </label>
                 </div>
               </div>
 
-              <label className="text-sm font-medium mb-1.5 block">Description</label>
+              <label className="text-sm font-medium mb-1.5 block">
+                Description
+              </label>
               <textarea
                 placeholder="Describe your responsibilities and achievements..."
                 value={exp.description}
-                onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                onChange={(e) =>
+                  updateExperience(exp.id, "description", e.target.value)
+                }
                 rows={3}
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none"
               />
@@ -474,7 +554,9 @@ export default function PortfolioEditor() {
         </div>
 
         {tools.length === 0 ? (
-          <p className="text-sm text-foreground/40 text-center py-4">No tools added yet</p>
+          <p className="text-sm text-foreground/40 text-center py-4">
+            No tools added yet
+          </p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {tools.map((tool) => (
@@ -483,7 +565,10 @@ export default function PortfolioEditor() {
                 className="bg-accent/10 text-accent text-sm px-3 py-1.5 rounded-full flex items-center gap-2"
               >
                 {tool}
-                <button onClick={() => removeTool(tool)} className="hover:text-red-500">
+                <button
+                  onClick={() => removeTool(tool)}
+                  className="hover:text-red-500"
+                >
                   ✕
                 </button>
               </span>
@@ -513,12 +598,17 @@ export default function PortfolioEditor() {
         </div>
 
         {portfolioItems.length === 0 && (
-          <p className="text-sm text-foreground/40 text-center py-6">No samples added yet</p>
+          <p className="text-sm text-foreground/40 text-center py-6">
+            No samples added yet
+          </p>
         )}
 
         <div className="flex flex-col gap-4">
           {portfolioItems.map((item) => (
-            <div key={item.id} className="border border-border rounded-lg p-4 relative">
+            <div
+              key={item.id}
+              className="border border-border rounded-lg p-4 relative"
+            >
               <button
                 onClick={() => removePortfolioItem(item.id)}
                 className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
@@ -530,23 +620,33 @@ export default function PortfolioEditor() {
                 type="text"
                 placeholder="E-commerce Product Descriptions"
                 value={item.title}
-                onChange={(e) => updatePortfolioItem(item.id, "title", e.target.value)}
+                onChange={(e) =>
+                  updatePortfolioItem(item.id, "title", e.target.value)
+                }
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors mb-3"
               />
-              <label className="text-sm font-medium mb-1.5 block">Description</label>
+              <label className="text-sm font-medium mb-1.5 block">
+                Description
+              </label>
               <textarea
                 placeholder="Briefly describe this piece of work..."
                 value={item.description}
-                onChange={(e) => updatePortfolioItem(item.id, "description", e.target.value)}
+                onChange={(e) =>
+                  updatePortfolioItem(item.id, "description", e.target.value)
+                }
                 rows={2}
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none mb-3"
               />
-              <label className="text-sm font-medium mb-1.5 block">Link (optional)</label>
+              <label className="text-sm font-medium mb-1.5 block">
+                Link (optional)
+              </label>
               <input
                 type="text"
                 placeholder="https://..."
                 value={item.link}
-                onChange={(e) => updatePortfolioItem(item.id, "link", e.target.value)}
+                onChange={(e) =>
+                  updatePortfolioItem(item.id, "link", e.target.value)
+                }
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
               />
             </div>
@@ -575,12 +675,17 @@ export default function PortfolioEditor() {
         </div>
 
         {testimonials.length === 0 && (
-          <p className="text-sm text-foreground/40 text-center py-6">No testimonials added yet</p>
+          <p className="text-sm text-foreground/40 text-center py-6">
+            No testimonials added yet
+          </p>
         )}
 
         <div className="flex flex-col gap-4">
           {testimonials.map((t) => (
-            <div key={t.id} className="border border-border rounded-lg p-4 relative">
+            <div
+              key={t.id}
+              className="border border-border rounded-lg p-4 relative"
+            >
               <button
                 onClick={() => removeTestimonial(t.id)}
                 className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
@@ -589,22 +694,30 @@ export default function PortfolioEditor() {
               </button>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">Name</label>
+                  <label className="text-sm font-medium mb-1.5 block">
+                    Name
+                  </label>
                   <input
                     type="text"
                     placeholder="Maria Santos"
                     value={t.name}
-                    onChange={(e) => updateTestimonial(t.id, "name", e.target.value)}
+                    onChange={(e) =>
+                      updateTestimonial(t.id, "name", e.target.value)
+                    }
                     className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">Role / Company</label>
+                  <label className="text-sm font-medium mb-1.5 block">
+                    Role / Company
+                  </label>
                   <input
                     type="text"
                     placeholder="Founder, ABC Store"
                     value={t.role}
-                    onChange={(e) => updateTestimonial(t.id, "role", e.target.value)}
+                    onChange={(e) =>
+                      updateTestimonial(t.id, "role", e.target.value)
+                    }
                     className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
@@ -613,7 +726,9 @@ export default function PortfolioEditor() {
               <textarea
                 placeholder="What did they say about your work?"
                 value={t.quote}
-                onChange={(e) => updateTestimonial(t.id, "quote", e.target.value)}
+                onChange={(e) =>
+                  updateTestimonial(t.id, "quote", e.target.value)
+                }
                 rows={2}
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none"
               />
@@ -656,7 +771,9 @@ export default function PortfolioEditor() {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="text-sm font-medium mb-1.5 block">Website (optional)</label>
+            <label className="text-sm font-medium mb-1.5 block">
+              Website (optional)
+            </label>
             <input
               type="text"
               placeholder="https://..."
@@ -680,7 +797,9 @@ export default function PortfolioEditor() {
       <div className="border border-border rounded-xl p-6 mb-6">
         <h2 className="font-semibold text-lg mb-4">Publish</h2>
 
-        <label className="text-sm font-medium mb-1.5 block">Portfolio URL</label>
+        <label className="text-sm font-medium mb-1.5 block">
+          Portfolio URL
+        </label>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-sm text-foreground/40">forgecv.com/p/</span>
           <input
@@ -713,14 +832,39 @@ export default function PortfolioEditor() {
           </div>
         ) : (
           <button
-            onClick={publishPortfolio}
+            onClick={handlePublishClick}
             disabled={saving}
             className="bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
           >
             {saving ? "Publishing..." : "Publish Portfolio"}
           </button>
         )}
+        </div>
+  
+        {showPaywallModal && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+            <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-2">Ready to go live?</h3>
+              <p className="text-foreground/60 text-sm mb-6">
+                You've used all your available portfolio publish slots. Upgrade your plan or grab a one-time slot to publish this portfolio.
+              </p>
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/pricing"
+                  className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+                >
+                  View Plans
+                </Link>
+                <button
+                  onClick={() => setShowPaywallModal(false)}
+                  className="text-foreground/60 text-sm font-medium py-2"
+                >
+                  Maybe later
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
 }
