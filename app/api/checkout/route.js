@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { createStripeCheckoutSession, getStripePriceId } from '@/lib/payments/stripe'
+import { createPaymongoCheckoutSession } from '@/lib/payments/paymongo'
 
 // Server-side Supabase client, used only to verify who's making the request.
 const supabase = createClient(
@@ -27,24 +28,40 @@ export async function POST(request) {
     const body = await request.json()
     const { provider, planKey } = body
 
-    if (provider !== 'stripe') {
-      return Response.json({ error: 'Only stripe is supported right now' }, { status: 400 })
+    if (!['stripe', 'paymongo'].includes(provider)) {
+      return Response.json({ error: 'Unsupported provider' }, { status: 400 })
     }
 
-    // 3. Build success/cancel URLs dynamically from the incoming request.
+    // 3. Determine payment type from the plan key.
+    //    Lifetime slot keys are explicit; everything else is a subscription.
+    const paymentType = planKey.startsWith('lifetime_') ? 'lifetime_slot' : 'subscription'
+
+    // 4. Build success/cancel URLs dynamically from the incoming request.
     const origin = request.headers.get('origin')
     const successUrl = `${origin}/dashboard/billing/success`
     const cancelUrl = `${origin}/dashboard/billing/canceled`
 
-    // 4. Create the Stripe checkout session.
-    const priceId = getStripePriceId(planKey)
-    const checkoutUrl = await createStripeCheckoutSession({
-      userId: user.id,
-      paymentType: 'subscription',
-      priceId,
-      successUrl,
-      cancelUrl,
-    })
+    // 5. Create the checkout session via the correct provider.
+    let checkoutUrl
+
+    if (provider === 'stripe') {
+      const priceId = getStripePriceId(planKey)
+      checkoutUrl = await createStripeCheckoutSession({
+        userId: user.id,
+        paymentType,
+        priceId,
+        successUrl,
+        cancelUrl,
+      })
+    } else {
+      checkoutUrl = await createPaymongoCheckoutSession({
+        userId: user.id,
+        paymentType,
+        planKey,
+        successUrl,
+        cancelUrl,
+      })
+    }
 
     return Response.json({ url: checkoutUrl })
   } catch (err) {

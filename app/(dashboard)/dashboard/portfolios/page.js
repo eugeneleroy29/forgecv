@@ -1,38 +1,38 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/app/context/AuthContext'
-import { supabase } from '@/lib/supabase'
-import Link from 'next/link'
+import { useState, useEffect } from "react";
+import { useAuth } from "@/app/context/AuthContext";
+import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 export default function Portfolios() {
-  const { user } = useAuth()
-  const [portfolios, setPortfolios] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth();
+  const [portfolios, setPortfolios] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user?.id) {
-      fetchPortfolios()
+      fetchPortfolios();
     }
-  }, [user])
+  }, [user]);
 
   const fetchPortfolios = async () => {
     const { data, error } = await supabase
-      .from('portfolios')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      .from("portfolios")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-    if (!error) setPortfolios(data)
-    setLoading(false)
-  }
+    if (!error) setPortfolios(data);
+    setLoading(false);
+  };
 
   if (loading) {
     return (
       <div className="px-8 py-8">
         <p className="text-foreground/60">Loading...</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -41,7 +41,9 @@ export default function Portfolios() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold mb-1">My Portfolios</h1>
-          <p className="text-foreground/60">Manage and publish your portfolio sites</p>
+          <p className="text-foreground/60">
+            Manage and publish your portfolio sites
+          </p>
         </div>
         <Link
           href="/dashboard/portfolios/new"
@@ -94,5 +96,5 @@ export default function Portfolios() {
         </div>
       )}
     </div>
-  )
+  );
 }
