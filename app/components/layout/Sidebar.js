@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 const menuItems = [
   { name: 'Overview', href: '/dashboard', icon: '🏠' },
   { name: 'Resumes', href: '/dashboard/resumes', icon: '📄' },
-  { name: 'Portfolio', href: '/dashboard/portfolio', icon: '🌐' },
+  { name: 'Portfolio', href: '/dashboard/portfolios', icon: '🌐' },
   { name: 'AI Tools', href: '/dashboard/ai-tools', icon: '🤖' },
   { name: 'Billing', href: '/dashboard/billing', icon: '💳' },
   { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
