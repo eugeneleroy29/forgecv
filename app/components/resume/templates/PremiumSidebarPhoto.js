@@ -1,0 +1,170 @@
+import {
+  formatDate,
+  getOrderedSections,
+  isSectionEmpty,
+  getCustomSectionById,
+} from '../resumeHelpers'
+
+// Sidebar sections: personalInfo (photo + contact) and skills live in the
+// colored left column. Everything else renders in the main content area.
+const SIDEBAR_SECTIONS = ['personalInfo', 'skills']
+
+export default function PremiumSidebarPhoto({ content }) {
+  const { personalInfo, summary, experience, education, skills } = content
+  const orderedSections = getOrderedSections(content).filter(
+    (key) => !isSectionEmpty(key, content)
+  )
+
+  const sidebarKeys = orderedSections.filter((key) => SIDEBAR_SECTIONS.includes(key))
+  const mainKeys = orderedSections.filter((key) => !SIDEBAR_SECTIONS.includes(key))
+
+  const PhotoCircle = () => {
+    if (personalInfo?.photoUrl) {
+      return (
+        <img
+          src={personalInfo.photoUrl}
+          alt={personalInfo?.fullName || 'Profile photo'}
+          className="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-white/30"
+        />
+      )
+    }
+    const initials = (personalInfo?.fullName || '')
+      .split(' ')
+      .map((n) => n[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join('')
+      .toUpperCase()
+    return (
+      <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+        {initials || '?'}
+      </div>
+    )
+  }
+
+  const renderSidebarSection = (key) => {
+    switch (key) {
+      case 'personalInfo':
+        return (
+          <div key={key} className="mb-6 text-center">
+            <PhotoCircle />
+            <h1 className="text-xl font-bold mb-3">{personalInfo?.fullName}</h1>
+            <div className="text-sm space-y-1 text-white/90">
+              {personalInfo?.email && <p>{personalInfo.email}</p>}
+              {personalInfo?.phone && <p>{personalInfo.phone}</p>}
+              {personalInfo?.location && <p>{personalInfo.location}</p>}
+              {personalInfo?.linkedin && <p>{personalInfo.linkedin}</p>}
+            </div>
+          </div>
+        )
+      case 'skills':
+        return (
+          <div key={key} className="mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 border-b border-white/30 pb-1">
+              Skills
+            </h2>
+            <ul className="text-sm space-y-1 mt-2">
+              {skills.map((skill, i) => (
+                <li key={i}>{skill}</li>
+              ))}
+            </ul>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  const renderMainSection = (key) => {
+    switch (key) {
+      case 'summary':
+        return (
+          <div key={key} className="mb-5">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+              Summary
+            </h2>
+            <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
+          </div>
+        )
+      case 'experience':
+        return (
+          <div key={key} className="mb-5">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+              Experience
+            </h2>
+            <div className="flex flex-col gap-4 mt-2">
+              {experience.map((exp) => (
+                <div key={exp.id}>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(exp.startDate)} – {exp.current ? 'Present' : formatDate(exp.endDate)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-1">{exp.company}</p>
+                  {exp.description && (
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                      {exp.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      case 'education':
+        return (
+          <div key={key} className="mb-5">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+              Education
+            </h2>
+            <div className="flex flex-col gap-3 mt-2">
+              {education.map((edu) => (
+                <div key={edu.id}>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">{edu.degree}</h3>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(edu.startDate)} – {edu.current ? 'Present' : formatDate(edu.endDate)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600">{edu.school}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      default: {
+        const customSection = getCustomSectionById(key, content)
+        if (!customSection) return null
+        return (
+          <div key={key} className="mb-5">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+              {customSection.title}
+            </h2>
+            <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
+              {customSection.items
+                .filter((item) => item.text?.trim())
+                .map((item) => (
+                  <li key={item.id}>{item.text}</li>
+                ))}
+            </ul>
+          </div>
+        )
+      }
+    }
+  }
+
+  return (
+    <div
+      className="bg-white text-black max-w-[8.5in] mx-auto flex font-sans"
+      id="resume-preview"
+    >
+      <div className="w-1/3 bg-indigo-700 text-white p-6">
+        {sidebarKeys.map(renderSidebarSection)}
+      </div>
+      <div className="w-2/3 p-8">
+        {mainKeys.map(renderMainSection)}
+      </div>
+    </div>
+  )
+}
