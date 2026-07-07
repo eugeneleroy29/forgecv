@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import ResumePreview from "@/app/components/resume/ResumePreview";
+import { getTemplateComponent } from "@/app/components/resume/templates";
 import PrintPortal from "@/app/components/resume/PrintPortal";
 
 export default function ResumeEditor() {
@@ -28,6 +28,7 @@ export default function ResumeEditor() {
   const [education, setEducation] = useState([]);
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
+  const [accentColor, setAccentColor] = useState("#4F46E5");
   const [showPreview, setShowPreview] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [showAts, setShowAts] = useState(false);
@@ -69,6 +70,9 @@ export default function ResumeEditor() {
     }
     if (data.content?.skills) {
       setSkills(data.content.skills);
+    }
+    if (data.content?.customization?.accentColor) {
+      setAccentColor(data.content.customization.accentColor);
     }
     setLoading(false);
   };
@@ -267,6 +271,7 @@ export default function ResumeEditor() {
       experience,
       education,
       skills,
+      customization: { ...resume.content?.customization, accentColor },
     };
     await supabase
       .from("resumes")
@@ -718,10 +723,32 @@ export default function ResumeEditor() {
           </div>
         )}
 
-        <button
+<button
           onClick={saveResume}
           disabled={saving}
           className="mt-4 text-sm text-accent hover:underline font-medium block"
+        >
+          {saving ? "Saving..." : "Save section"}
+        </button>
+      </div>
+
+      {/* Customization Section */}
+      <div className="border border-border rounded-xl p-6 mb-6">
+        <h2 className="font-semibold text-lg mb-4">Customization</h2>
+        <label className="text-sm font-medium mb-1.5 block">Accent Color</label>
+        <div className="flex items-center gap-3">
+          <input
+            type="color"
+            value={accentColor}
+            onChange={(e) => setAccentColor(e.target.value)}
+            className="w-12 h-12 border border-border rounded-lg cursor-pointer"
+          />
+          <span className="text-sm text-foreground/60">{accentColor}</span>
+        </div>
+        <button
+          onClick={saveResume}
+          disabled={saving}
+          className="mt-4 text-sm text-accent hover:underline font-medium"
         >
           {saving ? "Saving..." : "Save section"}
         </button>
@@ -929,9 +956,22 @@ export default function ResumeEditor() {
                 </button>
               </div>
             </div>
-            <ResumePreview
-              content={{ personalInfo, summary, experience, education, skills }}
-            />
+            {(() => {
+              const TemplateComponent = getTemplateComponent(resume.template);
+              return (
+                <TemplateComponent
+                  content={{
+                    ...resume.content,
+                    personalInfo,
+                    summary,
+                    experience,
+                    education,
+                    skills,
+                    customization: { accentColor },
+                  }}
+                />
+              );
+            })()}
           </div>
         </div>
       )}
@@ -939,9 +979,22 @@ export default function ResumeEditor() {
       {showPreview && (
         <PrintPortal>
           <div id="print-only-resume">
-            <ResumePreview
-              content={{ personalInfo, summary, experience, education, skills }}
-            />
+            {(() => {
+              const TemplateComponent = getTemplateComponent(resume.template);
+              return (
+                <TemplateComponent
+                  content={{
+                    ...resume.content,
+                    personalInfo,
+                    summary,
+                    experience,
+                    education,
+                    skills,
+                    customization: { accentColor },
+                  }}
+                />
+              );
+            })()}
           </div>
         </PrintPortal>
       )}

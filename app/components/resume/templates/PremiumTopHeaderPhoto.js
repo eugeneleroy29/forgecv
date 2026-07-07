@@ -21,7 +21,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         <img
           src={personalInfo.photoUrl}
           alt={personalInfo?.fullName || 'Profile photo'}
-          className="w-24 h-24 rounded-full object-cover border-4 border-white/30 flex-shrink-0"
+          className="w-24 h-24 rounded-full object-cover border-4 border-white/30 shrink-0"
         />
       )
     }
@@ -33,7 +33,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
       .join('')
       .toUpperCase()
     return (
-      <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold flex-shrink-0">
+      <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">
         {initials || '?'}
       </div>
     )
