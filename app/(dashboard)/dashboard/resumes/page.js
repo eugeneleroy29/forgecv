@@ -31,25 +31,12 @@ export default function Resumes() {
     setLoading(false);
   };
 
-  const createResume = async () => {
+  const createResume = () => {
     if (entitlements && resumes.length >= entitlements.resumeLimit) {
       setShowLimitModal(true);
       return;
     }
-
-    const { data, error } = await supabase
-      .from("resumes")
-      .insert({
-        user_id: user.id,
-        title: "Untitled Resume",
-        content: {},
-        template: "basic",
-      })
-      .select()
-      .single();
-    if (!error) {
-      window.location.href = `/dashboard/resumes/${data.id}`;
-    }
+    window.location.href = "/dashboard/resumes/new";
   };
 
   if (loading) {
