@@ -64,3 +64,8 @@ export function isSectionEmpty(sectionKey, content) {
 export function getCustomSectionById(sectionKey, content) {
   return (content?.customSections || []).find((s) => s.id === sectionKey) || null
 }
+
+// Returns the user's chosen accent color, or the brand default if unset.
+export function getAccentColor(content) {
+  return content?.customization?.accentColor || '#4F46E5'
+}

@@ -3,6 +3,7 @@ import {
   getOrderedSections,
   isSectionEmpty,
   getCustomSectionById,
+  getAccentColor,
 } from '../resumeHelpers'
 
 export default function PremiumTopHeaderPhoto({ content }) {
@@ -12,6 +13,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
   )
   // Header is rendered separately above; skip personalInfo in the body loop.
   const bodyKeys = orderedSections.filter((key) => key !== 'personalInfo')
+  const accentColor = getAccentColor(content)
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
@@ -42,7 +44,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
       case 'summary':
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Summary
             </h2>
             <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
@@ -51,7 +53,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
       case 'experience':
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Experience
             </h2>
             <div className="flex flex-col gap-4 mt-2">
@@ -77,7 +79,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
       case 'education':
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Education
             </h2>
             <div className="flex flex-col gap-3 mt-2">
@@ -98,7 +100,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
       case 'skills':
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Skills
             </h2>
             <p className="text-sm text-gray-800 mt-2">{skills.join(' • ')}</p>
@@ -109,7 +111,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         if (!customSection) return null
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               {customSection.title}
             </h2>
             <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
@@ -127,7 +129,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
 
   return (
     <div className="bg-white text-black max-w-[8.5in] mx-auto font-sans" id="resume-preview">
-      <div className="bg-indigo-700 text-white p-8 flex items-center gap-6">
+      <div className="text-white p-8 flex items-center gap-6" style={{ backgroundColor: accentColor }}>
         <PhotoCircle />
         <div>
           <h1 className="text-2xl font-bold mb-1">{personalInfo?.fullName}</h1>

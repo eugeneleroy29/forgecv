@@ -3,6 +3,7 @@ import {
   getOrderedSections,
   isSectionEmpty,
   getCustomSectionById,
+  getAccentColor,
 } from '../resumeHelpers'
 
 export default function AtsHarvardModern({ content }) {
@@ -10,9 +11,10 @@ export default function AtsHarvardModern({ content }) {
   const orderedSections = getOrderedSections(content).filter(
     (key) => !isSectionEmpty(key, content)
   )
+  const accentColor = getAccentColor(content)
 
   const SectionHeading = ({ children }) => (
-    <h2 className="text-sm font-bold text-indigo-700 mb-2">{children}</h2>
+    <h2 className="text-sm font-bold mb-2" style={{ color: accentColor }}>{children}</h2>
   )
 
   const renderSection = (key) => {

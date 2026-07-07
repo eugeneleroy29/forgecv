@@ -3,6 +3,7 @@ import {
   getOrderedSections,
   isSectionEmpty,
   getCustomSectionById,
+  getAccentColor,
 } from '../resumeHelpers'
 
 // Sidebar sections: personalInfo (photo + contact) and skills live in the
@@ -14,6 +15,8 @@ export default function PremiumSidebarPhoto({ content }) {
   const orderedSections = getOrderedSections(content).filter(
     (key) => !isSectionEmpty(key, content)
   )
+
+  const accentColor = getAccentColor(content)
 
   const sidebarKeys = orderedSections.filter((key) => SIDEBAR_SECTIONS.includes(key))
   const mainKeys = orderedSections.filter((key) => !SIDEBAR_SECTIONS.includes(key))
@@ -80,7 +83,7 @@ export default function PremiumSidebarPhoto({ content }) {
       case 'summary':
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Summary
             </h2>
             <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
@@ -89,7 +92,7 @@ export default function PremiumSidebarPhoto({ content }) {
       case 'experience':
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Experience
             </h2>
             <div className="flex flex-col gap-4 mt-2">
@@ -115,7 +118,7 @@ export default function PremiumSidebarPhoto({ content }) {
       case 'education':
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Education
             </h2>
             <div className="flex flex-col gap-3 mt-2">
@@ -138,7 +141,7 @@ export default function PremiumSidebarPhoto({ content }) {
         if (!customSection) return null
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 text-indigo-700">
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               {customSection.title}
             </h2>
             <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
@@ -159,7 +162,7 @@ export default function PremiumSidebarPhoto({ content }) {
       className="bg-white text-black max-w-[8.5in] mx-auto flex font-sans"
       id="resume-preview"
     >
-      <div className="w-1/3 bg-indigo-700 text-white p-6">
+      <div className="w-1/3 text-white p-6" style={{ backgroundColor: accentColor }}>
         {sidebarKeys.map(renderSidebarSection)}
       </div>
       <div className="w-2/3 p-8">
