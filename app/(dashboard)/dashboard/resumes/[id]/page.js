@@ -31,6 +31,43 @@ export default function ResumeEditor() {
   const [education, setEducation] = useState([]);
   const [skills, setSkills] = useState([]);
   const [customSections, setCustomSections] = useState([]);
+
+  const [sectionOrder, setSectionOrder] = useState([]);
+
+  const DEFAULT_REORDERABLE = ["summary", "experience", "education", "skills"];
+
+  const getEffectiveOrder = (order, sections) => {
+    const customIds = sections.map((s) => s.id);
+    const validExisting = order.filter(
+      (key) => DEFAULT_REORDERABLE.includes(key) || customIds.includes(key)
+    );
+    const missingDefault = DEFAULT_REORDERABLE.filter((key) => !validExisting.includes(key));
+    const missingCustom = customIds.filter((id) => !validExisting.includes(id));
+    return [...validExisting, ...missingDefault, ...missingCustom];
+  };
+
+  const SECTION_LABELS = {
+    summary: "Summary",
+    experience: "Work Experience",
+    education: "Education",
+    skills: "Skills",
+  };
+
+  const getSectionLabel = (key) => {
+    if (SECTION_LABELS[key]) return SECTION_LABELS[key];
+    const custom = customSections.find((s) => s.id === key);
+    return custom?.title || key;
+  };
+
+  const moveSection = (index, direction) => {
+    const effective = getEffectiveOrder(sectionOrder, customSections);
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= effective.length) return;
+    const newOrder = [...effective];
+    [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+    setSectionOrder(newOrder);
+  };
+
   const [skillInput, setSkillInput] = useState("");
   const [accentColor, setAccentColor] = useState("#4F46E5");
   const [showPreview, setShowPreview] = useState(false);
@@ -80,6 +117,9 @@ export default function ResumeEditor() {
     }
     if (data.content?.customSections) {
       setCustomSections(data.content.customSections);
+    }
+    if (data.content?.sectionOrder) {
+      setSectionOrder(data.content.sectionOrder.filter((key) => key !== "personalInfo"));
     }
     setLoading(false);
   };
@@ -370,6 +410,7 @@ export default function ResumeEditor() {
       skills,
       customization: { ...resume.content?.customization, accentColor },
       customSections,
+      sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
     };
     await supabase
       .from("resumes")
@@ -941,6 +982,47 @@ export default function ResumeEditor() {
         </button>
       </div>
 
+      {/* Section Order */}
+      <div className="border border-border rounded-xl p-6 mb-6">
+        <h2 className="font-semibold text-lg mb-4">Section Order</h2>
+        <p className="text-sm text-foreground/60 mb-4">
+          Personal Info always appears first. Reorder the rest using the arrows.
+        </p>
+        <div className="flex flex-col gap-2">
+          {getEffectiveOrder(sectionOrder, customSections).map((key, index, arr) => (
+            <div
+              key={key}
+              className="flex items-center justify-between border border-border rounded-lg px-4 py-2.5"
+            >
+              <span className="text-sm font-medium">{getSectionLabel(key)}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => moveSection(index, -1)}
+                  disabled={index === 0}
+                  className="text-foreground/60 hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() => moveSection(index, 1)}
+                  disabled={index === arr.length - 1}
+                  className="text-foreground/60 hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  ▼
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={saveResume}
+          disabled={saving}
+          className="mt-4 text-sm text-accent hover:underline font-medium"
+        >
+          {saving ? "Saving..." : "Save section"}
+        </button>
+      </div>
+
       {/* Customization Section */}
 
       <div className="border border-border rounded-xl p-6 mb-6">
@@ -1178,6 +1260,7 @@ export default function ResumeEditor() {
                     education,
                     skills,
                     customSections,
+                    sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
                     customization: { accentColor },
                   }}
                 />
@@ -1202,6 +1285,7 @@ export default function ResumeEditor() {
                     education,
                     skills,
                     customSections,
+                    sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
                     customization: { accentColor },
                   }}
                 />
