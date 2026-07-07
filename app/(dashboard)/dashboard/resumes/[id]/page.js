@@ -30,6 +30,7 @@ export default function ResumeEditor() {
   const [experience, setExperience] = useState([]);
   const [education, setEducation] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [customSections, setCustomSections] = useState([]);
   const [skillInput, setSkillInput] = useState("");
   const [accentColor, setAccentColor] = useState("#4F46E5");
   const [showPreview, setShowPreview] = useState(false);
@@ -76,6 +77,9 @@ export default function ResumeEditor() {
     }
     if (data.content?.customization?.accentColor) {
       setAccentColor(data.content.customization.accentColor);
+    }
+    if (data.content?.customSections) {
+      setCustomSections(data.content.customSections);
     }
     setLoading(false);
   };
@@ -129,6 +133,53 @@ export default function ResumeEditor() {
 
   const removePhoto = () => {
     updatePersonalInfo("photoUrl", "");
+  };
+
+  const addCustomSection = () => {
+    setCustomSections([
+      ...customSections,
+      { id: `custom_${Date.now()}`, title: "New Section", items: [{ id: `item_${Date.now()}`, text: "" }] },
+    ]);
+  };
+
+  const updateCustomSectionTitle = (sectionId, title) => {
+    setCustomSections(
+      customSections.map((s) => (s.id === sectionId ? { ...s, title } : s))
+    );
+  };
+
+  const removeCustomSection = (sectionId) => {
+    setCustomSections(customSections.filter((s) => s.id !== sectionId));
+  };
+
+  const addCustomSectionItem = (sectionId) => {
+    setCustomSections(
+      customSections.map((s) =>
+        s.id === sectionId
+          ? { ...s, items: [...s.items, { id: `item_${Date.now()}`, text: "" }] }
+          : s
+      )
+    );
+  };
+
+  const updateCustomSectionItem = (sectionId, itemId, text) => {
+    setCustomSections(
+      customSections.map((s) =>
+        s.id === sectionId
+          ? { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, text } : i)) }
+          : s
+      )
+    );
+  };
+
+  const removeCustomSectionItem = (sectionId, itemId) => {
+    setCustomSections(
+      customSections.map((s) =>
+        s.id === sectionId
+          ? { ...s, items: s.items.filter((i) => i.id !== itemId) }
+          : s
+      )
+    );
   };
 
   const addExperience = () => {
@@ -318,6 +369,7 @@ export default function ResumeEditor() {
       education,
       skills,
       customization: { ...resume.content?.customization, accentColor },
+      customSections,
     };
     await supabase
       .from("resumes")
@@ -817,7 +869,80 @@ export default function ResumeEditor() {
         </button>
       </div>
 
+      {/* Additional Sections */}
+      <div className="border border-border rounded-xl p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-lg">Additional Sections</h2>
+          <button
+            onClick={addCustomSection}
+            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+          >
+            + Add Section
+          </button>
+        </div>
+
+        {customSections.length === 0 && (
+          <p className="text-sm text-foreground/40 text-center py-6">
+            No additional sections yet. Add one for Certifications, Languages, Awards, etc.
+          </p>
+        )}
+
+        <div className="flex flex-col gap-4">
+          {customSections.map((section) => (
+            <div key={section.id} className="border border-border rounded-lg p-4 relative">
+              <button
+                onClick={() => removeCustomSection(section.id)}
+                className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
+              >
+                ✕
+              </button>
+              <input
+                type="text"
+                value={section.title}
+                onChange={(e) => updateCustomSectionTitle(section.id, e.target.value)}
+                placeholder="Section Title (e.g. Certifications)"
+                className="w-full border border-border rounded-lg px-4 py-2.5 text-sm font-semibold bg-background focus:outline-none focus:border-accent transition-colors mb-3"
+              />
+              <div className="flex flex-col gap-2">
+                {section.items.map((item) => (
+                  <div key={item.id} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={item.text}
+                      onChange={(e) => updateCustomSectionItem(section.id, item.id, e.target.value)}
+                      placeholder="e.g. AWS Certified Solutions Architect (2024)"
+                      className="flex-1 border border-border rounded-lg px-4 py-2 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+                    />
+                    <button
+                      onClick={() => removeCustomSectionItem(section.id, item.id)}
+                      className="text-foreground/40 hover:text-red-500 text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => addCustomSectionItem(section.id)}
+                className="mt-3 text-xs text-accent hover:underline font-medium"
+              >
+                + Add Line
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={saveResume}
+          disabled={saving}
+          className="mt-4 text-sm text-accent hover:underline font-medium"
+        >
+          {saving ? "Saving..." : "Save section"}
+        </button>
+      </div>
+
       {/* Customization Section */}
+
       <div className="border border-border rounded-xl p-6 mb-6">
         <h2 className="font-semibold text-lg mb-4">Customization</h2>
         <label className="text-sm font-medium mb-1.5 block">Accent Color</label>
@@ -1052,6 +1177,7 @@ export default function ResumeEditor() {
                     experience,
                     education,
                     skills,
+                    customSections,
                     customization: { accentColor },
                   }}
                 />
@@ -1075,6 +1201,7 @@ export default function ResumeEditor() {
                     experience,
                     education,
                     skills,
+                    customSections,
                     customization: { accentColor },
                   }}
                 />
