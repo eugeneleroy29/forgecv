@@ -21,7 +21,10 @@ export default function ResumeEditor() {
     phone: "",
     location: "",
     linkedin: "",
+    photoUrl: "",
   });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState(null);
 
   const [summary, setSummary] = useState("");
   const [experience, setExperience] = useState([]);
@@ -83,6 +86,49 @@ export default function ResumeEditor() {
 
   const updatePersonalInfo = (field, value) => {
     setPersonalInfo({ ...personalInfo, [field]: value });
+  };
+
+  const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // 2MB
+  const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png"];
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhotoError(null);
+
+    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      setPhotoError("Only JPG or PNG images are allowed.");
+      return;
+    }
+    if (file.size > MAX_PHOTO_SIZE) {
+      setPhotoError("Photo must be under 2MB.");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("profile-photos")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      setPhotoError("Upload failed. Please try again.");
+      setUploadingPhoto(false);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("profile-photos")
+      .getPublicUrl(filePath);
+
+    updatePersonalInfo("photoUrl", publicUrlData.publicUrl);
+    setUploadingPhoto(false);
+  };
+
+  const removePhoto = () => {
+    updatePersonalInfo("photoUrl", "");
   };
 
   const addExperience = () => {
@@ -391,9 +437,48 @@ export default function ResumeEditor() {
               placeholder="linkedin.com/in/juandelacruz"
               value={personalInfo.linkedin}
               onChange={(e) => updatePersonalInfo("linkedin", e.target.value)}
-              className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+              className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"     
             />
           </div>
+
+          {["premium-sidebar-photo", "premium-topheader-photo", "premium-twocol-photo"].includes(resume.template) && (
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium mb-1.5 block">
+                Profile Photo (JPG/PNG, max 2MB)
+              </label>
+              <div className="flex items-center gap-4">
+                {personalInfo.photoUrl && (
+                  <img
+                    src={personalInfo.photoUrl}
+                    alt="Profile"
+                    className="w-16 h-16 rounded-full object-cover border border-border"
+                  />
+                )}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={handlePhotoUpload}
+                  disabled={uploadingPhoto}
+                  className="text-sm"
+                />
+                {personalInfo.photoUrl && (
+                  <button
+                    onClick={removePhoto}
+                    type="button"
+                    className="text-sm text-red-500 hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {uploadingPhoto && (
+                <p className="text-xs text-foreground/60 mt-2">Uploading...</p>
+              )}
+              {photoError && (
+                <p className="text-xs text-red-500 mt-2">{photoError}</p>
+              )}
+            </div>
+          )}
         </div>
 
         <button
