@@ -4,6 +4,7 @@ import {
   isSectionEmpty,
   getCustomSectionById,
   getAccentColor,
+  getFontFamily,
 } from '../resumeHelpers'
 
 export default function PremiumTopHeaderPhoto({ content }) {
@@ -14,6 +15,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
   // Header is rendered separately above; skip personalInfo in the body loop.
   const bodyKeys = orderedSections.filter((key) => key !== 'personalInfo')
   const accentColor = getAccentColor(content)
+  const fontFamily = getFontFamily(content)
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
@@ -128,7 +130,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
   }
 
   return (
-    <div className="bg-white text-black max-w-[8.5in] mx-auto font-sans" id="resume-preview">
+    <div className="bg-white text-black max-w-[8.5in] mx-auto" id="resume-preview" style={{ fontFamily }}>
       <div className="text-white p-8 flex items-center gap-6" style={{ backgroundColor: accentColor }}>
         <PhotoCircle />
         <div>

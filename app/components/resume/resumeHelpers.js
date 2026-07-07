@@ -69,3 +69,9 @@ export function getCustomSectionById(sectionKey, content) {
 export function getAccentColor(content) {
   return content?.customization?.accentColor || '#4F46E5'
 }
+
+// Returns the user's chosen font family CSS value, or Inter (default) if unset.
+export function getFontFamily(content) {
+  const choice = content?.customization?.fontFamily
+  return choice === 'georgia' ? 'Georgia, serif' : 'Inter, sans-serif'
+}

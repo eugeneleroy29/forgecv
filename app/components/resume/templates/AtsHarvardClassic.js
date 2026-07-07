@@ -3,6 +3,7 @@ import {
   getOrderedSections,
   isSectionEmpty,
   getCustomSectionById,
+  getFontFamily,
 } from '../resumeHelpers'
 
 export default function AtsHarvardClassic({ content }) {
@@ -10,6 +11,7 @@ export default function AtsHarvardClassic({ content }) {
   const orderedSections = getOrderedSections(content).filter(
     (key) => !isSectionEmpty(key, content)
   )
+  const fontFamily = getFontFamily(content)
 
   const renderSection = (key) => {
     switch (key) {
@@ -114,7 +116,7 @@ export default function AtsHarvardClassic({ content }) {
   }
 
   return (
-    <div className="bg-white text-black p-10 max-w-[8.5in] mx-auto font-serif" id="resume-preview">
+    <div className="bg-white text-black p-10 max-w-[8.5in] mx-auto" id="resume-preview" style={{ fontFamily }}>
       {orderedSections.map(renderSection)}
     </div>
   )

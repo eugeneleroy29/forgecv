@@ -4,50 +4,56 @@ import {
   isSectionEmpty,
   getCustomSectionById,
   getAccentColor,
-} from '../resumeHelpers'
+  getFontFamily,
+} from "../resumeHelpers";
 
 // Sidebar sections: personalInfo (photo + contact) and skills live in the
 // colored left column. Everything else renders in the main content area.
-const SIDEBAR_SECTIONS = ['personalInfo', 'skills']
+const SIDEBAR_SECTIONS = ["personalInfo", "skills"];
 
 export default function PremiumSidebarPhoto({ content }) {
-  const { personalInfo, summary, experience, education, skills } = content
+  const { personalInfo, summary, experience, education, skills } = content;
   const orderedSections = getOrderedSections(content).filter(
-    (key) => !isSectionEmpty(key, content)
-  )
+    (key) => !isSectionEmpty(key, content),
+  );
 
-  const accentColor = getAccentColor(content)
+  const accentColor = getAccentColor(content);
+  const fontFamily = getFontFamily(content);
 
-  const sidebarKeys = orderedSections.filter((key) => SIDEBAR_SECTIONS.includes(key))
-  const mainKeys = orderedSections.filter((key) => !SIDEBAR_SECTIONS.includes(key))
+  const sidebarKeys = orderedSections.filter((key) =>
+    SIDEBAR_SECTIONS.includes(key),
+  );
+  const mainKeys = orderedSections.filter(
+    (key) => !SIDEBAR_SECTIONS.includes(key),
+  );
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
       return (
         <img
           src={personalInfo.photoUrl}
-          alt={personalInfo?.fullName || 'Profile photo'}
+          alt={personalInfo?.fullName || "Profile photo"}
           className="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-white/30"
         />
-      )
+      );
     }
-    const initials = (personalInfo?.fullName || '')
-      .split(' ')
+    const initials = (personalInfo?.fullName || "")
+      .split(" ")
       .map((n) => n[0])
       .filter(Boolean)
       .slice(0, 2)
-      .join('')
-      .toUpperCase()
+      .join("")
+      .toUpperCase();
     return (
       <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-        {initials || '?'}
+        {initials || "?"}
       </div>
-    )
-  }
+    );
+  };
 
   const renderSidebarSection = (key) => {
     switch (key) {
-      case 'personalInfo':
+      case "personalInfo":
         return (
           <div key={key} className="mb-6 text-center">
             <PhotoCircle />
@@ -59,8 +65,8 @@ export default function PremiumSidebarPhoto({ content }) {
               {personalInfo?.linkedin && <p>{personalInfo.linkedin}</p>}
             </div>
           </div>
-        )
-      case 'skills':
+        );
+      case "skills":
         return (
           <div key={key} className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-wide mb-2 border-b border-white/30 pb-1">
@@ -72,27 +78,33 @@ export default function PremiumSidebarPhoto({ content }) {
               ))}
             </ul>
           </div>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const renderMainSection = (key) => {
     switch (key) {
-      case 'summary':
+      case "summary":
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               Summary
             </h2>
             <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
           </div>
-        )
-      case 'experience':
+        );
+      case "experience":
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               Experience
             </h2>
             <div className="flex flex-col gap-4 mt-2">
@@ -101,7 +113,8 @@ export default function PremiumSidebarPhoto({ content }) {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
                     <span className="text-xs text-gray-500">
-                      {formatDate(exp.startDate)} – {exp.current ? 'Present' : formatDate(exp.endDate)}
+                      {formatDate(exp.startDate)} –{" "}
+                      {exp.current ? "Present" : formatDate(exp.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-1">{exp.company}</p>
@@ -114,11 +127,14 @@ export default function PremiumSidebarPhoto({ content }) {
               ))}
             </div>
           </div>
-        )
-      case 'education':
+        );
+      case "education":
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               Education
             </h2>
             <div className="flex flex-col gap-3 mt-2">
@@ -127,7 +143,8 @@ export default function PremiumSidebarPhoto({ content }) {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{edu.degree}</h3>
                     <span className="text-xs text-gray-500">
-                      {formatDate(edu.startDate)} – {edu.current ? 'Present' : formatDate(edu.endDate)}
+                      {formatDate(edu.startDate)} –{" "}
+                      {edu.current ? "Present" : formatDate(edu.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">{edu.school}</p>
@@ -135,13 +152,16 @@ export default function PremiumSidebarPhoto({ content }) {
               ))}
             </div>
           </div>
-        )
+        );
       default: {
-        const customSection = getCustomSectionById(key, content)
-        if (!customSection) return null
+        const customSection = getCustomSectionById(key, content);
+        if (!customSection) return null;
         return (
           <div key={key} className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               {customSection.title}
             </h2>
             <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
@@ -152,22 +172,24 @@ export default function PremiumSidebarPhoto({ content }) {
                 ))}
             </ul>
           </div>
-        )
+        );
       }
     }
-  }
+  };
 
   return (
     <div
-      className="bg-white text-black max-w-[8.5in] mx-auto flex font-sans"
+      className="bg-white text-black max-w-[8.5in] mx-auto flex"
       id="resume-preview"
+      style={{ fontFamily }}
     >
-      <div className="w-1/3 text-white p-6" style={{ backgroundColor: accentColor }}>
+      <div
+        className="w-1/3 text-white p-6"
+        style={{ backgroundColor: accentColor }}
+      >
         {sidebarKeys.map(renderSidebarSection)}
       </div>
-      <div className="w-2/3 p-8">
-        {mainKeys.map(renderMainSection)}
-      </div>
+      <div className="w-2/3 p-8">{mainKeys.map(renderMainSection)}</div>
     </div>
-  )
+  );
 }

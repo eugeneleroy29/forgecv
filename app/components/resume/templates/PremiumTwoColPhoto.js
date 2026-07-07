@@ -4,6 +4,7 @@ import {
   isSectionEmpty,
   getCustomSectionById,
   getAccentColor,
+  getFontFamily,
 } from '../resumeHelpers'
 
 // Left column: summary + skills. Right column: experience + education + custom sections.
@@ -18,6 +19,7 @@ export default function PremiumTwoColPhoto({ content }) {
   const leftKeys = bodyKeys.filter((key) => LEFT_COL_SECTIONS.includes(key))
   const rightKeys = bodyKeys.filter((key) => !LEFT_COL_SECTIONS.includes(key))
   const accentColor = getAccentColor(content)
+  const fontFamily = getFontFamily(content)
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
@@ -143,7 +145,7 @@ export default function PremiumTwoColPhoto({ content }) {
   }
 
   return (
-    <div className="bg-white text-black max-w-[8.5in] mx-auto p-8 font-sans" id="resume-preview">
+    <div className="bg-white text-black max-w-[8.5in] mx-auto p-8" id="resume-preview" style={{ fontFamily }}>
       <div className="text-center mb-6 border-b border-gray-300 pb-4">
         <PhotoCircle />
         <h1 className="text-2xl font-bold mb-1">{personalInfo?.fullName}</h1>
