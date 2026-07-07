@@ -5,6 +5,7 @@ import {
   getCustomSectionById,
   getAccentColor,
   getFontFamily,
+  getSpacing,
 } from '../resumeHelpers'
 
 // Left column: summary + skills. Right column: experience + education + custom sections.
@@ -20,6 +21,9 @@ export default function PremiumTwoColPhoto({ content }) {
   const rightKeys = bodyKeys.filter((key) => !LEFT_COL_SECTIONS.includes(key))
   const accentColor = getAccentColor(content)
   const fontFamily = getFontFamily(content)
+  const spacing = getSpacing(content)
+  const padding = spacing === 'compact' ? 'p-6' : 'p-8'
+  const sectionGap = spacing === 'compact' ? 'mb-3' : 'mb-5'
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
@@ -49,7 +53,7 @@ export default function PremiumTwoColPhoto({ content }) {
     switch (key) {
       case 'summary':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Summary
             </h2>
@@ -58,7 +62,7 @@ export default function PremiumTwoColPhoto({ content }) {
         )
       case 'skills':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Skills
             </h2>
@@ -78,7 +82,7 @@ export default function PremiumTwoColPhoto({ content }) {
     switch (key) {
       case 'experience':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Experience
             </h2>
@@ -104,7 +108,7 @@ export default function PremiumTwoColPhoto({ content }) {
         )
       case 'education':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               Education
             </h2>
@@ -127,7 +131,7 @@ export default function PremiumTwoColPhoto({ content }) {
         const customSection = getCustomSectionById(key, content)
         if (!customSection) return null
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
               {customSection.title}
             </h2>
@@ -145,7 +149,7 @@ export default function PremiumTwoColPhoto({ content }) {
   }
 
   return (
-    <div className="bg-white text-black max-w-[8.5in] mx-auto p-8" id="resume-preview" style={{ fontFamily }}>
+    <div className={`bg-white text-black max-w-[8.5in] mx-auto ${padding}`} id="resume-preview" style={{ fontFamily }}>
       <div className="text-center mb-6 border-b border-gray-300 pb-4">
         <PhotoCircle />
         <h1 className="text-2xl font-bold mb-1">{personalInfo?.fullName}</h1>

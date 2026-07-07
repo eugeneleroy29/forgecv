@@ -75,3 +75,8 @@ export function getFontFamily(content) {
   const choice = content?.customization?.fontFamily
   return choice === 'georgia' ? 'Georgia, serif' : 'Inter, sans-serif'
 }
+
+// Returns 'compact' or 'comfortable' (default) spacing preference.
+export function getSpacing(content) {
+  return content?.customization?.spacing === 'compact' ? 'compact' : 'comfortable'
+}

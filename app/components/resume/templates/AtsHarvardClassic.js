@@ -4,6 +4,7 @@ import {
   isSectionEmpty,
   getCustomSectionById,
   getFontFamily,
+  getSpacing,
 } from '../resumeHelpers'
 
 export default function AtsHarvardClassic({ content }) {
@@ -12,6 +13,9 @@ export default function AtsHarvardClassic({ content }) {
     (key) => !isSectionEmpty(key, content)
   )
   const fontFamily = getFontFamily(content)
+  const spacing = getSpacing(content)
+  const padding = spacing === 'compact' ? 'p-6' : 'p-10'
+  const sectionGap = spacing === 'compact' ? 'mb-3' : 'mb-5'
 
   const renderSection = (key) => {
     switch (key) {
@@ -31,7 +35,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'summary':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Summary
             </h2>
@@ -40,7 +44,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'experience':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Experience
             </h2>
@@ -66,7 +70,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'education':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Education
             </h2>
@@ -87,7 +91,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'skills':
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Skills
             </h2>
@@ -98,7 +102,7 @@ export default function AtsHarvardClassic({ content }) {
         const customSection = getCustomSectionById(key, content)
         if (!customSection) return null
         return (
-          <div key={key} className="mb-5">
+          <div key={key} className={sectionGap}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               {customSection.title}
             </h2>
@@ -116,7 +120,7 @@ export default function AtsHarvardClassic({ content }) {
   }
 
   return (
-    <div className="bg-white text-black p-10 max-w-[8.5in] mx-auto" id="resume-preview" style={{ fontFamily }}>
+    <div className={`bg-white text-black ${padding} max-w-[8.5in] mx-auto`} id="resume-preview" style={{ fontFamily }}>
       {orderedSections.map(renderSection)}
     </div>
   )
