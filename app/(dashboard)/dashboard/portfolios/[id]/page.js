@@ -24,6 +24,7 @@ export default function PortfolioEditor() {
   const [saving, setSaving] = useState(false);
   const [publishError, setPublishError] = useState(null);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const [personalInfo, setPersonalInfo] = useState({
     fullName: "",
@@ -264,6 +265,17 @@ export default function PortfolioEditor() {
       .eq("id", id);
     setPortfolio({ ...portfolio, is_published: false });
     setSaving(false);
+  };
+
+  const copyPortfolioLink = async () => {
+    const url = `https://forgecv.com/p/${portfolio.slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (err) {
+      // Clipboard API unavailable; user can still tap/select the link manually
+    }
   };
 
   if (loading) {
@@ -817,20 +829,37 @@ export default function PortfolioEditor() {
           </div>
         )}
 
-        {portfolio.is_published ? (
-          <div className="flex items-center gap-3">
-            <span className="text-sm bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-medium">
-              ✓ Published
-            </span>
-            <button
-              onClick={unpublishPortfolio}
-              disabled={saving}
-              className="text-sm text-foreground/60 hover:text-red-500 font-medium"
-            >
-              Unpublish
-            </button>
-          </div>
-        ) : (
+{portfolio.is_published ? (
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-sm bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-medium">
+                  ✓ Published
+                </span>
+                <button
+                  onClick={unpublishPortfolio}
+                  disabled={saving}
+                  className="text-sm text-foreground/60 hover:text-red-500 font-medium"
+                >
+                  Unpublish
+                </button>
+              </div>
+
+              <label className="text-sm font-medium mb-1.5 block">
+                Here's your live portfolio link
+              </label>
+              <div className="flex items-center gap-2">
+                <a href={`https://forgecv.com/p/${portfolio.slug}`} target="_blank" rel="noopener noreferrer" className="flex-1 border border-border rounded-lg px-4 py-2.5 text-sm bg-background text-accent hover:underline truncate">
+                  forgecv.com/p/{portfolio.slug}
+                </a>
+                <button
+                  onClick={copyPortfolioLink}
+                  className="border border-border px-4 py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
+                >
+                  {linkCopied ? "Copied!" : "Copy Link"}
+                </button>
+              </div>
+            </div>
+          ) : (
           <button
             onClick={handlePublishClick}
             disabled={saving}
