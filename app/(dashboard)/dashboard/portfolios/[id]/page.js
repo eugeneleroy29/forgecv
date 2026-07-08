@@ -43,6 +43,13 @@ export default function PortfolioEditor() {
     website: "",
   });
   const [slugInput, setSlugInput] = useState("");
+  const [sectionOrder, setSectionOrder] = useState([
+    "services",
+    "experience",
+    "tools",
+    "portfolioItems",
+    "testimonials",
+  ]);
 
   useEffect(() => {
     if (user?.id) {
@@ -72,6 +79,7 @@ export default function PortfolioEditor() {
       setPortfolioItems(data.content.portfolioItems);
     if (data.content?.testimonials) setTestimonials(data.content.testimonials);
     if (data.content?.contact) setContact(data.content.contact);
+    if (data.content?.sectionOrder) setSectionOrder(data.content.sectionOrder);
     setLoading(false);
   };
 
@@ -170,6 +178,26 @@ export default function PortfolioEditor() {
     setContact({ ...contact, [field]: value });
   };
 
+  const moveSectionUp = (key) => {
+    setSectionOrder((prev) => {
+      const index = prev.indexOf(key);
+      if (index <= 0) return prev;
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+  };
+
+  const moveSectionDown = (key) => {
+    setSectionOrder((prev) => {
+      const index = prev.indexOf(key);
+      if (index === -1 || index >= prev.length - 1) return prev;
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
+  };
+
   const savePortfolio = async () => {
     setSaving(true);
     const updatedContent = {
@@ -181,6 +209,7 @@ export default function PortfolioEditor() {
       portfolioItems,
       testimonials,
       contact,
+      sectionOrder,
     };
     await supabase
       .from("portfolios")
@@ -353,16 +382,37 @@ export default function PortfolioEditor() {
         </button>
       </div>
 
-      {/* Services Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
+      <div className="flex flex-col">
+        {/* Services Section */}
+        <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("services") }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Services Offered</h2>
-          <button
-            onClick={addService}
-            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
-          >
-            + Add Service
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("services")}
+                disabled={sectionOrder.indexOf("services") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                ↑
+              </button>
+              <button
+                onClick={() => moveSectionDown("services")}
+                disabled={sectionOrder.indexOf("services") === sectionOrder.length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                ↓
+              </button>
+            </div>
+            <button
+              onClick={addService}
+              className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+            >
+              + Add Service
+            </button>
+          </div>
         </div>
 
         {services.length === 0 && (
@@ -421,15 +471,35 @@ export default function PortfolioEditor() {
       </div>
 
       {/* Work Experience Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("experience") }}>
+      <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Work Experience</h2>
-          <button
-            onClick={addExperience}
-            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
-          >
-            + Add Experience
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("experience")}
+                disabled={sectionOrder.indexOf("experience") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                ↑
+              </button>
+              <button
+                onClick={() => moveSectionDown("experience")}
+                disabled={sectionOrder.indexOf("experience") === sectionOrder.length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                ↓
+              </button>
+            </div>
+            <button
+              onClick={addExperience}
+              className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+            >
+              + Add Experience
+            </button>
+          </div>
         </div>
 
         {experience.length === 0 && (
@@ -545,8 +615,28 @@ export default function PortfolioEditor() {
       </div>
 
       {/* Tools & Skills Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
-        <h2 className="font-semibold text-lg mb-4">Tools & Skills</h2>
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("tools") }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-lg">Tools & Skills</h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("tools")}
+                disabled={sectionOrder.indexOf("tools") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                ↑
+              </button>
+              <button
+                onClick={() => moveSectionDown("tools")}
+                disabled={sectionOrder.indexOf("tools") === sectionOrder.length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                ↓
+              </button>
+            </div>
+          </div>
 
         <div className="flex gap-2 mb-4">
           <input
@@ -598,15 +688,35 @@ export default function PortfolioEditor() {
       </div>
 
       {/* Portfolio Samples Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("portfolioItems") }}>
+      <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Portfolio Samples</h2>
-          <button
-            onClick={addPortfolioItem}
-            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
-          >
-            + Add Sample
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("portfolioItems")}
+                disabled={sectionOrder.indexOf("portfolioItems") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                ↑
+              </button>
+              <button
+                onClick={() => moveSectionDown("portfolioItems")}
+                disabled={sectionOrder.indexOf("portfolioItems") === sectionOrder.length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                ↓
+              </button>
+            </div>
+            <button
+              onClick={addPortfolioItem}
+              className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+            >
+              + Add Sample
+            </button>
+          </div>
         </div>
 
         {portfolioItems.length === 0 && (
@@ -675,15 +785,35 @@ export default function PortfolioEditor() {
       </div>
 
       {/* Testimonials Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("testimonials") }}>
+      <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Testimonials (optional)</h2>
-          <button
-            onClick={addTestimonial}
-            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
-          >
-            + Add Testimonial
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("testimonials")}
+                disabled={sectionOrder.indexOf("testimonials") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                ↑
+              </button>
+              <button
+                onClick={() => moveSectionDown("testimonials")}
+                disabled={sectionOrder.indexOf("testimonials") === sectionOrder.length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                ↓
+              </button>
+            </div>
+            <button
+              onClick={addTestimonial}
+              className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+            >
+              + Add Testimonial
+            </button>
+          </div>
         </div>
 
         {testimonials.length === 0 && (
@@ -749,17 +879,18 @@ export default function PortfolioEditor() {
         </div>
 
         <button
-          onClick={savePortfolio}
-          disabled={saving}
-          className="mt-4 text-sm text-accent hover:underline font-medium"
-        >
-          {saving ? "Saving..." : "Save section"}
-        </button>
-      </div>
+            onClick={savePortfolio}
+            disabled={saving}
+            className="mt-4 text-sm text-accent hover:underline font-medium"
+          >
+            {saving ? "Saving..." : "Save section"}
+          </button>
+        </div>
+        </div>
 
-      {/* Contact Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
-        <h2 className="font-semibold text-lg mb-4">Contact & Socials</h2>
+        {/* Contact Section */}
+        <div className="border border-border rounded-xl p-6 mb-6">
+          <h2 className="font-semibold text-lg mb-4">Contact & Socials</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
