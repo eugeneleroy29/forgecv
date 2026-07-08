@@ -12,6 +12,8 @@ export default function Resumes() {
   const [loading, setLoading] = useState(true);
   const [entitlements, setEntitlements] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -37,6 +39,21 @@ export default function Resumes() {
       return;
     }
     window.location.href = "/dashboard/resumes/new";
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await supabase
+      .from("resumes")
+      .delete()
+      .eq("id", deleteTarget.id);
+
+    if (!error) {
+      setResumes((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    }
+    setDeleting(false);
   };
 
   if (loading) {
@@ -80,16 +97,27 @@ export default function Resumes() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {resumes.map((resume) => (
             <Link
-              key={resume.id}
-              href={`/dashboard/resumes/${resume.id}`}
-              className="border border-border rounded-xl p-6 hover:border-accent transition-colors"
+            key={resume.id}
+            href={`/dashboard/resumes/${resume.id}`}
+            className="relative border border-border rounded-xl p-6 hover:border-accent transition-colors"
+          >
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDeleteTarget(resume);
+              }}
+              className="absolute top-3 right-3 text-foreground/30 hover:text-red-500 transition-colors text-sm"
+              aria-label="Delete resume"
             >
-              <div className="text-2xl mb-3">📄</div>
-              <h3 className="font-semibold mb-1">{resume.title}</h3>
-              <p className="text-xs text-foreground/40">
-                Updated {new Date(resume.updated_at).toLocaleDateString()}
-              </p>
-            </Link>
+              ✕
+            </button>
+            <div className="text-2xl mb-3">📄</div>
+            <h3 className="font-semibold mb-1 pr-6">{resume.title}</h3>
+            <p className="text-xs text-foreground/40">
+              Updated {new Date(resume.updated_at).toLocaleDateString()}
+            </p>
+          </Link>
           ))}
         </div>
       )}
@@ -111,15 +139,42 @@ export default function Resumes() {
                 View Plans
               </Link>
               <button
-                onClick={() => setShowLimitModal(false)}
-                className="text-foreground/60 text-sm font-medium py-2"
-              >
-                Maybe later
-              </button>
+                  onClick={() => setShowLimitModal(false)}
+                  className="text-foreground/60 text-sm font-medium py-2"
+                >
+                  Maybe later
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        )}
+
+        {deleteTarget && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+            <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-2">Delete resume?</h3>
+              <p className="text-foreground/60 text-sm mb-6">
+                This will permanently delete "{deleteTarget.title}". This can't be undone.
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                  className="bg-red-500 text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  {deleting ? "Deleting..." : "Delete"}
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                  className="text-foreground/60 text-sm font-medium py-2"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
