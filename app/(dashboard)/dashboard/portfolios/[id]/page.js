@@ -25,11 +25,14 @@ export default function PortfolioEditor() {
   const [publishError, setPublishError] = useState(null);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState(null);
 
   const [personalInfo, setPersonalInfo] = useState({
     fullName: "",
     tagline: "",
     bio: "",
+    photoUrl: "",
   });
   const [services, setServices] = useState([]);
   const [experience, setExperience] = useState([]);
@@ -89,6 +92,41 @@ export default function PortfolioEditor() {
 
   const updatePersonalInfo = (field, value) => {
     setPersonalInfo({ ...personalInfo, [field]: value });
+  };
+
+  const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // 2MB
+  const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png"];
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhotoError(null);
+    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      setPhotoError("Only JPG or PNG images are allowed.");
+      return;
+    }
+    if (file.size > MAX_PHOTO_SIZE) {
+      setPhotoError("Photo must be under 2MB.");
+      return;
+    }
+    setUploadingPhoto(true);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/portfolio-${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from("profile-photos")
+      .upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      setPhotoError("Upload failed. Please try again.");
+      setUploadingPhoto(false);
+      return;
+    }
+    const { data: publicUrlData } = supabase.storage
+      .from("profile-photos")
+      .getPublicUrl(filePath);
+    updatePersonalInfo("photoUrl", publicUrlData.publicUrl);
+    setUploadingPhoto(false);
+  };
+  const removePhoto = () => {
+    updatePersonalInfo("photoUrl", "");
   };
 
   const addService = () => {
@@ -373,6 +411,41 @@ export default function PortfolioEditor() {
           className="w-full border border-border rounded-lg px-4 py-3 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none"
         />
 
+        <label className="text-sm font-medium mb-1.5 block mt-4">
+          Profile Photo (JPG/PNG, max 2MB)
+        </label>
+        <div className="flex items-center gap-4">
+          {personalInfo.photoUrl && (
+            <img
+              src={personalInfo.photoUrl}
+              alt="Profile"
+              className="w-16 h-16 rounded-full object-cover border border-border"
+            />
+          )}
+          <input
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={handlePhotoUpload}
+            disabled={uploadingPhoto}
+            className="text-sm"
+          />
+          {personalInfo.photoUrl && (
+            <button
+              onClick={removePhoto}
+              type="button"
+              className="text-sm text-red-500 hover:underline"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+        {uploadingPhoto && (
+          <p className="text-xs text-foreground/60 mt-2">Uploading...</p>
+        )}
+        {photoError && (
+          <p className="text-xs text-red-500 mt-2">{photoError}</p>
+        )}
+
         <button
           onClick={savePortfolio}
           disabled={saving}
@@ -382,8 +455,7 @@ export default function PortfolioEditor() {
         </button>
       </div>
 
-      <div className="flex flex-col">
-        {/* Services Section */}
+      {/* Services Section */}
         <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("services") }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Services Offered</h2>
@@ -885,7 +957,6 @@ export default function PortfolioEditor() {
           >
             {saving ? "Saving..." : "Save section"}
           </button>
-        </div>
         </div>
 
         {/* Contact Section */}

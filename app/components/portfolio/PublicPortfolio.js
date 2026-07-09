@@ -127,6 +127,13 @@ export default function PublicPortfolio({ portfolio }) {
         className="px-6 py-20 text-center"
         style={{ backgroundColor: theme.accentSoft }}
       >
+        {personalInfo.photoUrl && (
+          <img
+            src={personalInfo.photoUrl}
+            alt={personalInfo.fullName || "Profile"}
+            className="w-28 h-28 rounded-full object-cover mx-auto mb-6 border-4 border-white shadow-md"
+          />
+        )}
         <h1 className={`text-4xl md:text-5xl font-bold mb-3 ${headingClass}`}>
           {personalInfo.fullName || "Your Name"}
         </h1>
