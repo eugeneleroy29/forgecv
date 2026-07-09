@@ -8,6 +8,7 @@ import { getUserEntitlements } from "@/lib/entitlements";
 import { TOOLS_CATALOG } from "@/app/components/portfolio/toolsCatalog";
 import { getPortfolioTheme } from "@/app/components/portfolio/portfolioThemes";
 import BrandIcon from "@/app/components/portfolio/BrandIcon";
+import PublicPortfolio from "@/app/components/portfolio/PublicPortfolio";
 import Link from "next/link";
 
 const slugify = (text) =>
@@ -38,6 +39,7 @@ export default function PortfolioEditor() {
   const [customSections, setCustomSections] = useState([]);
   const [accentColor, setAccentColor] = useState("");
   const [fontStyle, setFontStyle] = useState("sans");
+  const [mobileView, setMobileView] = useState("edit");
   const [uploadingCustomIcon, setUploadingCustomIcon] = useState(false);
   const [customIconError, setCustomIconError] = useState(null);
 
@@ -492,8 +494,46 @@ export default function PortfolioEditor() {
 
   const theme = getPortfolioTheme(portfolio.template);
 
+  const previewPortfolio = {
+    template: portfolio.template,
+    slug: portfolio.slug,
+    content: {
+      personalInfo,
+      services,
+      experience,
+      tools,
+      portfolioItems,
+      testimonials,
+      contact,
+      sectionOrder,
+      skillsTools,
+      customSections,
+      customization: { accentColor, fontStyle },
+    },
+  };
+
   return (
-    <div className="px-8 py-8 max-w-4xl">
+    <div className="px-8 py-8">
+      <div className="flex md:hidden gap-2 mb-6">
+        <button
+          onClick={() => setMobileView("edit")}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+            mobileView === "edit" ? "bg-accent text-white" : "border border-border text-foreground/60"
+          }`}
+        >
+          Edit
+        </button>
+        <button
+          onClick={() => setMobileView("preview")}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+            mobileView === "preview" ? "bg-accent text-white" : "border border-border text-foreground/60"
+          }`}
+        >
+          Preview
+        </button>
+      </div>
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className={`max-w-2xl w-full ${mobileView === "preview" ? "hidden md:block" : ""}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <input
@@ -1498,17 +1538,25 @@ export default function PortfolioEditor() {
               </div>
             </div>
           ) : (
-          <button
-            onClick={handlePublishClick}
-            disabled={saving}
-            className="bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
-          >
-            {saving ? "Publishing..." : "Publish Portfolio"}
-          </button>
-        )}
+            <button
+              onClick={handlePublishClick}
+              disabled={saving}
+              className="bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+            >
+              {saving ? "Publishing..." : "Publish Portfolio"}
+            </button>
+          )}
+          </div>
+          </div>
+  
+          <div className={`flex-1 min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
+            <div className="sticky top-8 border border-border rounded-xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
+              <PublicPortfolio portfolio={previewPortfolio} />
+            </div>
+          </div>
         </div>
   
-        {showPaywallModal && (
+          {showPaywallModal && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
             <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
               <h3 className="text-xl font-bold mb-2">Ready to go live?</h3>
