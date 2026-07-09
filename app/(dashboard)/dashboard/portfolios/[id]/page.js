@@ -34,6 +34,7 @@ export default function PortfolioEditor() {
   const [customToolName, setCustomToolName] = useState("");
   const [pendingCustomIconUrl, setPendingCustomIconUrl] = useState("");
   const [customToolCategory, setCustomToolCategory] = useState(TOOLS_CATALOG[0].id);
+  const [customSections, setCustomSections] = useState([]);
   const [uploadingCustomIcon, setUploadingCustomIcon] = useState(false);
   const [customIconError, setCustomIconError] = useState(null);
 
@@ -93,6 +94,7 @@ export default function PortfolioEditor() {
     if (data.content?.contact) setContact(data.content.contact);
     if (data.content?.sectionOrder) setSectionOrder(data.content.sectionOrder);
     if (data.content?.skillsTools) setSkillsTools(data.content.skillsTools);
+    if (data.content?.customSections) setCustomSections(data.content.customSections);
     setLoading(false);
   };
 
@@ -200,6 +202,52 @@ export default function PortfolioEditor() {
     ]);
     setCustomToolName("");
     setPendingCustomIconUrl("");
+  };
+
+  const addCustomSection = () => {
+    setCustomSections([
+      ...customSections,
+      {
+        id: `custom_${Date.now()}`,
+        title: "Additional Information",
+        items: [{ id: `item_${Date.now()}`, text: "" }],
+      },
+    ]);
+  };
+  const removeCustomSection = (sectionId) => {
+    setCustomSections(customSections.filter((s) => s.id !== sectionId));
+  };
+  const updateCustomSectionTitle = (sectionId, title) => {
+    setCustomSections(
+      customSections.map((s) => (s.id === sectionId ? { ...s, title } : s)),
+    );
+  };
+  const addCustomSectionItem = (sectionId) => {
+    setCustomSections(
+      customSections.map((s) =>
+        s.id === sectionId
+          ? { ...s, items: [...s.items, { id: `item_${Date.now()}`, text: "" }] }
+          : s,
+      ),
+    );
+  };
+  const updateCustomSectionItem = (sectionId, itemId, text) => {
+    setCustomSections(
+      customSections.map((s) =>
+        s.id === sectionId
+          ? { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, text } : i)) }
+          : s,
+      ),
+    );
+  };
+  const removeCustomSectionItem = (sectionId, itemId) => {
+    setCustomSections(
+      customSections.map((s) =>
+        s.id === sectionId
+          ? { ...s, items: s.items.filter((i) => i.id !== itemId) }
+          : s,
+      ),
+    );
   };
 
   const addService = () => {
@@ -322,6 +370,7 @@ export default function PortfolioEditor() {
       contact,
       sectionOrder,
       skillsTools,
+      customSections,
     };
     await supabase
       .from("portfolios")
@@ -967,6 +1016,83 @@ export default function PortfolioEditor() {
           onClick={savePortfolio}
           disabled={saving}
           className="mt-6 text-sm text-accent hover:underline font-medium block"
+        >
+          {saving ? "Saving..." : "Save section"}
+        </button>
+      </div>
+
+      {/* Custom "Additional Information" Sections */}
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: 6 }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-lg">Additional Information</h2>
+          <button
+            onClick={addCustomSection}
+            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+          >
+            + Add Section
+          </button>
+        </div>
+
+        {customSections.length === 0 && (
+          <p className="text-sm text-foreground/40 text-center py-6">
+            No additional sections added yet
+          </p>
+        )}
+
+        <div className="flex flex-col gap-4">
+          {customSections.map((section) => (
+            <div key={section.id} className="border border-border rounded-lg p-4 relative">
+              <button
+                onClick={() => removeCustomSection(section.id)}
+                className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
+              >
+                ✕
+              </button>
+              <label className="text-sm font-medium mb-1.5 block">Section Title</label>
+              <input
+                type="text"
+                placeholder="e.g. Certifications, Languages, Availability"
+                value={section.title}
+                onChange={(e) => updateCustomSectionTitle(section.id, e.target.value)}
+                className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors mb-3"
+              />
+
+              <label className="text-sm font-medium mb-1.5 block">Items</label>
+              <div className="flex flex-col gap-2 mb-3">
+                {section.items.map((item) => (
+                  <div key={item.id} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. HIPAA Certified Virtual Assistant"
+                      value={item.text}
+                      onChange={(e) =>
+                        updateCustomSectionItem(section.id, item.id, e.target.value)
+                      }
+                      className="flex-1 border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+                    />
+                    <button
+                      onClick={() => removeCustomSectionItem(section.id, item.id)}
+                      className="text-foreground/40 hover:text-red-500 text-sm px-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => addCustomSectionItem(section.id)}
+                className="text-xs text-accent hover:underline font-medium"
+              >
+                + Add Item
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={savePortfolio}
+          disabled={saving}
+          className="mt-4 text-sm text-accent hover:underline font-medium"
         >
           {saving ? "Saving..." : "Save section"}
         </button>
