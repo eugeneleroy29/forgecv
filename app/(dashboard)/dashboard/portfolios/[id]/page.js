@@ -60,6 +60,8 @@ export default function PortfolioEditor() {
     "services",
     "experience",
     "tools",
+    "skillsTools",
+    "customSections",
     "portfolioItems",
     "testimonials",
   ]);
@@ -92,7 +94,13 @@ export default function PortfolioEditor() {
       setPortfolioItems(data.content.portfolioItems);
     if (data.content?.testimonials) setTestimonials(data.content.testimonials);
     if (data.content?.contact) setContact(data.content.contact);
-    if (data.content?.sectionOrder) setSectionOrder(data.content.sectionOrder);
+    if (data.content?.sectionOrder) {
+      let loadedOrder = data.content.sectionOrder;
+      ["skillsTools", "customSections"].forEach((key) => {
+        if (!loadedOrder.includes(key)) loadedOrder = [...loadedOrder, key];
+      });
+      setSectionOrder(loadedOrder);
+    }
     if (data.content?.skillsTools) setSkillsTools(data.content.skillsTools);
     if (data.content?.customSections) setCustomSections(data.content.customSections);
     setLoading(false);
@@ -576,8 +584,8 @@ export default function PortfolioEditor() {
         >
           {saving ? "Saving..." : "Save section"}
         </button>
-      </div>
-
+        </div>
+      <div className="flex flex-col">
       {/* Services Section */}
         <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("services") }}>
         <div className="flex items-center justify-between mb-4">
@@ -883,8 +891,28 @@ export default function PortfolioEditor() {
       </div>
 
       {/* Skills & Tools Icon Grid Section */}
-      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: 5 }}>
-        <h2 className="font-semibold text-lg mb-1">Skills & Tools I Use</h2>
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("skillsTools") }}>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-semibold text-lg">Skills & Tools I Use</h2>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => moveSectionUp("skillsTools")}
+              disabled={sectionOrder.indexOf("skillsTools") === 0}
+              className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+              aria-label="Move section up"
+            >
+              ↑
+            </button>
+            <button
+              onClick={() => moveSectionDown("skillsTools")}
+              disabled={sectionOrder.indexOf("skillsTools") === sectionOrder.length - 1}
+              className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+              aria-label="Move section down"
+            >
+              ↓
+            </button>
+          </div>
+        </div>
         <p className="text-sm text-foreground/60 mb-4">
           Pick the tools you use — shown as a categorized icon grid on your public portfolio.
         </p>
@@ -1022,15 +1050,35 @@ export default function PortfolioEditor() {
       </div>
 
       {/* Custom "Additional Information" Sections */}
-      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: 6 }}>
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: sectionOrder.indexOf("customSections") }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Additional Information</h2>
-          <button
-            onClick={addCustomSection}
-            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
-          >
-            + Add Section
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("customSections")}
+                disabled={sectionOrder.indexOf("customSections") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                ↑
+              </button>
+              <button
+                onClick={() => moveSectionDown("customSections")}
+                disabled={sectionOrder.indexOf("customSections") === sectionOrder.length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                ↓
+              </button>
+            </div>
+            <button
+              onClick={addCustomSection}
+              className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+            >
+              + Add Section
+            </button>
+          </div>
         </div>
 
         {customSections.length === 0 && (
@@ -1295,9 +1343,9 @@ export default function PortfolioEditor() {
             className="mt-4 text-sm text-accent hover:underline font-medium"
           >
             {saving ? "Saving..." : "Save section"}
-          </button>
+            </button>
         </div>
-
+        </div>
         {/* Contact Section */}
         <div className="border border-border rounded-xl p-6 mb-6">
           <h2 className="font-semibold text-lg mb-4">Contact & Socials</h2>

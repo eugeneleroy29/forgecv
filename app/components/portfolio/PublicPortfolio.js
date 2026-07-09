@@ -24,17 +24,22 @@ export default function PublicPortfolio({ portfolio }) {
   const headingClass =
       theme.headingFont === "serif" ? "font-serif" : "font-sans";
 
-    const DEFAULT_SECTION_ORDER = [
-      "services",
-      "experience",
-      "tools",
-      "portfolioItems",
-      "testimonials",
-    ];
-    const orderedSections =
-      content.sectionOrder && content.sectionOrder.length > 0
-        ? content.sectionOrder
-        : DEFAULT_SECTION_ORDER;
+      const DEFAULT_SECTION_ORDER = [
+        "services",
+        "experience",
+        "tools",
+        "skillsTools",
+        "customSections",
+        "portfolioItems",
+        "testimonials",
+      ];
+      let orderedSections =
+        content.sectionOrder && content.sectionOrder.length > 0
+          ? content.sectionOrder
+          : DEFAULT_SECTION_ORDER;
+      ["skillsTools", "customSections"].forEach((key) => {
+        if (!orderedSections.includes(key)) orderedSections = [...orderedSections, key];
+      });
 
     const sectionMap = {
       services: services.length > 0 && (
@@ -108,6 +113,59 @@ export default function PublicPortfolio({ portfolio }) {
           </div>
         </section>
       ),
+      skillsTools: skillsToolsByCategory.length > 0 && (
+        <section key="skillsTools" className="mb-16">
+          <h2 className={`text-2xl font-semibold mb-6 ${headingClass}`}>
+            Skills & Tools I Use
+          </h2>
+          <div className="flex flex-col gap-5">
+            {skillsToolsByCategory.map((category) => (
+              <div key={category.id}>
+                <h3 className="text-sm font-semibold text-gray-500 mb-2">
+                  {category.label}
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {category.selected.map((tool, i) => (
+                    <span
+                      key={`${tool.name}-${i}`}
+                      className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    >
+                      {tool.type === "catalog" ? (
+                        <BrandIcon slug={tool.slug} size={16} />
+                      ) : (
+                        <img src={tool.iconUrl} alt="" className="w-4 h-4" />
+                      )}
+                      {tool.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ),
+      customSections: (content.customSections || []).some((s) =>
+        s.items?.some((item) => item.text?.trim())
+      ) && (
+        <section key="customSections" className="mb-16">
+          {(content.customSections || [])
+            .filter((section) => section.items?.some((item) => item.text?.trim()))
+            .map((section) => (
+              <div key={section.id} className="mb-10 last:mb-0">
+                <h2 className={`text-2xl font-semibold mb-4 ${headingClass}`}>
+                  {section.title}
+                </h2>
+                <ul className="list-disc list-inside flex flex-col gap-2 text-gray-700">
+                  {section.items
+                    .filter((item) => item.text?.trim())
+                    .map((item) => (
+                      <li key={item.id}>{item.text}</li>
+                    ))}
+                </ul>
+              </div>
+            ))}
+        </section>
+      ),
       testimonials: testimonials.length > 0 && (
         <section key="testimonials" className="mb-16">
           <h2 className={`text-2xl font-semibold mb-6 ${headingClass}`}>
@@ -178,39 +236,6 @@ export default function PublicPortfolio({ portfolio }) {
 
         {/* Ordered, reorderable sections */}
         {orderedSections.map((key) => sectionMap[key])}
-
-        {/* Skills & Tools Icon Grid */}
-        {skillsToolsByCategory.length > 0 && (
-          <section className="mb-16">
-            <h2 className={`text-2xl font-semibold mb-6 ${headingClass}`}>
-              Skills & Tools I Use
-            </h2>
-            <div className="flex flex-col gap-5">
-              {skillsToolsByCategory.map((category) => (
-                <div key={category.id}>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-2">
-                    {category.label}
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {category.selected.map((tool, i) => (
-                      <span
-                        key={`${tool.name}-${i}`}
-                        className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                      >
-                        {tool.type === "catalog" ? (
-                          <BrandIcon slug={tool.slug} size={16} />
-                        ) : (
-                          <img src={tool.iconUrl} alt="" className="w-4 h-4" />
-                        )}
-                        {tool.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* Contact */}
         <section className="text-center pt-8 border-t border-gray-200">
