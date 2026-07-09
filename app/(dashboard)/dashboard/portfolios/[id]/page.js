@@ -6,6 +6,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { TOOLS_CATALOG } from "@/app/components/portfolio/toolsCatalog";
+import { getPortfolioTheme } from "@/app/components/portfolio/portfolioThemes";
 import BrandIcon from "@/app/components/portfolio/BrandIcon";
 import Link from "next/link";
 
@@ -35,6 +36,8 @@ export default function PortfolioEditor() {
   const [pendingCustomIconUrl, setPendingCustomIconUrl] = useState("");
   const [customToolCategory, setCustomToolCategory] = useState(TOOLS_CATALOG[0].id);
   const [customSections, setCustomSections] = useState([]);
+  const [accentColor, setAccentColor] = useState("");
+  const [fontStyle, setFontStyle] = useState("sans");
   const [uploadingCustomIcon, setUploadingCustomIcon] = useState(false);
   const [customIconError, setCustomIconError] = useState(null);
 
@@ -103,6 +106,8 @@ export default function PortfolioEditor() {
     }
     if (data.content?.skillsTools) setSkillsTools(data.content.skillsTools);
     if (data.content?.customSections) setCustomSections(data.content.customSections);
+    if (data.content?.customization?.accentColor) setAccentColor(data.content.customization.accentColor);
+    if (data.content?.customization?.fontStyle) setFontStyle(data.content.customization.fontStyle);
     setLoading(false);
   };
 
@@ -379,6 +384,7 @@ export default function PortfolioEditor() {
       sectionOrder,
       skillsTools,
       customSections,
+      customization: { accentColor, fontStyle },
     };
     await supabase
       .from("portfolios")
@@ -483,6 +489,8 @@ export default function PortfolioEditor() {
       </div>
     );
   }
+
+  const theme = getPortfolioTheme(portfolio.template);
 
   return (
     <div className="px-8 py-8 max-w-4xl">
@@ -1385,6 +1393,47 @@ export default function PortfolioEditor() {
           </div>
         </div>
 
+        <button
+          onClick={savePortfolio}
+          disabled={saving}
+          className="mt-4 text-sm text-accent hover:underline font-medium"
+        >
+          {saving ? "Saving..." : "Save section"}
+        </button>
+      </div>
+
+      {/* Customization Section */}
+      <div className="border border-border rounded-xl p-6 mb-6">
+        <h2 className="font-semibold text-lg mb-4">Customization</h2>
+        <label className="text-sm font-medium mb-1.5 block">Accent Color</label>
+        <div className="flex items-center gap-3">
+          <input
+            type="color"
+            value={accentColor || theme.accent}
+            onChange={(e) => setAccentColor(e.target.value)}
+            className="w-12 h-12 border border-border rounded-lg cursor-pointer"
+          />
+          <span className="text-sm text-foreground/60">
+            {accentColor || `${theme.accent} (default for this template)`}
+          </span>
+          {accentColor && (
+            <button
+              onClick={() => setAccentColor("")}
+              className="text-sm text-accent hover:underline"
+            >
+              Reset to default
+            </button>
+          )}
+        </div>
+        <label className="text-sm font-medium mb-1.5 block mt-4">Font Style</label>
+        <select
+          value={fontStyle}
+          onChange={(e) => setFontStyle(e.target.value)}
+          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+        >
+          <option value="sans">Modern (Sans-serif)</option>
+          <option value="serif">Classic (Serif)</option>
+        </select>
         <button
           onClick={savePortfolio}
           disabled={saving}
