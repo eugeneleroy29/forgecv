@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { getUserEntitlements } from "@/lib/entitlements";
+import { TOOLS_CATALOG } from "@/app/components/portfolio/toolsCatalog";
+import BrandIcon from "@/app/components/portfolio/BrandIcon";
 import Link from "next/link";
 
 const slugify = (text) =>
@@ -27,6 +29,13 @@ export default function PortfolioEditor() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState(null);
+  const [skillsTools, setSkillsTools] = useState([]);
+  const [toolSearch, setToolSearch] = useState("");
+  const [customToolName, setCustomToolName] = useState("");
+  const [pendingCustomIconUrl, setPendingCustomIconUrl] = useState("");
+  const [customToolCategory, setCustomToolCategory] = useState(TOOLS_CATALOG[0].id);
+  const [uploadingCustomIcon, setUploadingCustomIcon] = useState(false);
+  const [customIconError, setCustomIconError] = useState(null);
 
   const [personalInfo, setPersonalInfo] = useState({
     fullName: "",
@@ -83,6 +92,7 @@ export default function PortfolioEditor() {
     if (data.content?.testimonials) setTestimonials(data.content.testimonials);
     if (data.content?.contact) setContact(data.content.contact);
     if (data.content?.sectionOrder) setSectionOrder(data.content.sectionOrder);
+    if (data.content?.skillsTools) setSkillsTools(data.content.skillsTools);
     setLoading(false);
   };
 
@@ -127,6 +137,69 @@ export default function PortfolioEditor() {
   };
   const removePhoto = () => {
     updatePersonalInfo("photoUrl", "");
+  };
+
+  const isToolSelected = (slug) =>
+    skillsTools.some((t) => t.type === "catalog" && t.slug === slug);
+
+  const toggleCatalogTool = (categoryId, tool) => {
+    setSkillsTools((prev) => {
+      const exists = prev.some((t) => t.type === "catalog" && t.slug === tool.slug);
+      if (exists) {
+        return prev.filter((t) => !(t.type === "catalog" && t.slug === tool.slug));
+      }
+      return [...prev, { type: "catalog", categoryId, slug: tool.slug, name: tool.name }];
+    });
+  };
+
+  const removeSkillTool = (index) => {
+    setSkillsTools(skillsTools.filter((_, i) => i !== index));
+  };
+
+  const MAX_CUSTOM_ICON_SIZE = 500 * 1024; // 500KB
+  const handleCustomIconUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCustomIconError(null);
+    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      setCustomIconError("Only JPG or PNG images are allowed.");
+      return;
+    }
+    if (file.size > MAX_CUSTOM_ICON_SIZE) {
+      setCustomIconError("Icon must be under 500KB.");
+      return;
+    }
+    setUploadingCustomIcon(true);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/custom-tool-${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from("profile-photos")
+      .upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      setCustomIconError("Upload failed. Please try again.");
+      setUploadingCustomIcon(false);
+      return;
+    }
+    const { data: publicUrlData } = supabase.storage
+      .from("profile-photos")
+      .getPublicUrl(filePath);
+    setPendingCustomIconUrl(publicUrlData.publicUrl);
+    setUploadingCustomIcon(false);
+  };
+
+  const addCustomTool = () => {
+    if (!customToolName.trim() || !pendingCustomIconUrl) return;
+    setSkillsTools([
+      ...skillsTools,
+      {
+        type: "custom",
+        categoryId: customToolCategory,
+        name: customToolName.trim(),
+        iconUrl: pendingCustomIconUrl,
+      },
+    ]);
+    setCustomToolName("");
+    setPendingCustomIconUrl("");
   };
 
   const addService = () => {
@@ -248,6 +321,7 @@ export default function PortfolioEditor() {
       testimonials,
       contact,
       sectionOrder,
+      skillsTools,
     };
     await supabase
       .from("portfolios")
@@ -754,6 +828,145 @@ export default function PortfolioEditor() {
           onClick={savePortfolio}
           disabled={saving}
           className="mt-4 text-sm text-accent hover:underline font-medium block"
+        >
+          {saving ? "Saving..." : "Save section"}
+        </button>
+      </div>
+
+      {/* Skills & Tools Icon Grid Section */}
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: 5 }}>
+        <h2 className="font-semibold text-lg mb-1">Skills & Tools I Use</h2>
+        <p className="text-sm text-foreground/60 mb-4">
+          Pick the tools you use — shown as a categorized icon grid on your public portfolio.
+        </p>
+
+        <input
+          type="text"
+          placeholder="Search tools (e.g. Canva, Slack, Excel)..."
+          value={toolSearch}
+          onChange={(e) => setToolSearch(e.target.value)}
+          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors mb-4"
+        />
+
+        <div className="flex flex-col gap-5">
+          {TOOLS_CATALOG.map((category) => {
+            const filteredTools = category.tools.filter((tool) =>
+              tool.name.toLowerCase().includes(toolSearch.toLowerCase())
+            );
+            if (toolSearch && filteredTools.length === 0) return null;
+            return (
+              <div key={category.id}>
+                <h3 className="text-sm font-semibold text-foreground/70 mb-2">
+                  {category.label}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {filteredTools.map((tool) => {
+                    const selected = isToolSelected(tool.slug);
+                    return (
+                      <button
+                        key={tool.slug}
+                        type="button"
+                        onClick={() => toggleCatalogTool(category.id, tool)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                          selected
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-border hover:border-accent/50"
+                        }`}
+                      >
+                        <BrandIcon slug={tool.slug} size={16} />
+                        {tool.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Custom tool (not in catalog) */}
+        <div className="mt-6 pt-6 border-t border-border">
+          <h3 className="text-sm font-semibold text-foreground/70 mb-2">
+            Can't find your tool? Add it manually
+          </h3>
+          <div className="flex flex-col md:flex-row gap-2 items-start md:items-center">
+            <input
+              type="text"
+              placeholder="Tool name"
+              value={customToolName}
+              onChange={(e) => setCustomToolName(e.target.value)}
+              className="border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+            />
+            <select
+              value={customToolCategory}
+              onChange={(e) => setCustomToolCategory(e.target.value)}
+              className="border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+            >
+              {TOOLS_CATALOG.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+            <input
+              type="file"
+              accept="image/jpeg,image/png"
+              onChange={handleCustomIconUpload}
+              disabled={uploadingCustomIcon}
+              className="text-sm"
+            />
+            {pendingCustomIconUrl && (
+              <img src={pendingCustomIconUrl} alt="" className="w-6 h-6 rounded" />
+            )}
+            <button
+              type="button"
+              onClick={addCustomTool}
+              disabled={!customToolName.trim() || !pendingCustomIconUrl}
+              className="border border-border px-4 py-2 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+            >
+              Add
+            </button>
+          </div>
+          {uploadingCustomIcon && (
+            <p className="text-xs text-foreground/60 mt-2">Uploading icon...</p>
+          )}
+          {customIconError && (
+            <p className="text-xs text-red-500 mt-2">{customIconError}</p>
+          )}
+          <p className="text-xs text-foreground/40 mt-2">Icon must be JPG or PNG, under 500KB.</p>
+        </div>
+
+        {/* Selected tools preview */}
+        {skillsTools.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-border">
+            <h3 className="text-sm font-semibold text-foreground/70 mb-2">
+              Selected ({skillsTools.length})
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {skillsTools.map((tool, index) => (
+                <span
+                  key={`${tool.type}-${tool.slug || tool.name}-${index}`}
+                  className="flex items-center gap-2 bg-accent/10 text-accent text-sm px-3 py-1.5 rounded-full"
+                >
+                  {tool.type === "catalog" ? (
+                    <BrandIcon slug={tool.slug} size={16} />
+                  ) : (
+                    <img src={tool.iconUrl} alt="" className="w-4 h-4" />
+                  )}
+                  {tool.name}
+                  <button onClick={() => removeSkillTool(index)} className="hover:text-red-500">
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={savePortfolio}
+          disabled={saving}
+          className="mt-6 text-sm text-accent hover:underline font-medium block"
         >
           {saving ? "Saving..." : "Save section"}
         </button>

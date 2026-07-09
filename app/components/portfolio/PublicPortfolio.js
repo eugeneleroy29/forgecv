@@ -1,4 +1,6 @@
 import { getPortfolioTheme } from "./portfolioThemes";
+import { TOOLS_CATALOG } from "./toolsCatalog";
+import BrandIcon from "./BrandIcon";
 
 export default function PublicPortfolio({ portfolio }) {
   const theme = getPortfolioTheme(portfolio.template);
@@ -11,7 +13,13 @@ export default function PublicPortfolio({ portfolio }) {
     portfolioItems = [],
     testimonials = [],
     contact = {},
+    skillsTools = [],
   } = content;
+
+  const skillsToolsByCategory = TOOLS_CATALOG.map((category) => ({
+    ...category,
+    selected: skillsTools.filter((t) => t.categoryId === category.id),
+  })).filter((category) => category.selected.length > 0);
 
   const headingClass =
       theme.headingFont === "serif" ? "font-serif" : "font-sans";
@@ -170,6 +178,39 @@ export default function PublicPortfolio({ portfolio }) {
 
         {/* Ordered, reorderable sections */}
         {orderedSections.map((key) => sectionMap[key])}
+
+        {/* Skills & Tools Icon Grid */}
+        {skillsToolsByCategory.length > 0 && (
+          <section className="mb-16">
+            <h2 className={`text-2xl font-semibold mb-6 ${headingClass}`}>
+              Skills & Tools I Use
+            </h2>
+            <div className="flex flex-col gap-5">
+              {skillsToolsByCategory.map((category) => (
+                <div key={category.id}>
+                  <h3 className="text-sm font-semibold text-gray-500 mb-2">
+                    {category.label}
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
+                    {category.selected.map((tool, i) => (
+                      <span
+                        key={`${tool.name}-${i}`}
+                        className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                      >
+                        {tool.type === "catalog" ? (
+                          <BrandIcon slug={tool.slug} size={16} />
+                        ) : (
+                          <img src={tool.iconUrl} alt="" className="w-4 h-4" />
+                        )}
+                        {tool.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Contact */}
         <section className="text-center pt-8 border-t border-gray-200">
