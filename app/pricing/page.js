@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
@@ -13,6 +13,8 @@ const PLANS = {
     tagline: 'For active job seekers',
     monthlyPrice: 149,
     annualPrice: 1490,
+    monthlyPriceUSD: 2.99,
+    annualPriceUSD: 29.99,
     monthlyKey: 'starter_monthly',
     annualKey: 'starter_annual',
     features: [
@@ -35,6 +37,8 @@ const PLANS = {
     tagline: 'For serious professionals',
     monthlyPrice: 299,
     annualPrice: 2990,
+    monthlyPriceUSD: 5.99,
+    annualPriceUSD: 59.99,
     monthlyKey: 'pro_monthly',
     annualKey: 'pro_annual',
     features: [
@@ -58,8 +62,14 @@ const PLANS = {
 
 export default function Pricing() {
   const [annual, setAnnual] = useState(false)
+  const [provider, setProvider] = useState('paymongo')
+  const isUSD = provider === 'stripe'
   const { user } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    setProvider(detectPaymentProvider())
+  }, [])
 
   const startCheckout = async (planKey) => {
     if (!user) {
@@ -129,7 +139,7 @@ export default function Pricing() {
             <h2 className="text-lg font-semibold mb-1">Free</h2>
             <p className="text-foreground/60 text-sm mb-6">Perfect for getting started</p>
             <div className="mb-6">
-              <span className="text-4xl font-bold">₱0</span>
+              <span className="text-4xl font-bold">{isUSD ? '$0' : '₱0'}</span>
               <span className="text-foreground/60 text-sm"> / forever</span>
             </div>
             <ul className="flex flex-col gap-3 mb-8 flex-1">
@@ -157,7 +167,9 @@ export default function Pricing() {
           {/* Starter & Pro */}
           {['starter', 'pro'].map((key) => {
             const plan = PLANS[key]
-            const price = annual ? plan.annualPrice : plan.monthlyPrice
+            const price = isUSD
+              ? (annual ? plan.annualPriceUSD : plan.monthlyPriceUSD)
+              : (annual ? plan.annualPrice : plan.monthlyPrice)
             const planKey = annual ? plan.annualKey : plan.monthlyKey
             const isStarter = key === 'starter'
 
@@ -176,7 +188,9 @@ export default function Pricing() {
                 <h2 className="text-lg font-semibold mb-1">{plan.name}</h2>
                 <p className="text-foreground/60 text-sm mb-6">{plan.tagline}</p>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold">₱{price.toLocaleString()}</span>
+                <span className="text-4xl font-bold">
+                    {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
+                  </span>
                   <span className="text-foreground/60 text-sm"> / {annual ? 'year' : 'month'}</span>
                 </div>
                 <ul className="flex flex-col gap-3 mb-8 flex-1">
@@ -216,7 +230,7 @@ export default function Pricing() {
               <div className="text-3xl mb-3">🌐</div>
               <h3 className="font-semibold mb-1">1 Portfolio</h3>
               <p className="text-foreground/60 text-sm mb-4">Premium template, live forever</p>
-              <div className="text-3xl font-bold mb-4">₱499</div>
+              <div className="text-3xl font-bold mb-4">{isUSD ? '$9.99' : '₱499'}</div>
               <button
                 onClick={() => startCheckout('lifetime_1_slot')}
                 className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
@@ -229,7 +243,7 @@ export default function Pricing() {
               <div className="text-3xl mb-3">🚀</div>
               <h3 className="font-semibold mb-1">3 Portfolios</h3>
               <p className="text-foreground/60 text-sm mb-4">Premium templates, live forever</p>
-              <div className="text-3xl font-bold mb-4">₱999</div>
+              <div className="text-3xl font-bold mb-4">{isUSD ? '$19.99' : '₱999'}</div>
               <button
                 onClick={() => startCheckout('lifetime_3_slots')}
                 className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
