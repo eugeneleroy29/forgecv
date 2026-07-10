@@ -72,7 +72,7 @@ export default function ResumeEditor() {
   const [accentColor, setAccentColor] = useState("#4F46E5");
   const [fontFamily, setFontFamily] = useState("inter");
   const [spacing, setSpacing] = useState("comfortable");
-  const [showPreview, setShowPreview] = useState(false);
+  const [mobileView, setMobileView] = useState("edit");
   const [aiLoading, setAiLoading] = useState(false);
   const [showAts, setShowAts] = useState(false);
   const [atsResult, setAtsResult] = useState(null);
@@ -440,8 +440,39 @@ export default function ResumeEditor() {
     );
   }
 
+  const previewContent = {
+    ...resume.content,
+    personalInfo,
+    summary,
+    experience,
+    education,
+    skills,
+    customSections,
+    sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
+    customization: { accentColor, fontFamily, spacing },
+  };
   return (
-    <div className="px-8 py-8 max-w-4xl">
+    <div className="px-8 py-8">
+      <div className="flex md:hidden gap-2 mb-6">
+        <button
+          onClick={() => setMobileView("edit")}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+            mobileView === "edit" ? "bg-accent text-white" : "border border-border text-foreground/60"
+          }`}
+        >
+          Edit
+        </button>
+        <button
+          onClick={() => setMobileView("preview")}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+            mobileView === "preview" ? "bg-accent text-white" : "border border-border text-foreground/60"
+          }`}
+        >
+          Preview
+        </button>
+      </div>
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className={`max-w-2xl w-full ${mobileView === "preview" ? "hidden md:block" : ""}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <input
@@ -467,10 +498,10 @@ export default function ResumeEditor() {
             💼 Job Optimizer
           </button>
           <button
-            onClick={() => setShowPreview(true)}
+            onClick={() => window.print()}
             className="border border-border px-5 py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors"
           >
-            Preview & Download
+            🖨️ Print / Save as PDF
           </button>
           <button
             onClick={saveResume}
@@ -1253,73 +1284,26 @@ export default function ResumeEditor() {
         </div>
       )}
 
-      {/* Preview Modal */}
-      {showPreview && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6 no-print">
-          <div className="bg-background rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-background">
-              <h3 className="font-semibold">Resume Preview</h3>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => window.print()}
-                  className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
-                >
-                  🖨️ Print / Save as PDF
-                </button>
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="text-foreground/60 hover:text-foreground text-sm"
-                >
-                  ✕ Close
-                </button>
-              </div>
+</div>
+        <div className={`flex-1 min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
+          <div className="sticky top-8 border border-border rounded-xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <div style={{ zoom: 0.6 }}>
+              {(() => {
+                const TemplateComponent = getTemplateComponent(resume.template);
+                return <TemplateComponent content={previewContent} />;
+              })()}
             </div>
-            {(() => {
-              const TemplateComponent = getTemplateComponent(resume.template);
-              return (
-                <TemplateComponent
-                  content={{
-                    ...resume.content,
-                    personalInfo,
-                    summary,
-                    experience,
-                    education,
-                    skills,
-                    customSections,
-                    sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
-                    customization: { accentColor, fontFamily, spacing },
-                  }}
-                />
-              );
-            })()}
           </div>
         </div>
-      )}
-
-      {showPreview && (
-        <PrintPortal>
-          <div id="print-only-resume">
-            {(() => {
-              const TemplateComponent = getTemplateComponent(resume.template);
-              return (
-                <TemplateComponent
-                  content={{
-                    ...resume.content,
-                    personalInfo,
-                    summary,
-                    experience,
-                    education,
-                    skills,
-                    customSections,
-                    sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
-                    customization: { accentColor, fontFamily, spacing },
-                  }}
-                />
-              );
-            })()}
-          </div>
-        </PrintPortal>
-      )}
+      </div>
+      <PrintPortal>
+        <div id="print-only-resume" className="hidden">
+          {(() => {
+            const TemplateComponent = getTemplateComponent(resume.template);
+            return <TemplateComponent content={previewContent} />;
+          })()}
+        </div>
+      </PrintPortal>
     </div>
   );
 }
