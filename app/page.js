@@ -1,7 +1,14 @@
+'use client'
+
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/app/context/AuthContext'
 
 export default function Home() {
+  const router = useRouter()
+  const { user } = useAuth()
+
   return (
     <main className="min-h-screen bg-background text-foreground">
 
@@ -17,13 +24,19 @@ export default function Home() {
           ATS-friendly resumes and stunning portfolio websites for freelancers and remote workers worldwide. Powered by AI.
         </p>
         <div className="flex items-center justify-center gap-4">
-          <button className="bg-accent text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors">
-            Get Started Free
-          </button>
-          <button className="border border-border text-foreground px-8 py-3 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors">
-            View Templates
-          </button>
-        </div>
+            <button
+              onClick={() => router.push(user ? '/dashboard' : '/signup')}
+              className="bg-accent text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+            >
+              {user ? 'Go to Dashboard' : 'Get Started Free'}
+            </button>
+            <button
+              onClick={() => router.push('/templates')}
+              className="border border-border text-foreground px-8 py-3 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors"
+            >
+              View Templates
+            </button>
+          </div>
       </section>
 
       {/* Features Section */}

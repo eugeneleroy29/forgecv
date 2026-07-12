@@ -1,10 +1,34 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/app/context/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user } = useAuth()
+  const [firstName, setFirstName] = useState('')
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
+
+  useEffect(() => {
+    if (!user) {
+      setFirstName('')
+      return
+    }
+    supabase
+      .from('profiles')
+      .select('first_name')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => setFirstName(data?.first_name || ''))
+  }, [user])
 
   return (
     <nav className="border-b border-border px-6 py-4">
@@ -23,15 +47,31 @@ export default function Navbar() {
           <Link href="/templates" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
             Templates
           </Link>
-          <Link href="/login" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-            Log in
-          </Link>
-          <Link href="/signup" className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors">
-            Get Started Free
-          </Link>
-        </div>
+          {user ? (
+              <>
+                <Link href="/dashboard" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+                  Hi, {firstName || user.email?.split('@')[0]}
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm text-foreground/60 hover:text-foreground transition-colors"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+                  Log in
+                </Link>
+                <Link href="/signup" className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors">
+                  Get Started Free
+                </Link>
+              </>
+            )}
+          </div>
 
-        {/* Mobile Menu Button */}
+          {/* Mobile Menu Button */}
         <button
           className="md:hidden text-foreground"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -49,14 +89,30 @@ export default function Navbar() {
           <Link href="/templates" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
             Templates
           </Link>
-          <Link href="/login" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-            Log in
-          </Link>
-          <Link href="/signup" className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors text-center">
-            Get Started Free
-          </Link>
-        </div>
-      )}
+          {user ? (
+              <>
+                <Link href="/dashboard" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
+                  Hi, {firstName || user.email?.split('@')[0]}
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm text-foreground/60 hover:text-foreground transition-colors text-left"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+                  Log in
+                </Link>
+                <Link href="/signup" className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors text-center">
+                  Get Started Free
+                </Link>
+              </>
+            )}
+          </div>
+        )}
     </nav>
   )
 }
