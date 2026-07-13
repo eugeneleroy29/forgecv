@@ -5,7 +5,7 @@ import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import { useAuth } from '@/app/context/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { detectPaymentProvider } from '@/lib/payments/detectProvider'
+import { detectPaymentProviderAsync } from '@/lib/payments/detectProvider'
 
 const PLANS = {
   starter: {
@@ -68,7 +68,7 @@ export default function Pricing() {
   const router = useRouter()
 
   useEffect(() => {
-    setProvider(detectPaymentProvider())
+    detectPaymentProviderAsync().then(setProvider)
   }, [])
 
   const startCheckout = async (planKey) => {
@@ -78,8 +78,6 @@ export default function Pricing() {
     }
 
     const { data: { session } } = await supabase.auth.getSession()
-    const provider = detectPaymentProvider()
-
     const res = await fetch('/api/checkout', {
       method: 'POST',
       headers: {
