@@ -59,13 +59,25 @@ export default function ResumeEditor() {
     return custom?.title || key;
   };
 
-  const moveSection = (index, direction) => {
-    const effective = getEffectiveOrder(sectionOrder, customSections);
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= effective.length) return;
-    const newOrder = [...effective];
-    [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
-    setSectionOrder(newOrder);
+  const moveSectionUp = (key) => {
+    setSectionOrder(() => {
+      const effective = getEffectiveOrder(sectionOrder, customSections);
+      const index = effective.indexOf(key);
+      if (index <= 0) return effective;
+      const newOrder = [...effective];
+      [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+      return newOrder;
+    });
+  };
+  const moveSectionDown = (key) => {
+    setSectionOrder(() => {
+      const effective = getEffectiveOrder(sectionOrder, customSections);
+      const index = effective.indexOf(key);
+      if (index === -1 || index >= effective.length - 1) return effective;
+      const newOrder = [...effective];
+      [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+      return newOrder;
+    });
   };
 
   const [skillInput, setSkillInput] = useState("");
@@ -622,10 +634,32 @@ export default function ResumeEditor() {
         </button>
       </div>
 
+      {/* Reorderable Sections */}
+      <div className="flex flex-col">
       {/* Professional Summary Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("summary") }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg">Professional Summary</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-semibold text-lg">Professional Summary</h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("summary")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("summary") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                {"\u2191"}
+              </button>
+              <button
+                onClick={() => moveSectionDown("summary")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("summary") === getEffectiveOrder(sectionOrder, customSections).length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                {"\u2193"}
+              </button>
+            </div>
+          </div>
           <button
             onClick={generateSummary}
             disabled={aiLoading}
@@ -653,9 +687,29 @@ export default function ResumeEditor() {
       </div>
 
       {/* Work Experience Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("experience") }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg">Work Experience</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-semibold text-lg">Work Experience</h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("experience")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("experience") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                {"\u2191"}
+              </button>
+              <button
+                onClick={() => moveSectionDown("experience")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("experience") === getEffectiveOrder(sectionOrder, customSections).length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                {"\u2193"}
+              </button>
+            </div>
+          </div>
           <button
             onClick={addExperience}
             className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
@@ -777,9 +831,29 @@ export default function ResumeEditor() {
       </div>
 
       {/* Education Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("education") }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg">Education</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-semibold text-lg">Education</h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("education")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("education") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                {"\u2191"}
+              </button>
+              <button
+                onClick={() => moveSectionDown("education")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("education") === getEffectiveOrder(sectionOrder, customSections).length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                {"\u2193"}
+              </button>
+            </div>
+          </div>
           <button
             onClick={addEducation}
             className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
@@ -888,9 +962,29 @@ export default function ResumeEditor() {
       </div>
 
       {/* Skills Section */}
-      <div className="border border-border rounded-xl p-6 mb-6">
+      <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("skills") }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg">Skills</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-semibold text-lg">Skills</h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp("skills")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("skills") === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                {"\u2191"}
+              </button>
+              <button
+                onClick={() => moveSectionDown("skills")}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf("skills") === getEffectiveOrder(sectionOrder, customSections).length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                {"\u2193"}
+              </button>
+            </div>
+          </div>
           <button
             onClick={suggestSkills}
             disabled={aiLoading}
@@ -949,116 +1043,95 @@ export default function ResumeEditor() {
         </button>
       </div>
 
-      {/* Additional Sections */}
-      <div className="border border-border rounded-xl p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg">Additional Sections</h2>
+      {/* Additional (Custom) Sections - each is its own reorderable card */}
+      {customSections.map((section) => (
+        <div
+          key={section.id}
+          className="border border-border rounded-xl p-6 mb-6 relative"
+          style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf(section.id) }}
+        >
           <button
-            onClick={addCustomSection}
-            className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
+            onClick={() => removeCustomSection(section.id)}
+            className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
           >
-            + Add Section
+            {"\u2715"}
+          </button>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => moveSectionUp(section.id)}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf(section.id) === 0}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section up"
+              >
+                {"\u2191"}
+              </button>
+              <button
+                onClick={() => moveSectionDown(section.id)}
+                disabled={getEffectiveOrder(sectionOrder, customSections).indexOf(section.id) === getEffectiveOrder(sectionOrder, customSections).length - 1}
+                className="text-foreground/40 hover:text-accent disabled:opacity-20 disabled:cursor-not-allowed text-sm px-1"
+                aria-label="Move section down"
+              >
+                {"\u2193"}
+              </button>
+            </div>
+            <span className="text-sm text-foreground/50">Custom Section</span>
+          </div>
+          <input
+            type="text"
+            value={section.title}
+            onChange={(e) => updateCustomSectionTitle(section.id, e.target.value)}
+            placeholder="Section Title (e.g. Certifications)"
+            className="w-full border border-border rounded-lg px-4 py-2.5 text-sm font-semibold bg-background focus:outline-none focus:border-accent transition-colors mb-3"
+          />
+          <div className="flex flex-col gap-2">
+            {section.items.map((item) => (
+              <div key={item.id} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={item.text}
+                  onChange={(e) => updateCustomSectionItem(section.id, item.id, e.target.value)}
+                  placeholder="e.g. AWS Certified Solutions Architect (2024)"
+                  className="flex-1 border border-border rounded-lg px-4 py-2 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+                />
+                <button
+                  onClick={() => removeCustomSectionItem(section.id, item.id)}
+                  className="text-foreground/40 hover:text-red-500 text-sm"
+                >
+                  {"\u2715"}
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => addCustomSectionItem(section.id)}
+            className="mt-3 text-xs text-accent hover:underline font-medium"
+          >
+            + Add Line
+          </button>
+          <button
+            onClick={saveResume}
+            disabled={saving}
+            className="mt-4 text-sm text-accent hover:underline font-medium block"
+          >
+            {saving ? "Saving..." : "Save section"}
           </button>
         </div>
+      ))}
+      </div>
 
+      {/* Add Custom Section */}
+      <div className="border border-border border-dashed rounded-xl p-6 mb-6 text-center">
         {customSections.length === 0 && (
-          <p className="text-sm text-foreground/40 text-center py-6">
+          <p className="text-sm text-foreground/40 mb-3">
             No additional sections yet. Add one for Certifications, Languages, Awards, etc.
           </p>
         )}
-
-        <div className="flex flex-col gap-4">
-          {customSections.map((section) => (
-            <div key={section.id} className="border border-border rounded-lg p-4 relative">
-              <button
-                onClick={() => removeCustomSection(section.id)}
-                className="absolute top-3 right-3 text-foreground/40 hover:text-red-500 text-sm"
-              >
-                ✕
-              </button>
-              <input
-                type="text"
-                value={section.title}
-                onChange={(e) => updateCustomSectionTitle(section.id, e.target.value)}
-                placeholder="Section Title (e.g. Certifications)"
-                className="w-full border border-border rounded-lg px-4 py-2.5 text-sm font-semibold bg-background focus:outline-none focus:border-accent transition-colors mb-3"
-              />
-              <div className="flex flex-col gap-2">
-                {section.items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={item.text}
-                      onChange={(e) => updateCustomSectionItem(section.id, item.id, e.target.value)}
-                      placeholder="e.g. AWS Certified Solutions Architect (2024)"
-                      className="flex-1 border border-border rounded-lg px-4 py-2 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
-                    />
-                    <button
-                      onClick={() => removeCustomSectionItem(section.id, item.id)}
-                      className="text-foreground/40 hover:text-red-500 text-sm"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => addCustomSectionItem(section.id)}
-                className="mt-3 text-xs text-accent hover:underline font-medium"
-              >
-                + Add Line
-              </button>
-            </div>
-          ))}
-        </div>
-
         <button
-          onClick={saveResume}
-          disabled={saving}
-          className="mt-4 text-sm text-accent hover:underline font-medium"
+          onClick={addCustomSection}
+          className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors"
         >
-          {saving ? "Saving..." : "Save section"}
-        </button>
-      </div>
-
-      {/* Section Order */}
-      <div className="border border-border rounded-xl p-6 mb-6">
-        <h2 className="font-semibold text-lg mb-4">Section Order</h2>
-        <p className="text-sm text-foreground/60 mb-4">
-          Personal Info always appears first. Reorder the rest using the arrows.
-        </p>
-        <div className="flex flex-col gap-2">
-          {getEffectiveOrder(sectionOrder, customSections).map((key, index, arr) => (
-            <div
-              key={key}
-              className="flex items-center justify-between border border-border rounded-lg px-4 py-2.5"
-            >
-              <span className="text-sm font-medium">{getSectionLabel(key)}</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => moveSection(index, -1)}
-                  disabled={index === 0}
-                  className="text-foreground/60 hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  ▲
-                </button>
-                <button
-                  onClick={() => moveSection(index, 1)}
-                  disabled={index === arr.length - 1}
-                  className="text-foreground/60 hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  ▼
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={saveResume}
-          disabled={saving}
-          className="mt-4 text-sm text-accent hover:underline font-medium"
-        >
-          {saving ? "Saving..." : "Save section"}
+          + Add Section
         </button>
       </div>
 
