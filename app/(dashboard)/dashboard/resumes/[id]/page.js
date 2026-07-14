@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { getUserEntitlements } from "@/lib/entitlements";
 import { getTemplateComponent } from "@/app/components/resume/templates";
 import PrintPortal from "@/app/components/resume/PrintPortal";
 
@@ -86,6 +87,7 @@ export default function ResumeEditor() {
   const [spacing, setSpacing] = useState("comfortable");
   const [mobileView, setMobileView] = useState("edit");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiUsage, setAiUsage] = useState({ used: 0, limit: 0, plan: "free" });
   const [showAts, setShowAts] = useState(false);
   const [atsResult, setAtsResult] = useState(null);
   const [showJobOptimizer, setShowJobOptimizer] = useState(false)
@@ -140,6 +142,23 @@ export default function ResumeEditor() {
     }
     if (data.content?.sectionOrder) {
       setSectionOrder(data.content.sectionOrder.filter((key) => key !== "personalInfo"));
+    }
+    // Fetch AI usage entitlements
+    try {
+      const entitlements = await getUserEntitlements(user.id);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("ai_generations_used, ai_generations_reset_date")
+        .eq("id", user.id)
+        .single();
+      const used = profile?.ai_generations_used || 0;
+      setAiUsage({
+        used,
+        limit: entitlements.aiGenerationsPerMonth || 0,
+        plan: entitlements.plan || "free",
+      });
+    } catch (e) {
+      console.error("Failed to fetch entitlements:", e);
     }
     setLoading(false);
   };
@@ -314,6 +333,10 @@ export default function ResumeEditor() {
   };
 
   const generateSummary = async () => {
+    if (aiUsage.used >= aiUsage.limit) {
+      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      return;
+    }
     setAiLoading(true);
     try {
       const jobTitle = experience[0]?.jobTitle || "Professional";
@@ -321,9 +344,14 @@ export default function ResumeEditor() {
         .map((e) => `${e.jobTitle} at ${e.company}`)
         .join(", ");
 
+      const { data: { session: aiSession } } = await supabase.auth.getSession();
+      const aiToken = aiSession?.access_token;
       const response = await fetch("/api/ai", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${aiToken}`,
+        },
         body: JSON.stringify({
           type: "summary",
           data: { jobTitle, experience: expText },
@@ -332,6 +360,10 @@ export default function ResumeEditor() {
       const result = await response.json();
       if (result.success) {
         setSummary(result.result);
+        if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used }));
+      } else if (response.status === 403) {
+        alert(result.error || "AI generation limit reached.");
+        if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
       console.error("AI error:", error);
@@ -340,13 +372,22 @@ export default function ResumeEditor() {
   };
 
   const suggestSkills = async () => {
+    if (aiUsage.used >= aiUsage.limit) {
+      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      return;
+    }
     setAiLoading(true);
     try {
       const jobTitle = experience[0]?.jobTitle || "Virtual Assistant";
 
+      const { data: { session: aiSession } } = await supabase.auth.getSession();
+      const aiToken = aiSession?.access_token;
       const response = await fetch("/api/ai", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${aiToken}`,
+        },
         body: JSON.stringify({
           type: "skills",
           data: { jobTitle },
@@ -354,24 +395,37 @@ export default function ResumeEditor() {
       });
       const result = await response.json();
       if (result.success) {
+        if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used }));
         const suggestedSkills = result.result
           .split(",")
           .map((s) => s.trim())
           .filter((s) => s && !skills.includes(s));
-        setSkills([...skills, ...suggestedSkills]);
-      }
-    } catch (error) {
+          setSkills([...skills, ...suggestedSkills]);
+        } else if (response.status === 403) {
+          alert(result.error || "AI generation limit reached.");
+          if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
+        }
+      } catch (error) {
       console.error("AI error:", error);
     }
     setAiLoading(false);
   };
 
   const checkATSScore = async () => {
+    if (aiUsage.used >= aiUsage.limit) {
+      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      return;
+    }
     setAiLoading(true);
     try {
+      const { data: { session: aiSession } } = await supabase.auth.getSession();
+      const aiToken = aiSession?.access_token;
       const response = await fetch("/api/ai", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${aiToken}`,
+        },
         body: JSON.stringify({
           type: "ats_score",
           data: { personalInfo, summary, experience, education, skills },
@@ -379,6 +433,7 @@ export default function ResumeEditor() {
       });
       const result = await response.json()
       if (result.success) {
+        if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used }));
         const cleaned = result.result
           .replace(/```json/g, '')
           .replace(/```/g, '')
@@ -386,6 +441,9 @@ export default function ResumeEditor() {
         const parsed = JSON.parse(cleaned)
         setAtsResult(parsed)
         setShowAts(true)
+      } else if (response.status === 403) {
+        alert(result.error || "AI generation limit reached.");
+        if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
       console.error("AI error:", error);
@@ -394,11 +452,20 @@ export default function ResumeEditor() {
   };
 
   const optimizeForJob = async () => {
+    if (aiUsage.used >= aiUsage.limit) {
+      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      return;
+    }
     setAiLoading(true)
     try {
+      const { data: { session: aiSession } } = await supabase.auth.getSession();
+      const aiToken = aiSession?.access_token;
       const response = await fetch('/api/ai', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${aiToken}`,
+        },
         body: JSON.stringify({
           type: 'job_optimizer',
           data: { jobDescription, skills, summary }
@@ -406,12 +473,16 @@ export default function ResumeEditor() {
       })
       const result = await response.json()
       if (result.success) {
+        if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used }));
         const cleaned = result.result
           .replace(/```json/g, '')
           .replace(/```/g, '')
           .trim()
         const parsed = JSON.parse(cleaned)
         setJobResult(parsed)
+      } else if (response.status === 403) {
+        alert(result.error || "AI generation limit reached.");
+        if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
       console.error('AI error:', error)

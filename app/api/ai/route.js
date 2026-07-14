@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -10,6 +11,13 @@ const MODEL_CHAIN = [
   'llama-3.1-8b-instant',      // Highest RPD (14,400), lower quality
   'allam-2-7b',                // Middle ground, 7,000 RPD
 ]
+
+// Plan limits for AI generations
+const AI_LIMITS = {
+  free: 0,
+  starter: 30,
+  pro: 60,
+}
 
 async function tryModels(groq, messages, maxTokens) {
   for (let i = 0; i < MODEL_CHAIN.length; i++) {
@@ -23,7 +31,6 @@ async function tryModels(groq, messages, maxTokens) {
       })
       return completion
     } catch (error) {
-      // If it's a rate limit (429) and we have more fallbacks, try next
       const isRateLimit = error.status === 429 || 
         error.message?.includes('429') ||
         error.message?.includes('RateLimit') ||
@@ -34,15 +41,93 @@ async function tryModels(groq, messages, maxTokens) {
         continue
       }
       
-      // If it's the last model or not a rate limit, throw
       throw error
     }
   }
 }
 
+async function checkAndIncrementAiUsage(userId) {
+  // Fetch current profile
+  const { data: profile, error: fetchError } = await supabaseAdmin
+    .from('profiles')
+    .select('ai_generations_used, ai_generations_reset_date, subscription_tier')
+    .eq('id', userId)
+    .single()
+
+  if (fetchError || !profile) {
+    throw new Error('Failed to fetch user profile')
+  }
+
+  const plan = profile.subscription_tier || 'free'
+  const limit = AI_LIMITS[plan] || 0
+
+  // Check if we need to reset the monthly counter
+  const now = new Date()
+  const resetDate = profile.ai_generations_reset_date 
+    ? new Date(profile.ai_generations_reset_date) 
+    : null
+
+  let currentUsed = profile.ai_generations_used || 0
+
+  // Reset if it's been more than a month since last reset
+  if (!resetDate || (now - resetDate) > (30 * 24 * 60 * 60 * 1000)) {
+    currentUsed = 0
+    await supabaseAdmin
+      .from('profiles')
+      .update({ 
+        ai_generations_used: 0, 
+        ai_generations_reset_date: now.toISOString() 
+      })
+      .eq('id', userId)
+  }
+
+  // Check limit
+  if (currentUsed >= limit) {
+    return { allowed: false, limit, used: currentUsed, plan }
+  }
+
+  // Increment counter
+  const { error: updateError } = await supabaseAdmin
+    .from('profiles')
+    .update({ ai_generations_used: currentUsed + 1 })
+    .eq('id', userId)
+
+  if (updateError) {
+    throw new Error('Failed to increment AI usage counter')
+  }
+
+  return { allowed: true, limit, used: currentUsed + 1, plan }
+}
+
 export async function POST(request) {
   try {
+    // Get user from Supabase auth
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+
+    if (authError || !user) {
+      return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { type, data } = await request.json()
+
+    // Check AI generation limits
+    const usageCheck = await checkAndIncrementAiUsage(user.id)
+    if (!usageCheck.allowed) {
+      return Response.json({ 
+        success: false, 
+        error: `AI generation limit reached. You've used ${usageCheck.used}/${usageCheck.limit} generations this month on your ${usageCheck.plan} plan. Upgrade to get more.`,
+        limitReached: true,
+        used: usageCheck.used,
+        limit: usageCheck.limit,
+        plan: usageCheck.plan
+      }, { status: 403 })
+    }
 
     let systemPrompt = ''
     let userPrompt = ''
@@ -132,12 +217,13 @@ Respond in this EXACT JSON format only, no other text:
     return Response.json({
       success: true,
       result: completion.choices[0].message.content,
+      used: usageCheck.used,
+      limit: usageCheck.limit,
     })
 
   } catch (error) {
     console.error('AI API error:', error)
     
-    // Friendly error messages for common issues
     let userMessage = error.message
     if (error.status === 429 || error.message?.includes('429')) {
       userMessage = 'Our AI service is temporarily busy. Please wait a moment and try again.'
