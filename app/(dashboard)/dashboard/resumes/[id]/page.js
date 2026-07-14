@@ -91,6 +91,7 @@ export default function ResumeEditor() {
   const [showAts, setShowAts] = useState(false);
   const [atsResult, setAtsResult] = useState(null);
   const [showJobOptimizer, setShowJobOptimizer] = useState(false)
+  const [showAiLimitModal, setShowAiLimitModal] = useState(false)
   const [jobDescription, setJobDescription] = useState('')
   const [jobResult, setJobResult] = useState(null)
 
@@ -334,7 +335,7 @@ export default function ResumeEditor() {
 
   const generateSummary = async () => {
     if (aiUsage.used >= aiUsage.limit) {
-      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      setShowAiLimitModal(true);
       return;
     }
     setAiLoading(true);
@@ -362,7 +363,7 @@ export default function ResumeEditor() {
         setSummary(result.result);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used }));
       } else if (response.status === 403) {
-        alert(result.error || "AI generation limit reached.");
+        setShowAiLimitModal(true);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
@@ -373,7 +374,7 @@ export default function ResumeEditor() {
 
   const suggestSkills = async () => {
     if (aiUsage.used >= aiUsage.limit) {
-      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      setShowAiLimitModal(true);
       return;
     }
     setAiLoading(true);
@@ -402,7 +403,7 @@ export default function ResumeEditor() {
           .filter((s) => s && !skills.includes(s));
           setSkills([...skills, ...suggestedSkills]);
         } else if (response.status === 403) {
-          alert(result.error || "AI generation limit reached.");
+          setShowAiLimitModal(true);
           if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
         }
       } catch (error) {
@@ -413,7 +414,7 @@ export default function ResumeEditor() {
 
   const checkATSScore = async () => {
     if (aiUsage.used >= aiUsage.limit) {
-      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      setShowAiLimitModal(true);
       return;
     }
     setAiLoading(true);
@@ -442,7 +443,7 @@ export default function ResumeEditor() {
         setAtsResult(parsed)
         setShowAts(true)
       } else if (response.status === 403) {
-        alert(result.error || "AI generation limit reached.");
+        setShowAiLimitModal(true);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
@@ -453,7 +454,7 @@ export default function ResumeEditor() {
 
   const optimizeForJob = async () => {
     if (aiUsage.used >= aiUsage.limit) {
-      alert(`AI generation limit reached (${aiUsage.used}/${aiUsage.limit}). Upgrade your plan for more.`);
+      setShowAiLimitModal(true);
       return;
     }
     setAiLoading(true)
@@ -481,7 +482,7 @@ export default function ResumeEditor() {
         const parsed = JSON.parse(cleaned)
         setJobResult(parsed)
       } else if (response.status === 403) {
-        alert(result.error || "AI generation limit reached.");
+        setShowAiLimitModal(true);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
@@ -1423,6 +1424,33 @@ export default function ResumeEditor() {
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+            {/* AI Limit Reached Modal */}
+            {showAiLimitModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-2">AI generation limit reached</h3>
+            <p className="text-foreground/60 text-sm mb-6">
+              You've used all {aiUsage.limit} AI generation{aiUsage.limit === 1 ? '' : 's'} on your current plan.
+              Upgrade to get more.
+            </p>
+            <div className="flex flex-col gap-3">
+              <a
+                href="/pricing"
+                className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+              >
+                View Plans
+              </a>
+              <button
+                onClick={() => setShowAiLimitModal(false)}
+                className="text-foreground/60 text-sm font-medium py-2"
+              >
+                Maybe later
+              </button>
             </div>
           </div>
         </div>
