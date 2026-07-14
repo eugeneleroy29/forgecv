@@ -49,8 +49,8 @@ export default function AtsHarvardClassic({ content }) {
               Experience
             </h2>
             <div className="flex flex-col gap-4 mt-2">
-              {experience.map((exp) => (
-                <div key={exp.id}>
+              {experience.map((exp, index) => (
+                <div key={exp.id || `exp-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
                     <span className="text-xs text-gray-600">
@@ -75,8 +75,8 @@ export default function AtsHarvardClassic({ content }) {
               Education
             </h2>
             <div className="flex flex-col gap-3 mt-2">
-              {education.map((edu) => (
-                <div key={edu.id}>
+              {education.map((edu, index) => (
+                <div key={edu.id || `edu-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{edu.degree}</h3>
                     <span className="text-xs text-gray-600">

@@ -6,57 +6,68 @@ import {
   getAccentColor,
   getFontFamily,
   getSpacing,
-} from '../resumeHelpers'
+} from "../resumeHelpers";
 
 export default function AtsHarvardModern({ content }) {
-  const { personalInfo, summary, experience, education, skills } = content
+  const { personalInfo, summary, experience, education, skills } = content;
   const orderedSections = getOrderedSections(content).filter(
-    (key) => !isSectionEmpty(key, content)
-  )
-  const accentColor = getAccentColor(content)
-  const fontFamily = getFontFamily(content)
-  const spacing = getSpacing(content)
-  const padding = spacing === 'compact' ? 'p-6' : 'p-10'
-  const sectionGap = spacing === 'compact' ? 'mb-3' : 'mb-6'
+    (key) => !isSectionEmpty(key, content),
+  );
+  const accentColor = getAccentColor(content);
+  const fontFamily = getFontFamily(content);
+  const spacing = getSpacing(content);
+  const padding = spacing === "compact" ? "p-6" : "p-10";
+  const sectionGap = spacing === "compact" ? "mb-3" : "mb-6";
 
   const SectionHeading = ({ children }) => (
-    <h2 className="text-sm font-bold mb-2" style={{ color: accentColor }}>{children}</h2>
-  )
+    <h2 className="text-sm font-bold mb-2" style={{ color: accentColor }}>
+      {children}
+    </h2>
+  );
 
   const renderSection = (key) => {
     switch (key) {
-      case 'personalInfo':
+      case "personalInfo":
         return (
           <div key={key} className={sectionGap}>
-            <h1 className="text-3xl font-bold mb-1">{personalInfo?.fullName}</h1>
+            <h1 className="text-3xl font-bold mb-1">
+              {personalInfo?.fullName}
+            </h1>
             <p className="text-sm text-gray-600">
-              {[personalInfo?.email, personalInfo?.phone, personalInfo?.location]
+              {[
+                personalInfo?.email,
+                personalInfo?.phone,
+                personalInfo?.location,
+              ]
                 .filter(Boolean)
-                .join(' • ')}
+                .join(" • ")}
             </p>
             {personalInfo?.linkedin && (
-              <p className="text-sm text-gray-600 mt-1">{personalInfo.linkedin}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {personalInfo.linkedin}
+              </p>
             )}
           </div>
-        )
-      case 'summary':
+        );
+      case "summary":
         return (
           <div key={key} className={sectionGap}>
             <SectionHeading>Summary</SectionHeading>
             <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
           </div>
-        )
-      case 'experience':
+        );
+      case "experience":
         return (
           <div key={key} className={sectionGap}>
             <SectionHeading>Experience</SectionHeading>
             <div className="flex flex-col gap-4 mt-2">
-              {experience.map((exp) => (
-                <div key={exp.id}>
+              {experience.map((exp, index) => (
+                <div key={exp.id || `exp-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
                     <span className="text-xs text-gray-500">
-                      {formatDate(exp.startDate)} – {exp.current ? 'Present' : formatDate(exp.endDate)}
+                      {formatDate(exp.startDate)} –{" "}
+                      {exp.current ? "Present" : formatDate(exp.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-1">{exp.company}</p>
@@ -69,18 +80,19 @@ export default function AtsHarvardModern({ content }) {
               ))}
             </div>
           </div>
-        )
-      case 'education':
+        );
+      case "education":
         return (
           <div key={key} className={sectionGap}>
             <SectionHeading>Education</SectionHeading>
             <div className="flex flex-col gap-3 mt-2">
-              {education.map((edu) => (
-                <div key={edu.id}>
+              {education.map((edu, index) => (
+                <div key={edu.id || `edu-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{edu.degree}</h3>
                     <span className="text-xs text-gray-500">
-                      {formatDate(edu.startDate)} – {edu.current ? 'Present' : formatDate(edu.endDate)}
+                      {formatDate(edu.startDate)} –{" "}
+                      {edu.current ? "Present" : formatDate(edu.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">{edu.school}</p>
@@ -88,17 +100,17 @@ export default function AtsHarvardModern({ content }) {
               ))}
             </div>
           </div>
-        )
-      case 'skills':
+        );
+      case "skills":
         return (
           <div key={key} className={sectionGap}>
             <SectionHeading>Skills</SectionHeading>
-            <p className="text-sm text-gray-800 mt-2">{skills.join(' • ')}</p>
+            <p className="text-sm text-gray-800 mt-2">{skills.join(" • ")}</p>
           </div>
-        )
+        );
       default: {
-        const customSection = getCustomSectionById(key, content)
-        if (!customSection) return null
+        const customSection = getCustomSectionById(key, content);
+        if (!customSection) return null;
         return (
           <div key={key} className={sectionGap}>
             <SectionHeading>{customSection.title}</SectionHeading>
@@ -110,14 +122,18 @@ export default function AtsHarvardModern({ content }) {
                 ))}
             </ul>
           </div>
-        )
+        );
       }
     }
-  }
+  };
 
   return (
-    <div className={`bg-white text-black ${padding} max-w-[8.5in] mx-auto`} id="resume-preview" style={{ fontFamily }}>
+    <div
+      className={`bg-white text-black ${padding} max-w-[8.5in] mx-auto`}
+      id="resume-preview"
+      style={{ fontFamily }}
+    >
       {orderedSections.map(renderSection)}
     </div>
-  )
+  );
 }

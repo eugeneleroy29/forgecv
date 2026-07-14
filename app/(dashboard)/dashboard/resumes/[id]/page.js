@@ -87,7 +87,7 @@ export default function ResumeEditor() {
   const [spacing, setSpacing] = useState("comfortable");
   const [mobileView, setMobileView] = useState("edit");
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiUsage, setAiUsage] = useState({ used: 0, limit: 0, plan: "free" });
+  const [aiUsage, setAiUsage] = useState({ used: 0, limit: 0, plan: "free", isAdmin: false });
   const [showAts, setShowAts] = useState(false);
   const [atsResult, setAtsResult] = useState(null);
   const [showJobOptimizer, setShowJobOptimizer] = useState(false)
@@ -152,15 +152,16 @@ export default function ResumeEditor() {
     try {
       const entitlements = await getUserEntitlements(user.id);
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("ai_generations_used, ai_generations_reset_date")
-        .eq("id", user.id)
-        .single();
+      .from("profiles")
+      .select("ai_generations_used, ai_generations_reset_date, is_admin")
+      .eq("id", user.id)
+      .single();
       const used = profile?.ai_generations_used || 0;
       setAiUsage({
         used,
         limit: entitlements.aiGenerationsPerMonth || 0,
         plan: entitlements.plan || "free",
+        isAdmin: profile?.is_admin === true,
       });
     } catch (e) {
       console.error("Failed to fetch entitlements:", e);
@@ -338,7 +339,7 @@ export default function ResumeEditor() {
   };
 
   const generateSummary = async () => {
-    if (aiUsage.used >= aiUsage.limit) {
+    if (!aiUsage.isAdmin && aiUsage.used >= aiUsage.limit) {
       setShowAiLimitModal(true);
       return;
     }
@@ -367,7 +368,7 @@ export default function ResumeEditor() {
         setSummary(result.result);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used }));
       } else if (response.status === 403) {
-        setShowAiLimitModal(true);
+        if (!aiUsage.isAdmin) setShowAiLimitModal(true);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
@@ -377,9 +378,9 @@ export default function ResumeEditor() {
   };
 
   const suggestSkills = async () => {
-    if (aiUsage.used >= aiUsage.limit) {
-      setShowAiLimitModal(true);
-      return;
+    if (!aiUsage.isAdmin && aiUsage.used >= aiUsage.limit) {
+      setShowAiLimitModal(true)
+      return
     }
     setAiLoading(true);
     try {
@@ -407,7 +408,7 @@ export default function ResumeEditor() {
           .filter((s) => s && !skills.includes(s));
           setSkills([...skills, ...suggestedSkills]);
         } else if (response.status === 403) {
-          setShowAiLimitModal(true);
+          if (!aiUsage.isAdmin) setShowAiLimitModal(true);
           if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
         }
       } catch (error) {
@@ -417,9 +418,9 @@ export default function ResumeEditor() {
   };
 
   const checkATSScore = async () => {
-    if (aiUsage.used >= aiUsage.limit) {
-      setShowAiLimitModal(true);
-      return;
+    if (!aiUsage.isAdmin && aiUsage.used >= aiUsage.limit) {
+      setShowAiLimitModal(true)
+      return
     }
     setAiLoading(true);
     try {
@@ -447,7 +448,7 @@ export default function ResumeEditor() {
         setAtsResult(parsed)
         setShowAts(true)
       } else if (response.status === 403) {
-        setShowAiLimitModal(true);
+        if (!aiUsage.isAdmin) setShowAiLimitModal(true);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
@@ -465,7 +466,7 @@ export default function ResumeEditor() {
       alert('Please enter a target position')
       return
     }
-    if (aiUsage.used >= aiUsage.limit) {
+    if (!aiUsage.isAdmin && aiUsage.used >= aiUsage.limit) {
       setShowAiLimitModal(true)
       return
     }
@@ -563,9 +564,9 @@ export default function ResumeEditor() {
   }
 
   const optimizeForJob = async () => {
-    if (aiUsage.used >= aiUsage.limit) {
-      setShowAiLimitModal(true);
-      return;
+    if (!aiUsage.isAdmin && aiUsage.used >= aiUsage.limit) {
+      setShowAiLimitModal(true)
+      return
     }
     setAiLoading(true)
     try {
@@ -592,7 +593,7 @@ export default function ResumeEditor() {
         const parsed = JSON.parse(cleaned)
         setJobResult(parsed)
       } else if (response.status === 403) {
-        setShowAiLimitModal(true);
+        if (!aiUsage.isAdmin) setShowAiLimitModal(true);
         if (result.used !== undefined) setAiUsage(prev => ({ ...prev, used: result.used, limit: result.limit }));
       }
     } catch (error) {
@@ -945,7 +946,7 @@ export default function ResumeEditor() {
         <div className="flex flex-col gap-4">
           {experience.map((exp, index) => (
             <div
-              key={exp.id}
+              key={exp.id || `exp-${index}`}
               className="border border-border rounded-lg p-4 relative"
             >
               <button
@@ -1087,9 +1088,9 @@ export default function ResumeEditor() {
         )}
 
         <div className="flex flex-col gap-4">
-          {education.map((edu) => (
+        {education.map((edu, index) => (
             <div
-              key={edu.id}
+              key={edu.id || `edu-${index}`}
               className="border border-border rounded-lg p-4 relative"
             >
               <button
@@ -1580,7 +1581,7 @@ export default function ResumeEditor() {
       )}
 
             {/* AI Limit Reached Modal */}
-            {showAiLimitModal && (
+            {showAiLimitModal && !aiUsage.isAdmin && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
             <h3 className="text-xl font-bold mb-2">AI generation limit reached</h3>

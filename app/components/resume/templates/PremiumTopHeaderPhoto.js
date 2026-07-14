@@ -6,69 +6,76 @@ import {
   getAccentColor,
   getFontFamily,
   getSpacing,
-} from '../resumeHelpers'
+} from "../resumeHelpers";
 
 export default function PremiumTopHeaderPhoto({ content }) {
-  const { personalInfo, summary, experience, education, skills } = content
+  const { personalInfo, summary, experience, education, skills } = content;
   const orderedSections = getOrderedSections(content).filter(
-    (key) => !isSectionEmpty(key, content)
-  )
+    (key) => !isSectionEmpty(key, content),
+  );
   // Header is rendered separately above; skip personalInfo in the body loop.
-  const bodyKeys = orderedSections.filter((key) => key !== 'personalInfo')
-  const accentColor = getAccentColor(content)
-  const fontFamily = getFontFamily(content)
-  const spacing = getSpacing(content)
-  const padding = spacing === 'compact' ? 'p-6' : 'p-8'
-  const sectionGap = spacing === 'compact' ? 'mb-3' : 'mb-5'
+  const bodyKeys = orderedSections.filter((key) => key !== "personalInfo");
+  const accentColor = getAccentColor(content);
+  const fontFamily = getFontFamily(content);
+  const spacing = getSpacing(content);
+  const padding = spacing === "compact" ? "p-6" : "p-8";
+  const sectionGap = spacing === "compact" ? "mb-3" : "mb-5";
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
       return (
         <img
           src={personalInfo.photoUrl}
-          alt={personalInfo?.fullName || 'Profile photo'}
+          alt={personalInfo?.fullName || "Profile photo"}
           className="w-24 h-24 rounded-full object-cover border-4 border-white/30 shrink-0"
         />
-      )
+      );
     }
-    const initials = (personalInfo?.fullName || '')
-      .split(' ')
+    const initials = (personalInfo?.fullName || "")
+      .split(" ")
       .map((n) => n[0])
       .filter(Boolean)
       .slice(0, 2)
-      .join('')
-      .toUpperCase()
+      .join("")
+      .toUpperCase();
     return (
       <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">
-        {initials || '?'}
+        {initials || "?"}
       </div>
-    )
-  }
+    );
+  };
 
   const renderBodySection = (key) => {
     switch (key) {
-      case 'summary':
+      case "summary":
         return (
           <div key={key} className={sectionGap}>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               Summary
             </h2>
             <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
           </div>
-        )
-      case 'experience':
+        );
+      case "experience":
         return (
           <div key={key} className={sectionGap}>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               Experience
             </h2>
             <div className="flex flex-col gap-4 mt-2">
-              {experience.map((exp) => (
-                <div key={exp.id}>
+              {experience.map((exp, index) => (
+                <div key={exp.id || `exp-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
                     <span className="text-xs text-gray-500">
-                      {formatDate(exp.startDate)} – {exp.current ? 'Present' : formatDate(exp.endDate)}
+                      {formatDate(exp.startDate)} –{" "}
+                      {exp.current ? "Present" : formatDate(exp.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-1">{exp.company}</p>
@@ -81,20 +88,24 @@ export default function PremiumTopHeaderPhoto({ content }) {
               ))}
             </div>
           </div>
-        )
-      case 'education':
+        );
+      case "education":
         return (
           <div key={key} className={sectionGap}>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               Education
             </h2>
             <div className="flex flex-col gap-3 mt-2">
-              {education.map((edu) => (
-                <div key={edu.id}>
+              {education.map((edu, index) => (
+                <div key={edu.id || `edu-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{edu.degree}</h3>
                     <span className="text-xs text-gray-500">
-                      {formatDate(edu.startDate)} – {edu.current ? 'Present' : formatDate(edu.endDate)}
+                      {formatDate(edu.startDate)} –{" "}
+                      {edu.current ? "Present" : formatDate(edu.endDate)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">{edu.school}</p>
@@ -102,22 +113,28 @@ export default function PremiumTopHeaderPhoto({ content }) {
               ))}
             </div>
           </div>
-        )
-      case 'skills':
+        );
+      case "skills":
         return (
           <div key={key} className={sectionGap}>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               Skills
             </h2>
-            <p className="text-sm text-gray-800 mt-2">{skills.join(' • ')}</p>
+            <p className="text-sm text-gray-800 mt-2">{skills.join(" • ")}</p>
           </div>
-        )
+        );
       default: {
-        const customSection = getCustomSectionById(key, content)
-        if (!customSection) return null
+        const customSection = getCustomSectionById(key, content);
+        if (!customSection) return null;
         return (
           <div key={key} className={sectionGap}>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2" style={{ color: accentColor }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-wide mb-2"
+              style={{ color: accentColor }}
+            >
               {customSection.title}
             </h2>
             <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
@@ -128,30 +145,37 @@ export default function PremiumTopHeaderPhoto({ content }) {
                 ))}
             </ul>
           </div>
-        )
+        );
       }
     }
-  }
+  };
 
   return (
-    <div className="bg-white text-black max-w-[8.5in] mx-auto" id="resume-preview" style={{ fontFamily }}>
-      <div className={`text-white ${padding} flex items-center gap-6`} style={{ backgroundColor: accentColor }}>
+    <div
+      className="bg-white text-black max-w-[8.5in] mx-auto"
+      id="resume-preview"
+      style={{ fontFamily }}
+    >
+      <div
+        className={`text-white ${padding} flex items-center gap-6`}
+        style={{ backgroundColor: accentColor }}
+      >
         <PhotoCircle />
         <div>
           <h1 className="text-2xl font-bold mb-1">{personalInfo?.fullName}</h1>
           <p className="text-sm text-white/90">
             {[personalInfo?.email, personalInfo?.phone, personalInfo?.location]
               .filter(Boolean)
-              .join(' • ')}
+              .join(" • ")}
           </p>
           {personalInfo?.linkedin && (
-            <p className="text-sm text-white/90 mt-1">{personalInfo.linkedin}</p>
+            <p className="text-sm text-white/90 mt-1">
+              {personalInfo.linkedin}
+            </p>
           )}
         </div>
       </div>
-      <div className={padding}>
-        {bodyKeys.map(renderBodySection)}
-      </div>
+      <div className={padding}>{bodyKeys.map(renderBodySection)}</div>
     </div>
-  )
+  );
 }

@@ -39,18 +39,23 @@ async function tryModels(groq, messages, maxTokens) {
 
 async function checkAndIncrementAiUsage(userId) {
   const { data: profile, error: fetchError } = await supabaseAdmin
-    .from('profiles')
-    .select('ai_generations_used, ai_generations_reset_date, subscription_tier')
-    .eq('id', userId)
-    .single()
+  .from('profiles')
+  .select('ai_generations_used, ai_generations_reset_date, subscription_tier, is_admin')
+  .eq('id', userId)
+  .single()
 
-  if (fetchError || !profile) {
-    throw new Error('Failed to fetch user profile')
-  }
+if (fetchError || !profile) {
+  throw new Error('Failed to fetch user profile')
+}
 
-  const plan = profile.subscription_tier || 'free'
-  const limits = { free: 0, starter: 30, pro: 60 }
-  const limit = limits[plan] || 0
+// Admins get unlimited AI
+if (profile.is_admin) {
+  return { allowed: true, limit: Infinity, used: 0, plan: 'admin' }
+}
+
+const plan = profile.subscription_tier || 'free'
+const limits = { free: 0, starter: 30, pro: 60 }
+const limit = limits[plan] || 0
 
   const now = new Date()
   const resetDate = profile.ai_generations_reset_date 

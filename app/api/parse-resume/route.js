@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server'
-import pdfParse from 'pdf-parse'
-import mammoth from 'mammoth'
 
 export async function POST(request) {
   try {
@@ -24,9 +22,23 @@ export async function POST(request) {
     let text = ''
 
     if (file.type === 'application/pdf') {
-      const pdfData = await pdfParse(buffer)
-      text = pdfData.text
+      const { default: PDFParser } = await import('pdf2json')
+      
+      const pdfParser = new PDFParser()
+      
+      const textContent = await new Promise((resolve, reject) => {
+        pdfParser.on('pdfParser_dataReady', (pdfData) => {
+          resolve(pdfData.Pages.map(page => 
+            page.Texts.map(t => decodeURIComponent(t.R[0].T)).join(' ')
+          ).join('\n\n'))
+        })
+        pdfParser.on('pdfParser_dataError', (err) => reject(err))
+        pdfParser.parseBuffer(buffer)
+      })
+      
+      text = textContent
     } else {
+      const mammoth = await import('mammoth').then(m => m.default || m)
       const docxData = await mammoth.extractRawText({ buffer })
       text = docxData.value
     }

@@ -20,10 +20,10 @@ export default function PremiumSidebarPhoto({ content }) {
 
   const accentColor = getAccentColor(content);
   const fontFamily = getFontFamily(content);
-  const spacing = getSpacing(content)
-  const sidebarPadding = spacing === 'compact' ? 'p-4' : 'p-6'
-  const mainPadding = spacing === 'compact' ? 'p-6' : 'p-8'
-  const sectionGap = spacing === 'compact' ? 'mb-3' : 'mb-5'
+  const spacing = getSpacing(content);
+  const sidebarPadding = spacing === "compact" ? "p-4" : "p-6";
+  const mainPadding = spacing === "compact" ? "p-6" : "p-8";
+  const sectionGap = spacing === "compact" ? "mb-3" : "mb-5";
 
   const sidebarKeys = orderedSections.filter((key) =>
     SIDEBAR_SECTIONS.includes(key),
@@ -113,8 +113,8 @@ export default function PremiumSidebarPhoto({ content }) {
               Experience
             </h2>
             <div className="flex flex-col gap-4 mt-2">
-              {experience.map((exp) => (
-                <div key={exp.id}>
+              {experience.map((exp, index) => (
+                <div key={exp.id || `exp-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
                     <span className="text-xs text-gray-500">
@@ -143,8 +143,8 @@ export default function PremiumSidebarPhoto({ content }) {
               Education
             </h2>
             <div className="flex flex-col gap-3 mt-2">
-              {education.map((edu) => (
-                <div key={edu.id}>
+              {education.map((edu, index) => (
+                <div key={edu.id || `edu-${index}`}>
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{edu.degree}</h3>
                     <span className="text-xs text-gray-500">
@@ -188,10 +188,15 @@ export default function PremiumSidebarPhoto({ content }) {
       id="resume-preview"
       style={{ fontFamily }}
     >
-      <div className={`w-1/3 text-white ${sidebarPadding}`} style={{ backgroundColor: accentColor }}>
+      <div
+        className={`w-1/3 text-white ${sidebarPadding}`}
+        style={{ backgroundColor: accentColor }}
+      >
         {sidebarKeys.map(renderSidebarSection)}
       </div>
-      <div className={`w-2/3 ${mainPadding}`}>{mainKeys.map(renderMainSection)}</div>
+      <div className={`w-2/3 ${mainPadding}`}>
+        {mainKeys.map(renderMainSection)}
+      </div>
     </div>
   );
 }

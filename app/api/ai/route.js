@@ -50,12 +50,17 @@ async function checkAndIncrementAiUsage(userId) {
   // Fetch current profile
   const { data: profile, error: fetchError } = await supabaseAdmin
     .from('profiles')
-    .select('ai_generations_used, ai_generations_reset_date, subscription_tier')
+    .select('ai_generations_used, ai_generations_reset_date, subscription_tier, is_admin')
     .eq('id', userId)
     .single()
 
   if (fetchError || !profile) {
     throw new Error('Failed to fetch user profile')
+  }
+
+  // Admins get unlimited AI
+  if (profile.is_admin) {
+    return { allowed: true, limit: Infinity, used: 0, plan: 'admin' }
   }
 
   const plan = profile.subscription_tier || 'free'
