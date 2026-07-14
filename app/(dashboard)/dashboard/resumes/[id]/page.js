@@ -1211,16 +1211,20 @@ export default function ResumeEditor() {
 
       <div className="border border-border rounded-xl p-6 mb-6">
         <h2 className="font-semibold text-lg mb-4">Customization</h2>
-        <label className="text-sm font-medium mb-1.5 block">Accent Color</label>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            value={accentColor}
-            onChange={(e) => setAccentColor(e.target.value)}
-            className="w-12 h-12 border border-border rounded-lg cursor-pointer"
-          />
-          <span className="text-sm text-foreground/60">{accentColor}</span>
-        </div>
+        {resume?.template?.startsWith('premium') && (
+          <>
+            <label className="text-sm font-medium mb-1.5 block">Accent Color</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="w-12 h-12 border border-border rounded-lg cursor-pointer"
+              />
+              <span className="text-sm text-foreground/60">{accentColor}</span>
+            </div>
+          </>
+        )}
         <label className="text-sm font-medium mb-1.5 block mt-4">Font Style</label>
         <select
           value={fontFamily}
