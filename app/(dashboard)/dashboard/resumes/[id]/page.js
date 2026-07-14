@@ -92,6 +92,10 @@ export default function ResumeEditor() {
   const [atsResult, setAtsResult] = useState(null);
   const [showJobOptimizer, setShowJobOptimizer] = useState(false)
   const [showAiLimitModal, setShowAiLimitModal] = useState(false)
+  const [uploadingResume, setUploadingResume] = useState(false)
+  const [parseProgress, setParseProgress] = useState('')
+  const [targetPosition, setTargetPosition] = useState('')
+  const [resumeFile, setResumeFile] = useState(null)
   const [jobDescription, setJobDescription] = useState('')
   const [jobResult, setJobResult] = useState(null)
 
@@ -452,6 +456,112 @@ export default function ResumeEditor() {
     setAiLoading(false);
   };
 
+  const handleResumeUpload = async () => {
+    if (!resumeFile) {
+      alert('Please select a file first')
+      return
+    }
+    if (!targetPosition.trim()) {
+      alert('Please enter a target position')
+      return
+    }
+    if (aiUsage.used >= aiUsage.limit) {
+      setShowAiLimitModal(true)
+      return
+    }
+
+    setUploadingResume(true)
+    setParseProgress('Uploading file...')
+
+    try {
+      // Step 1: Parse the file
+      const formData = new FormData()
+      formData.append('file', resumeFile)
+
+      const parseRes = await fetch('/api/parse-resume', {
+        method: 'POST',
+        body: formData,
+      })
+      const parseData = await parseRes.json()
+
+      if (!parseData.success) {
+        alert(parseData.error || 'Failed to parse resume')
+        setUploadingResume(false)
+        setParseProgress('')
+        return
+      }
+
+      setParseProgress('Analyzing with AI...')
+
+      // Step 2: Transform with AI
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const transformRes = await fetch('/api/ai/transform-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          extractedText: parseData.text,
+          targetPosition: targetPosition.trim(),
+        }),
+      })
+      const transformData = await transformRes.json()
+
+      if (!transformData.success) {
+        if (transformRes.status === 403) {
+          setShowAiLimitModal(true)
+          if (transformData.used !== undefined) {
+            setAiUsage(prev => ({ ...prev, used: transformData.used, limit: transformData.limit }))
+          }
+        } else {
+          alert(transformData.error || 'Failed to transform resume')
+        }
+        setUploadingResume(false)
+        setParseProgress('')
+        return
+      }
+
+      // Step 3: Auto-populate fields
+      if (transformData.data.personalInfo) {
+        setPersonalInfo(prev => ({ ...prev, ...transformData.data.personalInfo }))
+      }
+      if (transformData.data.summary) {
+        setSummary(transformData.data.summary)
+      }
+      if (transformData.data.experience) {
+        setExperience(transformData.data.experience)
+      }
+      if (transformData.data.education) {
+        setEducation(transformData.data.education)
+      }
+      if (transformData.data.skills) {
+        setSkills(transformData.data.skills)
+      }
+
+      // Update AI usage
+      if (transformData.used !== undefined) {
+        setAiUsage(prev => ({ ...prev, used: transformData.used, limit: transformData.limit }))
+      }
+
+      setParseProgress('Done!')
+      setTimeout(() => {
+        setUploadingResume(false)
+        setParseProgress('')
+        setResumeFile(null)
+        setTargetPosition('')
+      }, 1500)
+
+    } catch (error) {
+      console.error('Upload/transform error:', error)
+      alert('Something went wrong. Please try again.')
+      setUploadingResume(false)
+      setParseProgress('')
+    }
+  }
+
   const optimizeForJob = async () => {
     if (aiUsage.used >= aiUsage.limit) {
       setShowAiLimitModal(true);
@@ -557,6 +667,42 @@ export default function ResumeEditor() {
       </div>
       <div className="flex flex-col md:flex-row gap-8">
         <div className={`max-w-2xl w-full ${mobileView === "preview" ? "hidden md:block" : ""}`}>
+                    {/* Resume Upload Section */}
+                    <div className="border border-border rounded-xl p-6 mb-6 bg-accent/5">
+            <h2 className="font-semibold text-lg mb-2">Upload Existing Resume</h2>
+            <p className="text-sm text-foreground/60 mb-4">
+              Upload your current resume (PDF or DOCX) and we'll extract and optimize it for your target position.
+            </p>
+            <div className="flex flex-col gap-3">
+              <input
+                type="file"
+                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={(e) => setResumeFile(e.target.files[0])}
+                className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-accent file:text-white hover:file:bg-accent-hover"
+              />
+              <input
+                type="text"
+                placeholder="Target position (e.g. Virtual Assistant, Data Entry Specialist)"
+                value={targetPosition}
+                onChange={(e) => setTargetPosition(e.target.value)}
+                className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+              />
+              <button
+                onClick={handleResumeUpload}
+                disabled={uploadingResume || !resumeFile || !targetPosition.trim()}
+                className="bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {uploadingResume ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    {parseProgress || 'Processing...'}
+                  </>
+                ) : (
+                  <>✨ Transform with AI</>
+                )}
+              </button>
+            </div>
+          </div>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <input
