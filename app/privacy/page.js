@@ -33,7 +33,7 @@ const SECTIONS = [
   {
     heading: '4. AI-Powered Features',
     body: [
-      'ForgeCV includes AI features (such as generating a professional summary, suggesting skills, or scoring your resume against a job description) powered by Anthropic\'s Claude API. When you use these features, the relevant resume content or job description text you provide is sent to Anthropic\'s API to generate a response.',
+      'ForgeCV includes AI features (such as generating a professional summary, suggesting skills, or scoring your resume against a job description) powered by Google\'s Gemini API. When you use these features, the relevant resume content or job description text you provide is sent to Google\'s API to generate a response.',
       'We do not use your resume or portfolio content to train AI models.',
     ],
   },
@@ -53,7 +53,7 @@ const SECTIONS = [
   {
     heading: '7. Sharing of Information',
     body: [
-      'We do not sell your personal information. We share information only with the third-party services necessary to operate ForgeCV, including Supabase (hosting and storage), Stripe and PayMongo (payment processing), Anthropic (AI features), and Vercel (application hosting).',
+      'We do not sell your personal information. We share information only with the third-party services necessary to operate ForgeCV, including Supabase (hosting and storage), Stripe and PayMongo (payment processing), Google (AI features), and Vercel (application hosting).',
       'If you choose to publish a portfolio, the content of that portfolio is publicly accessible at the URL you are given, by design.',
     ],
   },
