@@ -80,3 +80,9 @@ export function getFontFamily(content) {
 export function getSpacing(content) {
   return content?.customization?.spacing === 'compact' ? 'compact' : 'comfortable'
 }
+
+// Returns 'circle', 'rounded', or 'square' (default) photo shape preference.
+export function getPhotoShape(content) {
+  const shape = content?.customization?.photoShape
+  return ['circle', 'rounded', 'square'].includes(shape) ? shape : 'circle'
+}

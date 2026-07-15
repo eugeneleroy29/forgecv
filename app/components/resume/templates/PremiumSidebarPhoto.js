@@ -6,6 +6,7 @@ import {
   getAccentColor,
   getFontFamily,
   getSpacing,
+  getPhotoShape,
 } from "../resumeHelpers";
 
 // Sidebar sections: personalInfo (photo + contact) and skills live in the
@@ -13,7 +14,8 @@ import {
 const SIDEBAR_SECTIONS = ["personalInfo", "skills"];
 
 export default function PremiumSidebarPhoto({ content }) {
-  const { personalInfo, summary, experience, education, skills } = content;
+  const { personalInfo, summary, experience, education, skills, customization } = content;
+  const photoShape = getPhotoShape(content);
   const orderedSections = getOrderedSections(content).filter(
     (key) => !isSectionEmpty(key, content),
   );
@@ -34,11 +36,12 @@ export default function PremiumSidebarPhoto({ content }) {
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
+      const shapeClass = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
       return (
         <img
           src={personalInfo.photoUrl}
-          alt={personalInfo?.fullName || "Profile photo"}
-          className="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-white/30"
+          alt={personalInfo.fullName || "Profile"}
+          className={`w-28 h-28 ${shapeClass} object-cover mx-auto mb-4 border-4 border-white/30`}
         />
       );
     }
@@ -49,8 +52,9 @@ export default function PremiumSidebarPhoto({ content }) {
       .slice(0, 2)
       .join("")
       .toUpperCase();
+    const placeholderShape = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
     return (
-      <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+      <div className={`w-28 h-28 ${placeholderShape} bg-white/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold`}>
         {initials || "?"}
       </div>
     );

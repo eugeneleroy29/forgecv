@@ -85,6 +85,7 @@ export default function ResumeEditor() {
   const [accentColor, setAccentColor] = useState("#4F46E5");
   const [fontFamily, setFontFamily] = useState("inter");
   const [spacing, setSpacing] = useState("comfortable");
+  const [photoShape, setPhotoShape] = useState("circle");
   const [mobileView, setMobileView] = useState("edit");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiUsage, setAiUsage] = useState({ used: 0, limit: 0, plan: "free", isAdmin: false });
@@ -141,6 +142,9 @@ export default function ResumeEditor() {
     }
     if (data.content?.customization?.spacing) {
       setSpacing(data.content.customization.spacing);
+    }
+    if (data.content?.customization?.photoShape) {
+      setPhotoShape(data.content.customization.photoShape);
     }
     if (data.content?.customSections) {
       setCustomSections(data.content.customSections);
@@ -611,7 +615,7 @@ export default function ResumeEditor() {
       experience,
       education,
       skills,
-      customization: { ...resume.content?.customization, accentColor, fontFamily, spacing },
+      customization: { ...resume.content?.customization, accentColor, fontFamily, spacing, photoShape },
       customSections,
       sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
     };
@@ -644,7 +648,7 @@ export default function ResumeEditor() {
     skills,
     customSections,
     sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
-    customization: { accentColor, fontFamily, spacing },
+    customization: { accentColor, fontFamily, spacing, photoShape },
   };
   return (
     <div className="px-8 py-8">
@@ -1390,6 +1394,31 @@ export default function ResumeEditor() {
           <option value="comfortable">Comfortable</option>
           <option value="compact">Compact</option>
         </select>
+        {personalInfo.photoUrl && (
+          <>
+            <label className="text-sm font-medium mb-1.5 block mt-4">Photo Shape</label>
+            <div className="flex gap-2">
+              {[
+                { value: 'circle', label: 'Circle', icon: '●' },
+                { value: 'rounded', label: 'Rounded', icon: '■' },
+                { value: 'square', label: 'Square', icon: '□' },
+              ].map((shape) => (
+                <button
+                  key={shape.value}
+                  onClick={() => setPhotoShape(shape.value)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    photoShape === shape.value
+                      ? 'border-accent bg-accent/10 text-accent'
+                      : 'border-border hover:border-accent/50'
+                  }`}
+                >
+                  <span className="text-lg">{shape.icon}</span>
+                  {shape.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <button
           onClick={saveResume}
           disabled={saving}

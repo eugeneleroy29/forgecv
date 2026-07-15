@@ -6,10 +6,12 @@ import {
   getAccentColor,
   getFontFamily,
   getSpacing,
+  getPhotoShape,
 } from "../resumeHelpers";
 
 export default function PremiumTopHeaderPhoto({ content }) {
-  const { personalInfo, summary, experience, education, skills } = content;
+  const { personalInfo, summary, experience, education, skills, customization } = content;
+  const photoShape = getPhotoShape(content);
   const orderedSections = getOrderedSections(content).filter(
     (key) => !isSectionEmpty(key, content),
   );
@@ -23,11 +25,12 @@ export default function PremiumTopHeaderPhoto({ content }) {
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
+      const shapeClass = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
       return (
         <img
           src={personalInfo.photoUrl}
           alt={personalInfo?.fullName || "Profile photo"}
-          className="w-24 h-24 rounded-full object-cover border-4 border-white/30 shrink-0"
+          className={`w-24 h-24 ${shapeClass} object-cover border-4 border-white/30 shrink-0`}
         />
       );
     }
@@ -38,12 +41,13 @@ export default function PremiumTopHeaderPhoto({ content }) {
       .slice(0, 2)
       .join("")
       .toUpperCase();
-    return (
-      <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">
-        {initials || "?"}
-      </div>
-    );
-  };
+      const placeholderShape = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
+      return (
+        <div className={`w-24 h-24 ${placeholderShape} bg-white/20 flex items-center justify-center text-xl font-bold shrink-0`}>
+          {initials || "?"}
+        </div>
+      );
+    };
 
   const renderBodySection = (key) => {
     switch (key) {

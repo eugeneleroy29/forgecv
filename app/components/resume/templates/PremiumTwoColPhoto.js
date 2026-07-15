@@ -6,13 +6,15 @@ import {
   getAccentColor,
   getFontFamily,
   getSpacing,
+  getPhotoShape,
 } from "../resumeHelpers";
 
 // Left column: summary + skills. Right column: experience + education + custom sections.
 const LEFT_COL_SECTIONS = ["summary", "skills"];
 
 export default function PremiumTwoColPhoto({ content }) {
-  const { personalInfo, summary, experience, education, skills } = content;
+  const { personalInfo, summary, experience, education, skills, customization } = content;
+  const photoShape = getPhotoShape(content);
   const orderedSections = getOrderedSections(content).filter(
     (key) => !isSectionEmpty(key, content),
   );
@@ -27,11 +29,12 @@ export default function PremiumTwoColPhoto({ content }) {
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
+      const shapeClass = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
       return (
         <img
           src={personalInfo.photoUrl}
           alt={personalInfo?.fullName || "Profile photo"}
-          className="w-20 h-20 rounded-full object-cover mx-auto mb-3"
+          className={`w-20 h-20 ${shapeClass} object-cover mx-auto mb-3`}
         />
       );
     }
@@ -42,14 +45,15 @@ export default function PremiumTwoColPhoto({ content }) {
       .slice(0, 2)
       .join("")
       .toUpperCase();
-    return (
-      <div
-        className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3 text-lg font-bold"
-        style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
-      >
-        {initials || "?"}
-      </div>
-    );
+      const placeholderShape = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
+      return (
+        <div
+          className={`w-20 h-20 ${placeholderShape} flex items-center justify-center mx-auto mb-3 text-lg font-bold`}
+          style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
+        >
+          {initials || "?"}
+        </div>
+      );
   };
 
   const renderLeftSection = (key) => {
