@@ -46,6 +46,20 @@ export default function Billing() {
     if (!user) return
 
     const loadBillingData = async () => {
+      // Check if admin first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.is_admin) {
+        setSubscription({ plan: 'admin', status: 'active', isAdmin: true })
+        setPayments([])
+        setLoading(false)
+        return
+      }
+
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
         .select('plan, billing_cycle, renewal_type, status, provider, current_period_end')
@@ -120,14 +134,29 @@ export default function Billing() {
 
       {/* Current Plan */}
       <div className="border border-border rounded-xl p-8 mb-8">
-        {isFree ? (
+        {subscription?.isAdmin ? (
+          <>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-semibold">Admin</h2>
+              <span className="text-xs px-2.5 py-1 rounded-full border font-medium bg-green-50 text-green-600 border-green-200">
+                active
+              </span>
+            </div>
+            <p className="text-foreground/60 text-sm mb-6">
+              You have unlimited access to all features — resumes, portfolios, templates, and AI generations.
+            </p>
+            <a href="/pricing" className="text-sm text-accent hover:underline">
+              View Plans →
+            </a>
+          </>
+        ) : isFree ? (
           <>
             <h2 className="text-lg font-semibold mb-1">Free Plan</h2>
             <p className="text-foreground/60 text-sm mb-6">
               You're currently on the free plan. Upgrade for more resumes, templates, and portfolio publishing.
             </p>
             <a
-            
+
               href="/pricing"
               className="inline-block bg-accent text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
             >
