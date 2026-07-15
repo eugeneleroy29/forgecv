@@ -9,6 +9,11 @@ export const metadata = {
   description: 'ATS-friendly resumes and stunning portfolio websites for freelancers and remote workers worldwide. Powered by AI.',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

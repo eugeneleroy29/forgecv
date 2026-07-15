@@ -1556,25 +1556,38 @@ export default function PortfolioEditor() {
           </div>
         </div>
   
-          {showPaywallModal && (
+        {showPaywallModal && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
             <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
               <h3 className="text-xl font-bold mb-2">Ready to go live?</h3>
               <p className="text-foreground/60 text-sm mb-6">
-                You've used all your available portfolio publish slots. Upgrade your plan or grab a one-time slot to publish this portfolio.
+                {entitlements.plan === 'pro' ? (
+                  <>You've used all {entitlements.totalPublishSlots} portfolio publish slots on your Pro plan. You've reached the maximum limit.</>
+                ) : (
+                  <>You've used all your available portfolio publish slots. Upgrade your plan or grab a one-time slot to publish this portfolio.</>
+                )}
               </p>
               <div className="flex flex-col gap-3">
-                <Link
-                  href="/pricing"
-                  className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
-                >
-                  View Plans
-                </Link>
+                {entitlements.plan !== 'pro' ? (
+                  <Link
+                    href="/pricing"
+                    className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+                  >
+                    View Plans
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setShowPaywallModal(false)}
+                    className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+                  >
+                    Got it
+                  </button>
+                )}
                 <button
                   onClick={() => setShowPaywallModal(false)}
                   className="text-foreground/60 text-sm font-medium py-2"
                 >
-                  Maybe later
+                  {entitlements.plan === 'pro' ? 'Close' : 'Maybe later'}
                 </button>
               </div>
             </div>

@@ -1609,27 +1609,39 @@ export default function ResumeEditor() {
         </div>
       )}
 
-            {/* AI Limit Reached Modal */}
-            {showAiLimitModal && !aiUsage.isAdmin && (
+                        {/* AI Limit Reached Modal */}
+                        {showAiLimitModal && !aiUsage.isAdmin && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
             <h3 className="text-xl font-bold mb-2">AI generation limit reached</h3>
             <p className="text-foreground/60 text-sm mb-6">
-              You've used all {aiUsage.limit} AI generation{aiUsage.limit === 1 ? '' : 's'} on your current plan.
-              Upgrade to get more.
+              {aiUsage.plan === 'pro' ? (
+                <>You've used all {aiUsage.limit} AI generation{aiUsage.limit === 1 ? '' : 's'} on your Pro plan. You've reached the monthly limit.</>
+              ) : (
+                <>You've used all {aiUsage.limit} AI generation{aiUsage.limit === 1 ? '' : 's'} on your current plan. Upgrade to get more.</>
+              )}
             </p>
             <div className="flex flex-col gap-3">
-              <a
-                href="/pricing"
-                className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
-              >
-                View Plans
-              </a>
+              {aiUsage.plan !== 'pro' ? (
+                <a
+                  href="/pricing"
+                  className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+                >
+                  View Plans
+                </a>
+              ) : (
+                <button
+                  onClick={() => setShowAiLimitModal(false)}
+                  className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+                >
+                  Got it
+                </button>
+              )}
               <button
                 onClick={() => setShowAiLimitModal(false)}
                 className="text-foreground/60 text-sm font-medium py-2"
               >
-                Maybe later
+                {aiUsage.plan === 'pro' ? 'Close' : 'Maybe later'}
               </button>
             </div>
           </div>
