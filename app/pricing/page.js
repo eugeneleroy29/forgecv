@@ -60,16 +60,111 @@ const PLANS = {
   },
 }
 
+const LIFETIME_PLANS = [
+  { key: 'lifetime_1_slot', slots: 1, pricePHP: 499, priceUSD: 9.99, icon: '🌐', name: '1 Portfolio', desc: 'Premium template, live forever' },
+  { key: 'lifetime_3_slots', slots: 3, pricePHP: 999, priceUSD: 19.99, icon: '🚀', name: '3 Portfolios', desc: 'Premium templates, live forever' },
+]
+
 export default function Pricing() {
   const [annual, setAnnual] = useState(false)
   const [provider, setProvider] = useState('paymongo')
-  const isUSD = provider === 'stripe'
+  const [currency, setCurrency] = useState('PHP')
+  const [detecting, setDetecting] = useState(true)
   const { user } = useAuth()
   const router = useRouter()
 
+  // User's existing subscriptions/purchases
+  const [userPlan, setUserPlan] = useState(null) // 'free', 'starter', 'pro', 'admin'
+  const [lifetimeSlotsOwned, setLifetimeSlotsOwned] = useState(0)
+  const [loadingUserData, setLoadingUserData] = useState(true)
+
+  // Detect provider + currency on mount
   useEffect(() => {
-    detectPaymentProviderAsync().then(setProvider)
+    let mounted = true
+
+    const runDetection = async () => {
+      try {
+        const detected = await detectPaymentProviderAsync()
+        if (!mounted) return
+
+        if (detected === 'paymongo') {
+          setProvider('paymongo')
+          setCurrency('PHP')
+        } else {
+          setProvider('stripe')
+          setCurrency('USD')
+        }
+      } catch (err) {
+        console.error('Provider detection failed:', err)
+        // Default stays as paymongo/PHP
+      } finally {
+        if (mounted) setDetecting(false)
+      }
+    }
+
+    runDetection()
+    return () => { mounted = false }
   }, [])
+
+  // Fetch user's existing plan and lifetime slots
+  useEffect(() => {
+    if (!user) {
+      setLoadingUserData(false)
+      return
+    }
+
+    const loadUserData = async () => {
+      try {
+        // Check if admin first
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single()
+
+        if (profile?.is_admin) {
+          setUserPlan('admin')
+          setLoadingUserData(false)
+          return
+        }
+
+        // Check active subscription
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('plan, status')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        const plan = subscription?.plan || 'free'
+        setUserPlan(plan)
+
+        // Check lifetime slots purchased
+        const { data: lifetimePayments } = await supabase
+          .from('payments')
+          .select('slots_purchased')
+          .eq('user_id', user.id)
+          .eq('payment_type', 'lifetime_slot')
+          .eq('status', 'paid')
+
+        const slots = (lifetimePayments || []).reduce(
+          (sum, p) => sum + (p.slots_purchased || 0),
+          0
+        )
+        setLifetimeSlotsOwned(slots)
+      } catch (err) {
+        console.error('Failed to load user billing data:', err)
+      } finally {
+        setLoadingUserData(false)
+      }
+    }
+
+    loadUserData()
+  }, [user])
+
+  const isUSD = currency === 'USD'
 
   const startCheckout = async (planKey) => {
     if (!user) {
@@ -97,35 +192,154 @@ export default function Pricing() {
     }
   }
 
+  // Plan ownership helpers
+  const isFree = userPlan === 'free' || userPlan === null
+  const isStarter = userPlan === 'starter'
+  const isPro = userPlan === 'pro'
+  const isAdmin = userPlan === 'admin'
+
+  const lifetime1Owned = lifetimeSlotsOwned >= 1 || isAdmin
+  const lifetime3Owned = lifetimeSlotsOwned >= 3 || isAdmin
+
+  const formatPrice = (php, usd) => {
+    if (isUSD) return `$${usd.toFixed(2)}`
+    return `₱${php.toLocaleString()}`
+  }
+
+  // Helper to render a plan card
+  const renderPlanCard = (key, plan, isCurrent, isDisabled) => {
+    const price = isUSD
+      ? (annual ? plan.annualPriceUSD : plan.monthlyPriceUSD)
+      : (annual ? plan.annualPrice : plan.monthlyPrice)
+    const planKey = annual ? plan.annualKey : plan.monthlyKey
+    const isStarter = key === 'starter'
+
+    return (
+      <div
+        key={key}
+        className={`rounded-xl p-8 flex flex-col relative ${
+          isCurrent
+            ? 'border-2 border-accent bg-accent/5'
+            : isDisabled
+            ? 'border border-border bg-muted/30 opacity-60'
+            : isStarter
+            ? 'border-2 border-accent'
+            : 'border border-border'
+        }`}
+      >
+        {isCurrent && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs px-3 py-1 rounded-full font-medium">
+            Current Plan
+          </div>
+        )}
+        {isStarter && !isCurrent && !isDisabled && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs px-3 py-1 rounded-full font-medium">
+            Most Popular
+          </div>
+        )}
+        <h2 className="text-lg font-semibold mb-1">{plan.name}</h2>
+        <p className="text-foreground/60 text-sm mb-6">{plan.tagline}</p>
+        <div className="mb-6">
+          <span className="text-4xl font-bold">
+            {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
+          </span>
+          <span className="text-foreground/60 text-sm"> / {annual ? 'year' : 'month'}</span>
+        </div>
+        <ul className="flex flex-col gap-3 mb-8 flex-1">
+          {plan.features.map((feature) => (
+            <li key={feature} className="flex items-center gap-2 text-sm">
+              <span className="text-accent">✓</span>
+              {feature}
+            </li>
+          ))}
+        </ul>
+        {isCurrent ? (
+          <button
+            disabled
+            className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
+          >
+            Current Plan
+          </button>
+        ) : isDisabled ? (
+          <button
+            disabled
+            className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
+          >
+            {isAdmin ? 'Admin — Unlimited' : 'Not Available'}
+          </button>
+        ) : (
+          <button
+            onClick={() => startCheckout(planKey)}
+            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isStarter
+                ? 'bg-accent text-white hover:bg-accent-hover'
+                : 'border border-border text-foreground hover:border-accent hover:text-accent'
+            }`}
+          >
+            Get Started
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
 
       {/* Header */}
-      <section className="max-w-4xl mx-auto px-6 py-20 text-center">
+      <section className="max-w-4xl mx-auto px-6 pt-20 pb-8 text-center">
         <h1 className="text-4xl font-bold mb-4">Simple, transparent pricing</h1>
         <p className="text-foreground/60 text-lg">
           Start for free. Upgrade when you need more.
         </p>
 
-        {/* Monthly/Annual Toggle */}
-        <div className="flex items-center justify-center gap-3 mt-8">
-          <span className={`text-sm font-medium ${!annual ? '' : 'text-foreground/60'}`}>Monthly</span>
-          <button
-            onClick={() => setAnnual(!annual)}
-            className="w-12 h-6 bg-accent rounded-full relative cursor-pointer"
-          >
-            <div
-              className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                annual ? 'right-0.5' : 'left-0.5'
+        {/* Currency Toggle + Monthly/Annual Toggle */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+          {/* Currency Toggle */}
+          <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+            <button
+              onClick={() => { setCurrency('PHP'); setProvider('paymongo') }}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                currency === 'PHP' ? 'bg-background shadow-sm' : 'text-foreground/60 hover:text-foreground'
               }`}
-            />
-          </button>
-          <span className={`text-sm font-medium ${annual ? '' : 'text-foreground/60'}`}>Annual</span>
-          <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">
-            Save 17%
-          </span>
+            >
+              PHP ₱
+            </button>
+            <button
+              onClick={() => { setCurrency('USD'); setProvider('stripe') }}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                currency === 'USD' ? 'bg-background shadow-sm' : 'text-foreground/60 hover:text-foreground'
+              }`}
+            >
+              USD $
+            </button>
+          </div>
+
+          {/* Monthly/Annual Toggle */}
+          <div className="flex items-center gap-3">
+            <span className={`text-sm font-medium ${!annual ? '' : 'text-foreground/60'}`}>Monthly</span>
+            <button
+              onClick={() => setAnnual(!annual)}
+              className="w-12 h-6 bg-accent rounded-full relative cursor-pointer"
+            >
+              <div
+                className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                  annual ? 'right-0.5' : 'left-0.5'
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium ${annual ? '' : 'text-foreground/60'}`}>Annual</span>
+            <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">
+              Save 17%
+            </span>
+          </div>
         </div>
+
+        {/* Detection status */}
+        {detecting && (
+          <p className="text-xs text-foreground/40 mt-3">Detecting your region...</p>
+        )}
       </section>
 
       {/* Pricing Cards */}
@@ -133,85 +347,28 @@ export default function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
           {/* Free */}
-          <div className="border border-border rounded-xl p-8 flex flex-col">
-            <h2 className="text-lg font-semibold mb-1">Free</h2>
-            <p className="text-foreground/60 text-sm mb-6">Perfect for getting started</p>
-            <div className="mb-6">
-              <span className="text-4xl font-bold">{isUSD ? '$0' : '₱0'}</span>
-              <span className="text-foreground/60 text-sm"> / forever</span>
-            </div>
-            <ul className="flex flex-col gap-3 mb-8 flex-1">
-              {[
-                '1 resume',
-                '1 resume template of your choice',
-                'Unlimited downloads',
-                'Build portfolios (all 9 templates)',
-                'Publishing requires an upgrade',
-              ].map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-sm">
-                  <span className="text-accent">✓</span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => router.push(user ? '/dashboard' : '/signup')}
-              className="w-full border border-border text-foreground py-2.5 rounded-lg text-sm font-medium hover:border-accent hover:text-accent transition-colors"
-            >
-              Get Started Free
-            </button>
-          </div>
+          {renderPlanCard('free', {
+            name: 'Free',
+            tagline: 'Perfect for getting started',
+            monthlyPrice: 0,
+            annualPrice: 0,
+            monthlyPriceUSD: 0,
+            annualPriceUSD: 0,
+            features: [
+              '1 resume',
+              '1 resume template of your choice',
+              'Unlimited downloads',
+              'Build portfolios (all 9 templates)',
+              'Publishing requires an upgrade',
+            ],
+          }, isFree, !isFree)}
 
-          {/* Starter & Pro */}
-          {['starter', 'pro'].map((key) => {
-            const plan = PLANS[key]
-            const price = isUSD
-              ? (annual ? plan.annualPriceUSD : plan.monthlyPriceUSD)
-              : (annual ? plan.annualPrice : plan.monthlyPrice)
-            const planKey = annual ? plan.annualKey : plan.monthlyKey
-            const isStarter = key === 'starter'
+          {/* Starter */}
+          {renderPlanCard('starter', PLANS.starter, isStarter, isPro || isAdmin)}
 
-            return (
-              <div
-                key={key}
-                className={`rounded-xl p-8 flex flex-col relative ${
-                  isStarter ? 'border-2 border-accent' : 'border border-border'
-                }`}
-              >
-                {isStarter && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs px-3 py-1 rounded-full font-medium">
-                    Most Popular
-                  </div>
-                )}
-                <h2 className="text-lg font-semibold mb-1">{plan.name}</h2>
-                <p className="text-foreground/60 text-sm mb-6">{plan.tagline}</p>
-                <div className="mb-6">
-                <span className="text-4xl font-bold">
-                    {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
-                  </span>
-                  <span className="text-foreground/60 text-sm"> / {annual ? 'year' : 'month'}</span>
-                </div>
-                <ul className="flex flex-col gap-3 mb-8 flex-1">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2 text-sm">
-                      <span className="text-accent">✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => startCheckout(planKey)}
-                  className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isStarter
-                      ? 'bg-accent text-white hover:bg-accent-hover'
-                      : 'border border-border text-foreground hover:border-accent hover:text-accent'
-                  }`}
-                >
-                  Get Started
-                </button>
-              </div>
-            )
-          })}
+          {/* Pro */}
+          {renderPlanCard('pro', PLANS.pro, isPro, isAdmin)}
+
         </div>
 
         {/* One-time Payment Section */}
@@ -221,34 +378,51 @@ export default function Pricing() {
             <p className="text-foreground/60 text-sm">
               One-time payment. No subscription. Yours forever.
             </p>
+            {lifetimeSlotsOwned > 0 && (
+              <p className="text-accent text-sm mt-2 font-medium">
+                You already own {lifetimeSlotsOwned} lifetime slot{lifetimeSlotsOwned === 1 ? '' : 's'}.
+              </p>
+            )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
 
-            <div className="border border-border rounded-xl p-6 text-center hover:border-accent transition-colors">
-              <div className="text-3xl mb-3">🌐</div>
-              <h3 className="font-semibold mb-1">1 Portfolio</h3>
-              <p className="text-foreground/60 text-sm mb-4">Premium template, live forever</p>
-              <div className="text-3xl font-bold mb-4">{isUSD ? '$9.99' : '₱499'}</div>
-              <button
-                onClick={() => startCheckout('lifetime_1_slot')}
-                className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
-              >
-                Buy Now
-              </button>
-            </div>
+            {LIFETIME_PLANS.map((lt) => {
+              const isOwned = lt.slots === 1 ? lifetime1Owned : lifetime3Owned
+              const price = isUSD ? lt.priceUSD : lt.pricePHP
 
-            <div className="border border-border rounded-xl p-6 text-center hover:border-accent transition-colors">
-              <div className="text-3xl mb-3">🚀</div>
-              <h3 className="font-semibold mb-1">3 Portfolios</h3>
-              <p className="text-foreground/60 text-sm mb-4">Premium templates, live forever</p>
-              <div className="text-3xl font-bold mb-4">{isUSD ? '$19.99' : '₱999'}</div>
-              <button
-                onClick={() => startCheckout('lifetime_3_slots')}
-                className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
-              >
-                Buy Now
-              </button>
-            </div>
+              return (
+                <div
+                  key={lt.key}
+                  className={`border rounded-xl p-6 text-center transition-colors ${
+                    isOwned
+                      ? 'border-border bg-muted/30 opacity-60'
+                      : 'border-border hover:border-accent'
+                  }`}
+                >
+                  <div className="text-3xl mb-3">{lt.icon}</div>
+                  <h3 className="font-semibold mb-1">{lt.name}</h3>
+                  <p className="text-foreground/60 text-sm mb-4">{lt.desc}</p>
+                  <div className="text-3xl font-bold mb-4">
+                    {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
+                  </div>
+                  {isOwned ? (
+                    <button
+                      disabled
+                      className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
+                    >
+                      {isAdmin ? 'Admin — Unlimited' : 'Already Owned'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => startCheckout(lt.key)}
+                      className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+                    >
+                      Buy Now
+                    </button>
+                  )}
+                </div>
+              )
+            })}
 
           </div>
         </div>
