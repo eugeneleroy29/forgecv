@@ -39,6 +39,7 @@ export default function PortfolioEditor() {
   const [customSections, setCustomSections] = useState([]);
   const [accentColor, setAccentColor] = useState("");
   const [fontStyle, setFontStyle] = useState("sans");
+  const [photoShape, setPhotoShape] = useState("circle");
   const [mobileView, setMobileView] = useState("edit");
   const [uploadingCustomIcon, setUploadingCustomIcon] = useState(false);
   const [customIconError, setCustomIconError] = useState(null);
@@ -110,6 +111,7 @@ export default function PortfolioEditor() {
     if (data.content?.customSections) setCustomSections(data.content.customSections);
     if (data.content?.customization?.accentColor) setAccentColor(data.content.customization.accentColor);
     if (data.content?.customization?.fontStyle) setFontStyle(data.content.customization.fontStyle);
+    if (data.content?.customization?.photoShape) setPhotoShape(data.content.customization.photoShape);
     setLoading(false);
   };
 
@@ -386,7 +388,7 @@ export default function PortfolioEditor() {
       sectionOrder,
       skillsTools,
       customSections,
-      customization: { accentColor, fontStyle },
+      customization: { accentColor, fontStyle, photoShape },
     };
     await supabase
       .from("portfolios")
@@ -508,7 +510,7 @@ export default function PortfolioEditor() {
       sectionOrder,
       skillsTools,
       customSections,
-      customization: { accentColor, fontStyle },
+      customization: { accentColor, fontStyle, photoShape },
     },
   };
 
@@ -1469,11 +1471,36 @@ export default function PortfolioEditor() {
         <select
           value={fontStyle}
           onChange={(e) => setFontStyle(e.target.value)}
-          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
+          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"    
         >
           <option value="sans">Modern (Sans-serif)</option>
           <option value="serif">Classic (Serif)</option>
         </select>
+
+        {personalInfo.photoUrl && (
+          <>
+            <label className="text-sm font-medium mb-1.5 block mt-4">Photo Shape</label>
+            <div className="flex gap-2">
+              {[
+                { value: 'circle', label: 'Circle' },
+                { value: 'rounded', label: 'Rounded' },
+                { value: 'square', label: 'Square' },
+              ].map((shape) => (
+                <button
+                  key={shape.value}
+                  onClick={() => setPhotoShape(shape.value)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    photoShape === shape.value
+                      ? 'bg-accent text-white border-accent'
+                      : 'border-border text-foreground/60 hover:border-accent hover:text-foreground'
+                  }`}
+                >
+                  {shape.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <button
           onClick={savePortfolio}
           disabled={saving}

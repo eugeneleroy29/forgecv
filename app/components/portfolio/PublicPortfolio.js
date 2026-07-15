@@ -1,6 +1,7 @@
 "use client";
 
 import { getPortfolioTheme } from "./portfolioThemes";
+import { getPhotoShape } from "../resume/resumeHelpers";
 import { TOOLS_CATALOG } from "./toolsCatalog";
 import BrandIcon from "./BrandIcon";
 import PortfolioNavbar from "./PortfolioNavbar";
@@ -271,7 +272,11 @@ export default function PublicPortfolio({ portfolio }) {
           <img
             src={personalInfo.photoUrl}
             alt={personalInfo.fullName || "Profile"}
-            className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover mx-auto mb-4 sm:mb-6 border-4 border-white shadow-md"
+            className={`w-24 h-24 sm:w-28 sm:h-28 object-cover mx-auto mb-4 sm:mb-6 border-4 border-white shadow-md ${
+              getPhotoShape(portfolio?.content) === 'circle' ? 'rounded-full'
+              : getPhotoShape(portfolio?.content) === 'rounded' ? 'rounded-lg'
+              : 'rounded-none'
+            }`}
           />
         )}
         <h1
