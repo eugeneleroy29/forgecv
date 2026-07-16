@@ -634,7 +634,7 @@ export default function ResumeEditor() {
 
   if (loading) {
     return (
-      <div className="px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <p className="text-foreground/60">Loading...</p>
       </div>
     );
@@ -652,7 +652,7 @@ export default function ResumeEditor() {
     customization: { accentColor, fontFamily, spacing, photoShape },
   };
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="flex md:hidden gap-2 mb-6">
         <button
           onClick={() => setMobileView("edit")}
@@ -671,8 +671,8 @@ export default function ResumeEditor() {
           Preview
         </button>
       </div>
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className={`max-w-2xl w-full ${mobileView === "preview" ? "hidden md:block" : ""}`}>
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+        <div className={`w-full md:max-w-2xl md:w-auto ${mobileView === "preview" ? "hidden md:block" : ""}`}>
                     {/* Resume Upload Section */}
                     <div className="border border-border rounded-xl p-6 mb-6 bg-accent/5">
             <h2 className="font-semibold text-lg mb-2">Upload Existing Resume</h2>
@@ -718,7 +718,7 @@ export default function ResumeEditor() {
           onBlur={saveResume}
           className="text-2xl font-bold bg-transparent border-none focus:outline-none focus:border-b focus:border-accent"
         />
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             onClick={checkATSScore}
             disabled={aiLoading}
@@ -863,7 +863,7 @@ export default function ResumeEditor() {
       {/* Professional Summary Section */}
       <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("summary") }}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h2 className="font-semibold text-lg">Professional Summary</h2>
             <div className="flex items-center gap-1">
               <button
@@ -913,7 +913,7 @@ export default function ResumeEditor() {
       {/* Work Experience Section */}
       <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("experience") }}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h2 className="font-semibold text-lg">Work Experience</h2>
             <div className="flex items-center gap-1">
               <button
@@ -1057,7 +1057,7 @@ export default function ResumeEditor() {
       {/* Education Section */}
       <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("education") }}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h2 className="font-semibold text-lg">Education</h2>
             <div className="flex items-center gap-1">
               <button
@@ -1188,7 +1188,7 @@ export default function ResumeEditor() {
       {/* Skills Section */}
       <div className="border border-border rounded-xl p-6 mb-6" style={{ order: getEffectiveOrder(sectionOrder, customSections).indexOf("skills") }}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h2 className="font-semibold text-lg">Skills</h2>
             <div className="flex items-center gap-1">
               <button
@@ -1366,7 +1366,7 @@ export default function ResumeEditor() {
         {resume?.template?.startsWith('premium') && (
           <>
             <label className="text-sm font-medium mb-1.5 block">Accent Color</label>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <input
                 type="color"
                 value={accentColor}
@@ -1650,8 +1650,8 @@ export default function ResumeEditor() {
       )}
 
 </div>
-        <div className={`flex-1 min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
-          <div className="sticky top-8 h-[calc(100vh-4rem)] flex flex-col">
+        <div className={`w-full md:flex-1 md:min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
+          <div className="sticky top-6 md:top-8 h-[calc(100vh-3rem)] md:h-[calc(100vh-4rem)] flex flex-col">
             <ResumePreviewPanel title="Resume Preview" className="h-full">
               {(() => {
                 const TemplateComponent = getTemplateComponent(resume.template);

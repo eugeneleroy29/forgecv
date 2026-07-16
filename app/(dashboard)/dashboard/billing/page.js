@@ -129,7 +129,7 @@ export default function Billing() {
     : 0
 
   return (
-    <div className="px-8 py-8 max-w-3xl">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-3xl">
       <h1 className="text-2xl font-bold mb-8">Billing</h1>
 
       {/* Current Plan */}
@@ -181,7 +181,7 @@ export default function Billing() {
               {subscription.provider === 'stripe' ? 'Stripe' : 'PayMongo'}
             </p>
 
-            <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 text-sm">
               <div>
                 <p className="text-foreground/60 mb-1">Next renewal date</p>
                 <p className="font-medium">{formatDate(subscription.current_period_end)}</p>

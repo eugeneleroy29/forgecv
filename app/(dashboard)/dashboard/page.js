@@ -85,7 +85,7 @@ export default function Dashboard() {
     : stats.aiLimit === 0 ? 0 : stats.aiLimit
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <h1 className="text-2xl font-bold mb-1">
         Welcome back, {firstName}! 👋
       </h1>
@@ -153,7 +153,7 @@ export default function Dashboard() {
       </div>
 
       {/* Plan Banner */}
-      <div className="mt-8 border border-border rounded-xl p-6 flex items-center justify-between">
+      <div className="mt-8 border border-border rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-sm text-foreground/60 mb-1">Current Plan</p>
           <p className="text-lg font-semibold capitalize">{stats.plan}</p>

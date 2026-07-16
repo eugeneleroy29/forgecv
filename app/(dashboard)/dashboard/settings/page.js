@@ -40,7 +40,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="px-8 py-8 max-w-3xl">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-3xl">
       <h1 className="text-2xl font-bold mb-8">Settings</h1>
 
       {/* Account Info */}
@@ -66,7 +66,7 @@ export default function Settings() {
             Choose a new password for your account.
           </p>
 
-          <form onSubmit={handleChangePassword} className="flex flex-col gap-4 max-w-sm">
+          <form onSubmit={handleChangePassword} className="flex flex-col gap-4 max-w-md sm:max-w-sm">
             <div>
               <label className="text-sm font-medium mb-1.5 block">New Password</label>
               <input

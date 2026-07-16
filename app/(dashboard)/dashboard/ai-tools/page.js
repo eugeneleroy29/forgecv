@@ -29,7 +29,7 @@ export default function AiTools() {
   const router = useRouter()
 
   return (
-    <div className="px-8 py-8 max-w-3xl">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-3xl">
       <h1 className="text-2xl font-bold mb-2">AI Tools</h1>
       <p className="text-foreground/60 text-sm mb-8">
         These AI-powered tools are built right into the resume builder — open any resume to use them.

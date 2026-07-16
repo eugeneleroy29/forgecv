@@ -46,16 +46,16 @@ export default function Portfolios() {
 
   if (loading) {
     return (
-      <div className="px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <p className="text-foreground/60">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold mb-1">My Portfolios</h1>
           <p className="text-foreground/60">
