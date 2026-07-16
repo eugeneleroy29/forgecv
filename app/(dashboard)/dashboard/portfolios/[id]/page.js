@@ -10,6 +10,8 @@ import { getPortfolioTheme } from "@/app/components/portfolio/portfolioThemes";
 import BrandIcon from "@/app/components/portfolio/BrandIcon";
 import PublicPortfolio from "@/app/components/portfolio/PublicPortfolio";
 import Link from "next/link";
+import PreviewPanel from "@/app/components/ui/PreviewPanel";
+import PortfolioPreviewPanel from "@/app/components/ui/PortfolioPreviewPanel";
 
 const slugify = (text) =>
   text
@@ -1577,8 +1579,13 @@ export default function PortfolioEditor() {
           </div>
   
           <div className={`flex-1 min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
-            <div className="sticky top-8 border border-border rounded-xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
-              <PublicPortfolio portfolio={previewPortfolio} />
+            <div className="sticky top-8 h-[calc(100vh-4rem)] flex flex-col">
+              <PortfolioPreviewPanel className="h-full"
+                title="Portfolio Preview"
+                externalLink={portfolio?.slug ? `https://forgecv.com/p/${portfolio.slug}` : null}
+              >
+                <PublicPortfolio portfolio={previewPortfolio} />
+              </PortfolioPreviewPanel>
             </div>
           </div>
         </div>

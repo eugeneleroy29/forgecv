@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { getTemplateComponent } from "@/app/components/resume/templates";
 import PrintPortal from "@/app/components/resume/PrintPortal";
+import PreviewPanel from "@/app/components/ui/PreviewPanel";
+import ResumePreviewPanel from "@/app/components/ui/ResumePreviewPanel";
 
 export default function ResumeEditor() {
   const { id } = useParams();
@@ -1650,13 +1652,13 @@ export default function ResumeEditor() {
 
 </div>
         <div className={`flex-1 min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
-          <div className="sticky top-8 border border-border rounded-xl overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
-            <div style={{ zoom: 0.6 }}>
+          <div className="sticky top-8 h-[calc(100vh-4rem)] flex flex-col">
+            <ResumePreviewPanel title="Resume Preview" className="h-full">
               {(() => {
                 const TemplateComponent = getTemplateComponent(resume.template);
                 return <TemplateComponent content={previewContent} />;
               })()}
-            </div>
+            </ResumePreviewPanel>
           </div>
         </div>
       </div>
