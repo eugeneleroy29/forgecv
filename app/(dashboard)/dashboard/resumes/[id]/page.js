@@ -7,7 +7,6 @@ import { supabase } from "@/lib/supabase";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { getTemplateComponent } from "@/app/components/resume/templates";
 import PrintPortal from "@/app/components/resume/PrintPortal";
-import PreviewPanel from "@/app/components/ui/PreviewPanel";
 import ResumePreviewPanel from "@/app/components/ui/ResumePreviewPanel";
 
 export default function ResumeEditor() {

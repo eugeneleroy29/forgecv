@@ -1,10 +1,36 @@
 "use client";
 
+import { useState } from "react";
 import { getPortfolioTheme } from "./portfolioThemes";
 import { getPhotoShape } from "../resume/resumeHelpers";
 import { TOOLS_CATALOG } from "./toolsCatalog";
 import BrandIcon from "./BrandIcon";
 import PortfolioNavbar from "./PortfolioNavbar";
+
+function CopyEmailButton({ email, theme, className, children }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e) => {
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      window.location.href = `mailto:${email}`;
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={className}
+      style={theme ? { backgroundColor: theme.accent } : undefined}
+    >
+      {copied ? "Copied!" : children}
+    </button>
+  );
+}
 
 function hexToSoftTint(hex) {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -334,13 +360,13 @@ export default function PublicPortfolio({ portfolio }) {
           </h2>
           <div className="flex justify-center gap-3 sm:gap-4 flex-wrap">
             {contact.email && (
-              <a
-                href={`mailto:${contact.email}`}
+              <CopyEmailButton
+                email={contact.email}
+                theme={theme}
                 className="px-5 py-2.5 rounded-lg text-white font-medium text-sm"
-                style={{ backgroundColor: theme.accent }}
               >
                 Email Me
-              </a>
+              </CopyEmailButton>
             )}
             {contact.linkedin && (
               <a

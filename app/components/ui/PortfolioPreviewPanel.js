@@ -93,7 +93,7 @@ export default function PortfolioPreviewPanel({
               display: "block",
             }}
             title={title}
-            sandbox="allow-same-origin"
+            sandbox="allow-same-origin allow-scripts"
           />
         </div>
       </div>

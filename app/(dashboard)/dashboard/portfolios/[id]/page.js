@@ -10,7 +10,6 @@ import { getPortfolioTheme } from "@/app/components/portfolio/portfolioThemes";
 import BrandIcon from "@/app/components/portfolio/BrandIcon";
 import PublicPortfolio from "@/app/components/portfolio/PublicPortfolio";
 import Link from "next/link";
-import PreviewPanel from "@/app/components/ui/PreviewPanel";
 import PortfolioPreviewPanel from "@/app/components/ui/PortfolioPreviewPanel";
 
 const slugify = (text) =>
@@ -517,7 +516,7 @@ export default function PortfolioEditor() {
   };
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="flex md:hidden gap-2 mb-6">
         <button
           onClick={() => setMobileView("edit")}
@@ -536,8 +535,8 @@ export default function PortfolioEditor() {
           Preview
         </button>
       </div>
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className={`max-w-2xl w-full ${mobileView === "preview" ? "hidden md:block" : ""}`}>
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+        <div className={`w-full md:max-w-2xl md:w-auto ${mobileView === "preview" ? "hidden md:block" : ""}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <input
@@ -1578,8 +1577,8 @@ export default function PortfolioEditor() {
           </div>
           </div>
   
-          <div className={`flex-1 min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
-            <div className="sticky top-8 h-[calc(100vh-4rem)] flex flex-col">
+          <div className={`w-full md:flex-1 md:min-w-0 ${mobileView === "edit" ? "hidden md:block" : ""}`}>
+            <div className="sticky top-6 md:top-8 h-[calc(100vh-3rem)] md:h-[calc(100vh-4rem)] flex flex-col">
               <PortfolioPreviewPanel className="h-full"
                 title="Portfolio Preview"
                 externalLink={portfolio?.slug ? `https://forgecv.com/p/${portfolio.slug}` : null}

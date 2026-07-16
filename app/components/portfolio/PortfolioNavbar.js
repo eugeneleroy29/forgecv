@@ -2,6 +2,32 @@
 
 import { useState, useEffect } from "react";
 
+function CopyEmailButton({ email, theme, className, children }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e) => {
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Fallback: try to open mailto as last resort
+      window.location.href = `mailto:${email}`;
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={className}
+      style={theme ? { backgroundColor: theme.accent } : undefined}
+    >
+      {copied ? "Copied!" : children}
+    </button>
+  );
+}
+
 export default function PortfolioNavbar({ content, theme }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -94,13 +120,13 @@ export default function PortfolioNavbar({ content, theme }) {
           {/* Desktop CTA */}
           <div className="hidden md:block">
             {contact.email && (
-              <a
-                href={`mailto:${contact.email}`}
+              <CopyEmailButton
+                email={contact.email}
+                theme={theme}
                 className="px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: theme.accent }}
               >
-                Hire Me
-              </a>
+              Hire Me
+              </CopyEmailButton>
             )}
           </div>
 
@@ -150,13 +176,13 @@ export default function PortfolioNavbar({ content, theme }) {
                 </a>
               ))}
               {contact.email && (
-                <a
-                  href={`mailto:${contact.email}`}
+                <CopyEmailButton
+                  email={contact.email}
+                  theme={theme}
                   className="mt-2 mx-3 px-5 py-2.5 rounded-lg text-sm font-medium text-white text-center transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: theme.accent }}
                 >
-                  Hire Me
-                </a>
+                Hire Me
+                </CopyEmailButton>
               )}
             </div>
           </div>

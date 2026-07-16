@@ -5,6 +5,30 @@ import { useAuth } from '@/app/context/AuthContext'
 import { Mail } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
+import { useState } from 'react'
+
+function SupportEmailButton() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText("support@forgecv.com");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      window.location.href = "mailto:support@forgecv.com";
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="inline-block bg-accent text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+    >
+      {copied ? "Copied to clipboard!" : "support@forgecv.com"}
+    </button>
+  );
+}
 
 export default function Support() {
   const router = useRouter()
@@ -28,11 +52,7 @@ export default function Support() {
           <p className="text-foreground/60 mb-6">
             Send us a message and we will get back to you, typically within 24 hours.
           </p>
-          <a href="mailto:support@forgecv.com"
-            className="inline-block bg-accent text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
-          >
-            support@forgecv.com
-          </a>
+            <SupportEmailButton />
         </div>
 
         <p className="text-center text-sm text-foreground/60 mt-8">
