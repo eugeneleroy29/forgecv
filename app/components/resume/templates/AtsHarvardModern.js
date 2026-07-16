@@ -5,7 +5,7 @@ import {
   getCustomSectionById,
   getAccentColor,
   getFontFamily,
-  getSpacing,
+
 } from "../resumeHelpers";
 
 export default function AtsHarvardModern({ content }) {
@@ -15,9 +15,6 @@ export default function AtsHarvardModern({ content }) {
   );
   const accentColor = getAccentColor(content);
   const fontFamily = getFontFamily(content);
-  const spacing = getSpacing(content);
-  const padding = spacing === "compact" ? "p-6" : "p-10";
-  const sectionGap = spacing === "compact" ? "mb-3" : "mb-6";
 
   const SectionHeading = ({ children }) => (
     <h2 className="text-sm font-bold mb-2" style={{ color: accentColor }}>
@@ -29,7 +26,7 @@ export default function AtsHarvardModern({ content }) {
     switch (key) {
       case "personalInfo":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h1 className="text-3xl font-bold mb-1">
               {personalInfo?.fullName}
             </h1>
@@ -51,14 +48,14 @@ export default function AtsHarvardModern({ content }) {
         );
       case "summary":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <SectionHeading>Summary</SectionHeading>
             <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
           </div>
         );
       case "experience":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <SectionHeading>Experience</SectionHeading>
             <div className="flex flex-col gap-4 mt-2">
               {experience.map((exp, index) => (
@@ -83,7 +80,7 @@ export default function AtsHarvardModern({ content }) {
         );
       case "education":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <SectionHeading>Education</SectionHeading>
             <div className="flex flex-col gap-3 mt-2">
               {education.map((edu, index) => (
@@ -103,7 +100,7 @@ export default function AtsHarvardModern({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <SectionHeading>Skills</SectionHeading>
             <p className="text-sm text-gray-800 mt-2">{skills.join(" • ")}</p>
           </div>
@@ -112,7 +109,7 @@ export default function AtsHarvardModern({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <SectionHeading>{customSection.title}</SectionHeading>
             <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
               {customSection.items
@@ -129,7 +126,7 @@ export default function AtsHarvardModern({ content }) {
 
   return (
     <div
-      className={`bg-white text-black ${padding} max-w-[8.5in] mx-auto`}
+      className={`bg-white text-black $p-8 max-w-[8.5in] mx-auto`}
       id="resume-preview"
       style={{ fontFamily }}
     >

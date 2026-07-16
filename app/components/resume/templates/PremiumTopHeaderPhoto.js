@@ -5,7 +5,7 @@ import {
   getCustomSectionById,
   getAccentColor,
   getFontFamily,
-  getSpacing,
+
   getPhotoShape,
 } from "../resumeHelpers";
 
@@ -19,9 +19,6 @@ export default function PremiumTopHeaderPhoto({ content }) {
   const bodyKeys = orderedSections.filter((key) => key !== "personalInfo");
   const accentColor = getAccentColor(content);
   const fontFamily = getFontFamily(content);
-  const spacing = getSpacing(content);
-  const padding = spacing === "compact" ? "p-6" : "p-8";
-  const sectionGap = spacing === "compact" ? "mb-3" : "mb-5";
 
   const PhotoCircle = () => {
     if (personalInfo?.photoUrl) {
@@ -53,7 +50,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
     switch (key) {
       case "summary":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -65,7 +62,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "experience":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -95,7 +92,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "education":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -120,7 +117,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -134,7 +131,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -161,7 +158,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
       style={{ fontFamily }}
     >
       <div
-        className={`text-white ${padding} flex items-center gap-6`}
+        className={`text-white $p-8 flex items-center gap-6`}
         style={{ backgroundColor: accentColor }}
       >
         <PhotoCircle />
@@ -179,7 +176,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
           )}
         </div>
       </div>
-      <div className={padding}>{bodyKeys.map(renderBodySection)}</div>
+      <div className="p-8">{bodyKeys.map(renderBodySection)}</div>
     </div>
   );
 }

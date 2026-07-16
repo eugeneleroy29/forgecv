@@ -76,10 +76,6 @@ export function getFontFamily(content) {
   return choice === 'georgia' ? 'Georgia, serif' : 'Inter, sans-serif'
 }
 
-// Returns 'compact' or 'comfortable' (default) spacing preference.
-export function getSpacing(content) {
-  return content?.customization?.spacing === 'compact' ? 'compact' : 'comfortable'
-}
 
 // Returns 'circle', 'rounded', or 'square' (default) photo shape preference.
 export function getPhotoShape(content) {

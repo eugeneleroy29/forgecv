@@ -5,7 +5,7 @@ import {
   getCustomSectionById,
   getAccentColor,
   getFontFamily,
-  getSpacing,
+
   getPhotoShape,
 } from "../resumeHelpers";
 
@@ -22,10 +22,6 @@ export default function PremiumSidebarPhoto({ content }) {
 
   const accentColor = getAccentColor(content);
   const fontFamily = getFontFamily(content);
-  const spacing = getSpacing(content);
-  const sidebarPadding = spacing === "compact" ? "p-4" : "p-6";
-  const mainPadding = spacing === "compact" ? "p-6" : "p-8";
-  const sectionGap = spacing === "compact" ? "mb-3" : "mb-5";
 
   const sidebarKeys = orderedSections.filter((key) =>
     SIDEBAR_SECTIONS.includes(key),
@@ -97,7 +93,7 @@ export default function PremiumSidebarPhoto({ content }) {
     switch (key) {
       case "summary":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -109,7 +105,7 @@ export default function PremiumSidebarPhoto({ content }) {
         );
       case "experience":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -139,7 +135,7 @@ export default function PremiumSidebarPhoto({ content }) {
         );
       case "education":
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -166,7 +162,7 @@ export default function PremiumSidebarPhoto({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className={sectionGap}>
+          <div key={key} className="mb-6">
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -193,12 +189,12 @@ export default function PremiumSidebarPhoto({ content }) {
       style={{ fontFamily }}
     >
       <div
-        className={`w-1/3 text-white ${sidebarPadding}`}
+        className={`w-1/3 text-white $p-6`}
         style={{ backgroundColor: accentColor }}
       >
         {sidebarKeys.map(renderSidebarSection)}
       </div>
-      <div className={`w-2/3 ${mainPadding}`}>
+      <div className={`w-2/3 $p-8`}>
         {mainKeys.map(renderMainSection)}
       </div>
     </div>

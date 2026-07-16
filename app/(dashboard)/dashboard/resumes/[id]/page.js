@@ -85,7 +85,6 @@ export default function ResumeEditor() {
   const [skillInput, setSkillInput] = useState("");
   const [accentColor, setAccentColor] = useState("#4F46E5");
   const [fontFamily, setFontFamily] = useState("inter");
-  const [spacing, setSpacing] = useState("comfortable");
   const [photoShape, setPhotoShape] = useState("circle");
   const [mobileView, setMobileView] = useState("edit");
   const [aiLoading, setAiLoading] = useState(false);
@@ -140,9 +139,6 @@ export default function ResumeEditor() {
     }
     if (data.content?.customization?.fontFamily) {
       setFontFamily(data.content.customization.fontFamily);
-    }
-    if (data.content?.customization?.spacing) {
-      setSpacing(data.content.customization.spacing);
     }
     if (data.content?.customization?.photoShape) {
       setPhotoShape(data.content.customization.photoShape);
@@ -616,7 +612,7 @@ export default function ResumeEditor() {
       experience,
       education,
       skills,
-      customization: { ...resume.content?.customization, accentColor, fontFamily, spacing, photoShape },
+      customization: { ...resume.content?.customization, accentColor, fontFamily, photoShape },
       customSections,
       sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
     };
@@ -649,7 +645,7 @@ export default function ResumeEditor() {
     skills,
     customSections,
     sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
-    customization: { accentColor, fontFamily, spacing, photoShape },
+    customization: { accentColor, fontFamily, photoShape },
   };
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -1385,15 +1381,6 @@ export default function ResumeEditor() {
         >
           <option value="inter">Modern (Inter)</option>
           <option value="georgia">Classic (Georgia)</option>
-        </select>
-        <label className="text-sm font-medium mb-1.5 block mt-4">Spacing</label>
-        <select
-          value={spacing}
-          onChange={(e) => setSpacing(e.target.value)}
-          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors"
-        >
-          <option value="comfortable">Comfortable</option>
-          <option value="compact">Compact</option>
         </select>
         {personalInfo.photoUrl && (
           <>
