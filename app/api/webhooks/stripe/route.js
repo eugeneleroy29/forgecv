@@ -82,8 +82,14 @@ async function downgradeToFree(userId) {
     .eq('provider', 'stripe')
   if (subError) console.error('Failed to cancel subscription:', subError)
 
-  // Note: We intentionally do NOT delete data.
-  // Features lock until resubscribe per business rules.
+  // Reset profiles subscription tier
+  await supabaseAdmin
+    .from('profiles')
+    .update({
+      subscription_tier: 'free',
+      subscription_status: 'canceled',
+    })
+    .eq('id', userId)
 }
 
 export async function POST(request) {
@@ -133,6 +139,16 @@ export async function POST(request) {
           console.error('Failed to insert subscription:', error)
           return Response.json({ error: 'Database error' }, { status: 500 })
         }
+
+        // Sync subscription tier to profiles table
+        await supabaseAdmin
+          .from('profiles')
+          .update({
+            subscription_tier: planInfo.plan,
+            subscription_status: 'active',
+            subscription_end_date: new Date(stripeSubscription.items.data[0].current_period_end * 1000).toISOString(),
+          })
+          .eq('id', userId)
 
         // Reset AI counter on new subscription
         await resetAiGenerations(userId)

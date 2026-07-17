@@ -47,7 +47,7 @@ async function tryModels(groq, messages, maxTokens) {
 }
 
 async function checkAndIncrementAiUsage(userId) {
-  // Fetch current profile
+  // 1. Fetch profile
   const { data: profile, error: fetchError } = await supabaseAdmin
     .from('profiles')
     .select('ai_generations_used, ai_generations_reset_date, subscription_tier, is_admin')
@@ -63,13 +63,32 @@ async function checkAndIncrementAiUsage(userId) {
     return { allowed: true, limit: Infinity, used: 0, plan: 'admin' }
   }
 
-  const plan = profile.subscription_tier || 'free'
-  const limit = AI_LIMITS[plan] || 0
+  // 2. VALIDATE against subscriptions table (source of truth)
+  const { data: subscription } = await supabaseAdmin
+    .from('subscriptions')
+    .select('plan, status, current_period_end')
+    .eq('user_id', userId)
+    .in('status', ['active', 'trialing'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
-  // Check if we need to reset the monthly counter
+  // Use subscription table as source of truth, fallback to profiles
+  const effectivePlan = subscription?.plan || profile.subscription_tier || 'free'
+  const limit = AI_LIMITS[effectivePlan] || 0
+
+  // Check if subscription is actually valid (not expired)
+  if (effectivePlan !== 'free' && subscription?.current_period_end) {
+    const periodEnd = new Date(subscription.current_period_end)
+    if (periodEnd < new Date()) {
+      return { allowed: false, limit: 0, used: profile.ai_generations_used || 0, plan: 'free' }
+    }
+  }
+
+  // 3. Check monthly counter reset
   const now = new Date()
-  const resetDate = profile.ai_generations_reset_date 
-    ? new Date(profile.ai_generations_reset_date) 
+  const resetDate = profile.ai_generations_reset_date
+    ? new Date(profile.ai_generations_reset_date)
     : null
 
   let currentUsed = profile.ai_generations_used || 0
@@ -79,16 +98,16 @@ async function checkAndIncrementAiUsage(userId) {
     currentUsed = 0
     await supabaseAdmin
       .from('profiles')
-      .update({ 
-        ai_generations_used: 0, 
-        ai_generations_reset_date: now.toISOString() 
+      .update({
+        ai_generations_used: 0,
+        ai_generations_reset_date: now.toISOString()
       })
       .eq('id', userId)
   }
 
   // Check limit
   if (currentUsed >= limit) {
-    return { allowed: false, limit, used: currentUsed, plan }
+    return { allowed: false, limit, used: currentUsed, plan: effectivePlan }
   }
 
   // Increment counter
@@ -101,7 +120,7 @@ async function checkAndIncrementAiUsage(userId) {
     throw new Error('Failed to increment AI usage counter')
   }
 
-  return { allowed: true, limit, used: currentUsed + 1, plan }
+  return { allowed: true, limit, used: currentUsed + 1, plan: effectivePlan }
 }
 
 export async function POST(request) {

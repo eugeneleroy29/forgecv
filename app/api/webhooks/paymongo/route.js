@@ -51,6 +51,16 @@ export async function POST(request) {
         console.error('Failed to insert subscription:', error)
         return Response.json({ error: 'Database error' }, { status: 500 })
       }
+
+      // Sync subscription tier to profiles table
+      await supabaseAdmin
+        .from('profiles')
+        .update({
+          subscription_tier: plan,
+          subscription_status: 'active',
+          subscription_end_date: periodEnd.toISOString(),
+        })
+        .eq('id', userId)
     } else if (paymentType === 'lifetime_slot') {
       const slotsPurchased = planKey === 'lifetime_1_slot' ? 1 : planKey === 'lifetime_3_slots' ? 3 : null
 
