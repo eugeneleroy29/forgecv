@@ -1,230 +1,348 @@
-'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Navbar from '../components/layout/Navbar'
-import Footer from '../components/layout/Footer'
-import { useAuth } from '@/app/context/AuthContext'
-import { supabase } from '@/lib/supabase'
-import { detectPaymentProviderAsync } from '@/lib/payments/detectProvider'
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
+import { useAuth } from "@/app/context/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { detectPaymentProviderAsync } from "@/lib/payments/detectProvider";
 
 const PLANS = {
   starter: {
-    name: 'Starter',
-    tagline: 'For active job seekers',
+    name: "Starter",
+    tagline: "For active job seekers",
     monthlyPrice: 149,
     annualPrice: 1490,
     monthlyPriceUSD: 2.99,
     annualPriceUSD: 29.99,
-    monthlyKey: 'starter_monthly',
-    annualKey: 'starter_annual',
+    monthlyKey: "starter_monthly",
+    annualKey: "starter_annual",
     features: [
-      '3 resumes',
-      'All resume templates (up to 3 in use)',
-      'Unlimited downloads',
-      '1 portfolio publish slot',
-      'All premium portfolio templates',
-      'Custom portfolio sections',
-      '30 AI generations/month',
-      'Professional Summary AI',
-      'ATS Score Checker',
-      'Skills Suggester',
-      'Job Description Optimizer',
-      'Portfolio Bio Generator',
+      "3 resumes",
+      "All resume templates (up to 3 in use)",
+      "Unlimited downloads",
+      "1 portfolio publish slot",
+      "All premium portfolio templates",
+      "Custom portfolio sections",
+      "30 AI generations/month",
+      "Professional Summary AI",
+      "ATS Score Checker",
+      "Skills Suggester",
+      "Job Description Optimizer",
+      "Portfolio Bio Generator",
     ],
   },
   pro: {
-    name: 'Pro',
-    tagline: 'For serious professionals',
+    name: "Pro",
+    tagline: "For serious professionals",
     monthlyPrice: 299,
     annualPrice: 2990,
     monthlyPriceUSD: 5.99,
     annualPriceUSD: 59.99,
-    monthlyKey: 'pro_monthly',
-    annualKey: 'pro_annual',
+    monthlyKey: "pro_monthly",
+    annualKey: "pro_annual",
     features: [
-      'Unlimited resumes',
-      'All resume templates, unlimited use',
-      'Unlimited downloads',
-      '3 portfolio publish slots',
-      'All premium portfolio templates',
-      'Custom portfolio sections',
-      'Portfolio analytics',
-      '60 AI generations/month',
-      'Professional Summary AI',
-      'ATS Score Checker',
-      'Skills Suggester',
-      'Job Description Optimizer',
-      'Portfolio Bio Generator',
-      'Priority support',
+      "Unlimited resumes",
+      "All resume templates, unlimited use",
+      "Unlimited downloads",
+      "3 portfolio publish slots",
+      "All premium portfolio templates",
+      "Custom portfolio sections",
+      "Portfolio analytics",
+      "60 AI generations/month",
+      "Professional Summary AI",
+      "ATS Score Checker",
+      "Skills Suggester",
+      "Job Description Optimizer",
+      "Portfolio Bio Generator",
+      "Priority support",
     ],
   },
-}
+};
 
 const LIFETIME_PLANS = [
-  { key: 'lifetime_1_slot', slots: 1, pricePHP: 499, priceUSD: 9.99, icon: '🌐', name: '1 Portfolio', desc: 'Premium template, live forever' },
-  { key: 'lifetime_3_slots', slots: 3, pricePHP: 999, priceUSD: 19.99, icon: '🚀', name: '3 Portfolios', desc: 'Premium templates, live forever' },
-]
+  {
+    key: "lifetime_1_slot",
+    slots: 1,
+    pricePHP: 499,
+    priceUSD: 9.99,
+    icon: "🌐",
+    name: "1 Portfolio",
+    desc: "Premium template, live forever",
+  },
+  {
+    key: "lifetime_3_slots",
+    slots: 3,
+    pricePHP: 999,
+    priceUSD: 19.99,
+    icon: "🚀",
+    name: "3 Portfolios",
+    desc: "Premium templates, live forever",
+  },
+];
+
+const PLAN_HIERARCHY = {
+  free: 0,
+  starter: 1,
+  pro: 2,
+};
+
+function isUpgrade(currentPlan, currentCycle, targetPlan, targetCycle) {
+  const currentTier = PLAN_HIERARCHY[currentPlan] || 0;
+  const targetTier = PLAN_HIERARCHY[targetPlan] || 0;
+  if (targetTier > currentTier) return true;
+  if (
+    targetTier === currentTier &&
+    currentCycle === "monthly" &&
+    targetCycle === "annual"
+  )
+    return true;
+  return false;
+}
+
+function isCurrentPlan(currentPlan, currentCycle, targetPlan, targetCycle) {
+  return currentPlan === targetPlan && currentCycle === targetCycle;
+}
 
 export default function Pricing() {
-  const [annual, setAnnual] = useState(false)
-  const [provider, setProvider] = useState('paymongo')
-  const [currency, setCurrency] = useState('PHP')
-  const [detecting, setDetecting] = useState(true)
-  const { user } = useAuth()
-  const router = useRouter()
+  const [annual, setAnnual] = useState(false);
+  const [provider, setProvider] = useState("paymongo");
+  const [currency, setCurrency] = useState("PHP");
+  const [detecting, setDetecting] = useState(true);
+  const { user } = useAuth();
+  const router = useRouter();
 
   // User's existing subscriptions/purchases
-  const [userPlan, setUserPlan] = useState(null) // 'free', 'starter', 'pro', 'admin'
-  const [lifetimeSlotsOwned, setLifetimeSlotsOwned] = useState(0)
-  const [loadingUserData, setLoadingUserData] = useState(true)
+  const [userPlan, setUserPlan] = useState(null);
+  const [userCycle, setUserCycle] = useState("monthly");
+  const [lifetimeSlotsOwned, setLifetimeSlotsOwned] = useState(0);
+  const [loadingUserData, setLoadingUserData] = useState(true);
+
+  // Upgrade confirmation modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeTargetPlan, setUpgradeTargetPlan] = useState(null);
+  const [upgradeTargetKey, setUpgradeTargetKey] = useState(null);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
 
   // Detect provider + currency on mount
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     const runDetection = async () => {
       try {
-        const detected = await detectPaymentProviderAsync()
-        if (!mounted) return
+        const detected = await detectPaymentProviderAsync();
+        if (!mounted) return;
 
-        if (detected === 'paymongo') {
-          setProvider('paymongo')
-          setCurrency('PHP')
+        if (detected === "paymongo") {
+          setProvider("paymongo");
+          setCurrency("PHP");
         } else {
-          setProvider('stripe')
-          setCurrency('USD')
+          setProvider("stripe");
+          setCurrency("USD");
         }
       } catch (err) {
-        console.error('Provider detection failed:', err)
+        console.error("Provider detection failed:", err);
         // Default stays as paymongo/PHP
       } finally {
-        if (mounted) setDetecting(false)
+        if (mounted) setDetecting(false);
       }
-    }
+    };
 
-    runDetection()
-    return () => { mounted = false }
-  }, [])
+    runDetection();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Fetch user's existing plan and lifetime slots
   useEffect(() => {
     if (!user) {
-      setLoadingUserData(false)
-      return
+      setLoadingUserData(false);
+      return;
     }
 
     const loadUserData = async () => {
       try {
         // Check if admin first
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', user.id)
-          .single()
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", user.id)
+          .single();
 
         if (profile?.is_admin) {
-          setUserPlan('admin')
-          setLoadingUserData(false)
-          return
+          setUserPlan("admin");
+          setLoadingUserData(false);
+          return;
         }
 
         // Check active subscription
         const { data: subscription } = await supabase
-          .from('subscriptions')
-          .select('plan, status')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
+          .from("subscriptions")
+          .select("plan, status, billing_cycle")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
           .limit(1)
-          .maybeSingle()
+          .maybeSingle();
 
-        const plan = subscription?.plan || 'free'
-        setUserPlan(plan)
+        const plan = subscription?.plan || "free";
+        const cycle = subscription?.billing_cycle || "monthly";
+        setUserPlan(plan);
+        setUserCycle(cycle);
 
         // Check lifetime slots purchased
         const { data: lifetimePayments } = await supabase
-          .from('payments')
-          .select('slots_purchased')
-          .eq('user_id', user.id)
-          .eq('payment_type', 'lifetime_slot')
-          .eq('status', 'paid')
+          .from("payments")
+          .select("slots_purchased")
+          .eq("user_id", user.id)
+          .eq("payment_type", "lifetime_slot")
+          .eq("status", "paid");
 
         const slots = (lifetimePayments || []).reduce(
           (sum, p) => sum + (p.slots_purchased || 0),
-          0
-        )
-        setLifetimeSlotsOwned(slots)
+          0,
+        );
+        setLifetimeSlotsOwned(slots);
       } catch (err) {
-        console.error('Failed to load user billing data:', err)
+        console.error("Failed to load user billing data:", err);
       } finally {
-        setLoadingUserData(false)
+        setLoadingUserData(false);
       }
-    }
+    };
 
-    loadUserData()
-  }, [user])
+    loadUserData();
+  }, [user]);
 
-  const isUSD = currency === 'USD'
+  const isUSD = currency === "USD";
 
   const startCheckout = async (planKey) => {
     if (!user) {
-      router.push('/login')
-      return
+      router.push("/login");
+      return;
     }
 
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch('/api/checkout', {
-      method: 'POST',
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const res = await fetch("/api/checkout", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ provider, planKey }),
-    })
+    });
 
-    const data = await res.json()
+    const data = await res.json();
 
     if (data.url) {
-      window.location.href = data.url
+      window.location.href = data.url;
     } else {
-      console.error('Checkout failed:', data.error)
-      alert('Something went wrong starting checkout. Please try again.')
+      console.error("Checkout failed:", data.error);
+      alert("Something went wrong starting checkout. Please try again.");
     }
-  }
+  };
+
+  const openUpgradeModal = (planKey) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // Find plan details for the modal
+    const planKeyParts = planKey.split("_");
+    const planName = planKeyParts[0] === "starter" ? "Starter" : "Pro";
+    const cycleName = planKeyParts[1] === "annual" ? "Annual" : "Monthly";
+
+    setUpgradeTargetPlan(`${planName} (${cycleName})`);
+    setUpgradeTargetKey(planKey);
+    setShowUpgradeModal(true);
+  };
+
+  const handleUpgrade = async () => {
+    if (!upgradeTargetKey) return;
+
+    setUpgradeLoading(true);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const res = await fetch("/api/billing/upgrade-subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ targetPlanKey: upgradeTargetKey }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setShowUpgradeModal(false);
+        const amountMsg = data.amountCharged
+          ? ` You were charged ${data.currency === "USD" ? "$" : "₱"}${data.amountCharged} for the prorated difference.`
+          : "";
+        alert(`Upgrade successful!${amountMsg}`);
+        window.location.reload();
+      } else {
+        console.error("Upgrade failed:", data.error);
+        alert(data.error || "Upgrade failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Upgrade error:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setUpgradeLoading(false);
+    }
+  };
 
   // Plan ownership helpers
-  const isFree = userPlan === 'free' || userPlan === null
-  const isStarter = userPlan === 'starter'
-  const isPro = userPlan === 'pro'
-  const isAdmin = userPlan === 'admin'
+  const isFree = userPlan === "free" || userPlan === null;
+  const isStarter = userPlan === "starter";
+  const isPro = userPlan === "pro";
+  const isAdmin = userPlan === "admin";
 
-  const lifetime1Owned = lifetimeSlotsOwned >= 1 || isAdmin
-  const lifetime3Owned = lifetimeSlotsOwned >= 3 || isAdmin
+  const lifetime1Owned = lifetimeSlotsOwned >= 1 || isAdmin;
+  const lifetime3Owned = lifetimeSlotsOwned >= 3 || isAdmin;
 
   const formatPrice = (php, usd) => {
-    if (isUSD) return `$${usd.toFixed(2)}`
-    return `₱${php.toLocaleString()}`
-  }
+    if (isUSD) return `$${usd.toFixed(2)}`;
+    return `₱${php.toLocaleString()}`;
+  };
 
   // Helper to render a plan card
-  const renderPlanCard = (key, plan, isCurrent, isDisabled) => {
+  const renderPlanCard = (
+    key,
+    plan,
+    isCurrent,
+    isDisabled,
+    isUpgradeable = false,
+  ) => {
     const price = isUSD
-      ? (annual ? plan.annualPriceUSD : plan.monthlyPriceUSD)
-      : (annual ? plan.annualPrice : plan.monthlyPrice)
-    const planKey = annual ? plan.annualKey : plan.monthlyKey
-    const isStarter = key === 'starter'
+      ? annual
+        ? plan.annualPriceUSD
+        : plan.monthlyPriceUSD
+      : annual
+        ? plan.annualPrice
+        : plan.monthlyPrice;
+    const planKey = annual ? plan.annualKey : plan.monthlyKey;
+    const isStarter = key === "starter";
 
     return (
       <div
         key={key}
         className={`rounded-xl p-8 flex flex-col relative ${
           isCurrent
-            ? 'border-2 border-accent bg-accent/5'
+            ? "border-2 border-accent bg-accent/5"
             : isDisabled
-            ? 'border border-border bg-muted/30 opacity-60'
-            : isStarter
-            ? 'border-2 border-accent'
-            : 'border border-border'
+              ? "border border-border bg-muted/30 opacity-60"
+              : isStarter
+                ? "border-2 border-accent"
+                : "border border-border"
         }`}
       >
         {isCurrent && (
@@ -243,7 +361,10 @@ export default function Pricing() {
           <span className="text-4xl font-bold">
             {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
           </span>
-          <span className="text-foreground/60 text-sm"> / {annual ? 'year' : 'month'}</span>
+          <span className="text-foreground/60 text-sm">
+            {" "}
+            / {annual ? "year" : "month"}
+          </span>
         </div>
         <ul className="flex flex-col gap-3 mb-8 flex-1">
           {plan.features.map((feature) => (
@@ -265,23 +386,34 @@ export default function Pricing() {
             disabled
             className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
           >
-            {isAdmin ? 'Admin — Unlimited' : 'Not Available'}
+            {isAdmin ? "Admin — Unlimited" : "Not Available"}
+          </button>
+        ) : isUpgradeable ? (
+          <button
+            onClick={() => openUpgradeModal(planKey)}
+            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isStarter
+                ? "bg-accent text-white hover:bg-accent-hover"
+                : "border border-border text-foreground hover:border-accent hover:text-accent"
+            }`}
+          >
+            Upgrade
           </button>
         ) : (
           <button
             onClick={() => startCheckout(planKey)}
             className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isStarter
-                ? 'bg-accent text-white hover:bg-accent-hover'
-                : 'border border-border text-foreground hover:border-accent hover:text-accent'
+                ? "bg-accent text-white hover:bg-accent-hover"
+                : "border border-border text-foreground hover:border-accent hover:text-accent"
             }`}
           >
             Get Started
           </button>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -299,17 +431,27 @@ export default function Pricing() {
           {/* Currency Toggle */}
           <div className="flex items-center gap-2 bg-muted rounded-full p-1">
             <button
-              onClick={() => { setCurrency('PHP'); setProvider('paymongo') }}
+              onClick={() => {
+                setCurrency("PHP");
+                setProvider("paymongo");
+              }}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                currency === 'PHP' ? 'bg-background shadow-sm' : 'text-foreground/60 hover:text-foreground'
+                currency === "PHP"
+                  ? "bg-background shadow-sm"
+                  : "text-foreground/60 hover:text-foreground"
               }`}
             >
               PHP ₱
             </button>
             <button
-              onClick={() => { setCurrency('USD'); setProvider('stripe') }}
+              onClick={() => {
+                setCurrency("USD");
+                setProvider("stripe");
+              }}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                currency === 'USD' ? 'bg-background shadow-sm' : 'text-foreground/60 hover:text-foreground'
+                currency === "USD"
+                  ? "bg-background shadow-sm"
+                  : "text-foreground/60 hover:text-foreground"
               }`}
             >
               USD $
@@ -318,18 +460,26 @@ export default function Pricing() {
 
           {/* Monthly/Annual Toggle */}
           <div className="flex items-center gap-3">
-            <span className={`text-sm font-medium ${!annual ? '' : 'text-foreground/60'}`}>Monthly</span>
+            <span
+              className={`text-sm font-medium ${!annual ? "" : "text-foreground/60"}`}
+            >
+              Monthly
+            </span>
             <button
               onClick={() => setAnnual(!annual)}
               className="w-12 h-6 bg-accent rounded-full relative cursor-pointer"
             >
               <div
                 className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  annual ? 'right-0.5' : 'left-0.5'
+                  annual ? "right-0.5" : "left-0.5"
                 }`}
               />
             </button>
-            <span className={`text-sm font-medium ${annual ? '' : 'text-foreground/60'}`}>Annual</span>
+            <span
+              className={`text-sm font-medium ${annual ? "" : "text-foreground/60"}`}
+            >
+              Annual
+            </span>
             <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">
               Save 17%
             </span>
@@ -338,37 +488,78 @@ export default function Pricing() {
 
         {/* Detection status */}
         {detecting && (
-          <p className="text-xs text-foreground/40 mt-3">Detecting your region...</p>
+          <p className="text-xs text-foreground/40 mt-3">
+            Detecting your region...
+          </p>
         )}
       </section>
 
       {/* Pricing Cards */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
           {/* Free */}
-          {renderPlanCard('free', {
-            name: 'Free',
-            tagline: 'Perfect for getting started',
-            monthlyPrice: 0,
-            annualPrice: 0,
-            monthlyPriceUSD: 0,
-            annualPriceUSD: 0,
-            features: [
-              '1 resume',
-              '1 resume template of your choice',
-              'Unlimited downloads',
-              'Build portfolios (all 9 templates)',
-              'Publishing requires an upgrade',
-            ],
-          }, isFree, !isFree)}
+          {renderPlanCard(
+            "free",
+            {
+              name: "Free",
+              tagline: "Perfect for getting started",
+              monthlyPrice: 0,
+              annualPrice: 0,
+              monthlyPriceUSD: 0,
+              annualPriceUSD: 0,
+              features: [
+                "1 resume",
+                "1 resume template of your choice",
+                "Unlimited downloads",
+                "Build portfolios (all 9 templates)",
+                "Publishing requires an upgrade",
+              ],
+            },
+            isFree,
+            !isFree,
+            false,
+          )}
 
           {/* Starter */}
-          {renderPlanCard('starter', PLANS.starter, isStarter, isPro || isAdmin)}
+          {renderPlanCard(
+            "starter",
+            PLANS.starter,
+            isStarter,
+            isPro || isAdmin,
+            isUpgrade(
+              "free",
+              userCycle,
+              "starter",
+              annual ? "annual" : "monthly",
+            ) ||
+              isUpgrade(
+                "starter",
+                userCycle,
+                "starter",
+                annual ? "annual" : "monthly",
+              ),
+          )}
 
           {/* Pro */}
-          {renderPlanCard('pro', PLANS.pro, isPro, isAdmin)}
-
+          {renderPlanCard(
+            "pro",
+            PLANS.pro,
+            isPro,
+            isAdmin,
+            isUpgrade(
+              "free",
+              userCycle,
+              "pro",
+              annual ? "annual" : "monthly",
+            ) ||
+              isUpgrade(
+                "starter",
+                userCycle,
+                "pro",
+                annual ? "annual" : "monthly",
+              ) ||
+              isUpgrade("pro", userCycle, "pro", annual ? "annual" : "monthly"),
+          )}
         </div>
 
         {/* One-time Payment Section */}
@@ -380,37 +571,39 @@ export default function Pricing() {
             </p>
             {lifetimeSlotsOwned > 0 && (
               <p className="text-accent text-sm mt-2 font-medium">
-                You already own {lifetimeSlotsOwned} lifetime slot{lifetimeSlotsOwned === 1 ? '' : 's'}.
+                You already own {lifetimeSlotsOwned} lifetime slot
+                {lifetimeSlotsOwned === 1 ? "" : "s"}.
               </p>
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-
             {LIFETIME_PLANS.map((lt) => {
-              const isOwned = lt.slots === 1 ? lifetime1Owned : lifetime3Owned
-              const price = isUSD ? lt.priceUSD : lt.pricePHP
+              const isOwned = lt.slots === 1 ? lifetime1Owned : lifetime3Owned;
+              const price = isUSD ? lt.priceUSD : lt.pricePHP;
 
               return (
                 <div
                   key={lt.key}
                   className={`border rounded-xl p-6 text-center transition-colors ${
                     isOwned
-                      ? 'border-border bg-muted/30 opacity-60'
-                      : 'border-border hover:border-accent'
+                      ? "border-border bg-muted/30 opacity-60"
+                      : "border-border hover:border-accent"
                   }`}
                 >
                   <div className="text-3xl mb-3">{lt.icon}</div>
                   <h3 className="font-semibold mb-1">{lt.name}</h3>
                   <p className="text-foreground/60 text-sm mb-4">{lt.desc}</p>
                   <div className="text-3xl font-bold mb-4">
-                    {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
+                    {isUSD
+                      ? `$${price.toFixed(2)}`
+                      : `₱${price.toLocaleString()}`}
                   </div>
                   {isOwned ? (
                     <button
                       disabled
                       className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
                     >
-                      {isAdmin ? 'Admin — Unlimited' : 'Already Owned'}
+                      {isAdmin ? "Admin — Unlimited" : "Already Owned"}
                     </button>
                   ) : (
                     <button
@@ -421,13 +614,41 @@ export default function Pricing() {
                     </button>
                   )}
                 </div>
-              )
+              );
             })}
-
           </div>
         </div>
-
       </section>
+
+            {/* Upgrade Confirmation Modal */}
+            {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-2">Confirm Upgrade</h3>
+            <p className="text-foreground/60 text-sm mb-6">
+              You are about to upgrade to <strong>{upgradeTargetPlan}</strong>. 
+              You will be charged the prorated difference immediately. 
+              Your card on file will be billed automatically.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleUpgrade}
+                disabled={upgradeLoading}
+                className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+              >
+                {upgradeLoading ? 'Processing...' : 'Confirm Upgrade'}
+              </button>
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                disabled={upgradeLoading}
+                className="text-foreground/60 text-sm font-medium py-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </main>
