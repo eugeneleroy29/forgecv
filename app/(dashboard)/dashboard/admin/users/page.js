@@ -13,6 +13,9 @@ export default function AdminUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [editingUser, setEditingUser] = useState(null)
+  const [editForm, setEditForm] = useState({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -85,12 +88,72 @@ export default function AdminUsers() {
 
       if (error) throw error
 
-      setUsers(users.map(u => 
+      setUsers(users.map(u =>
         u.id === userId ? { ...u, is_banned: !currentStatus } : u
       ))
     } catch (e) {
       console.error('Failed to toggle ban:', e)
       alert('Failed to update user status')
+    }
+  }
+
+  const openEditModal = (user) => {
+    setEditingUser(user)
+    setEditForm({
+      subscription_tier: user.subscription_tier || 'free',
+      subscription_status: user.subscription_status || 'active',
+      ai_generations_used: user.ai_generations_used || 0,
+      portfolio_slots: user.portfolio_slots || 1,
+      is_admin: user.is_admin || false,
+    })
+  }
+
+  const closeEditModal = () => {
+    setEditingUser(null)
+    setEditForm({})
+  }
+
+  const saveUserChanges = async () => {
+    if (!editingUser) return
+    setSaving(true)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      if (!token) {
+        alert('Session expired. Please log in again.')
+        return
+      }
+
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: editingUser.id,
+          updates: editForm,
+        }),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Failed to update user')
+      }
+
+      // Update local state
+      setUsers(users.map(u =>
+        u.id === editingUser.id ? { ...u, ...editForm } : u
+      ))
+      closeEditModal()
+    } catch (e) {
+      console.error('Failed to save user changes:', e)
+      alert(e.message || 'Failed to update user')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -179,16 +242,24 @@ export default function AdminUsers() {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <button
-                    onClick={() => toggleBan(u.id, u.is_banned)}
-                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                      u.is_banned
-                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                        : 'bg-red-100 text-red-700 hover:bg-red-200'
-                    }`}
-                  >
-                    {u.is_banned ? 'Unban' : 'Ban'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEditModal(u)}
+                      className="text-xs px-3 py-1.5 rounded-lg font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => toggleBan(u.id, u.is_banned)}
+                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                        u.is_banned
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'bg-red-100 text-red-700 hover:bg-red-200'
+                      }`}
+                    >
+                      {u.is_banned ? 'Unban' : 'Ban'}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -199,6 +270,96 @@ export default function AdminUsers() {
       <div className="mt-4 text-sm text-foreground/60">
         Showing {filteredUsers.length} of {users.length} users
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-2">Edit User</h3>
+            <p className="text-foreground/60 text-sm mb-6">
+              {editingUser.email}
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Plan Tier</label>
+                <select
+                  value={editForm.subscription_tier}
+                  onChange={(e) => setEditForm({ ...editForm, subscription_tier: e.target.value })}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:border-accent"
+                >
+                  <option value="free">Free</option>
+                  <option value="starter">Starter</option>
+                  <option value="pro">Pro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Subscription Status</label>
+                <select
+                  value={editForm.subscription_status}
+                  onChange={(e) => setEditForm({ ...editForm, subscription_status: e.target.value })}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:border-accent"
+                >
+                  <option value="active">Active</option>
+                  <option value="canceled">Canceled</option>
+                  <option value="past_due">Past Due</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">AI Generations Used</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={editForm.ai_generations_used}
+                  onChange={(e) => setEditForm({ ...editForm, ai_generations_used: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Portfolio Slots</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={editForm.portfolio_slots}
+                  onChange={(e) => setEditForm({ ...editForm, portfolio_slots: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="is_admin"
+                  checked={editForm.is_admin}
+                  onChange={(e) => setEditForm({ ...editForm, is_admin: e.target.checked })}
+                  className="w-4 h-4 rounded border-border accent-accent"
+                />
+                <label htmlFor="is_admin" className="text-sm font-medium">Admin Access</label>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={saveUserChanges}
+                disabled={saving}
+                className="bg-accent text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                onClick={closeEditModal}
+                className="text-foreground/60 hover:text-foreground text-sm py-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
