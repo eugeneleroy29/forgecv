@@ -11,6 +11,9 @@ export default function Portfolios() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [renameTarget, setRenameTarget] = useState(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -44,6 +47,24 @@ export default function Portfolios() {
     setDeleting(false);
   };
 
+  const confirmRename = async () => {
+    if (!renameTarget || !renameValue.trim()) return;
+    setRenaming(true);
+    const { error } = await supabase
+      .from("portfolios")
+      .update({ title: renameValue.trim(), updated_at: new Date().toISOString() })
+      .eq("id", renameTarget.id);
+
+    if (!error) {
+      setPortfolios((prev) =>
+        prev.map((p) => (p.id === renameTarget.id ? { ...p, title: renameValue.trim() } : p))
+      );
+      setRenameTarget(null);
+      setRenameValue("");
+    }
+    setRenaming(false);
+  };
+
   if (loading) {
     return (
       <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -54,7 +75,6 @@ export default function Portfolios() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-
       <div className="flex flex-wrap items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold mb-1">My Portfolios</h1>
@@ -87,69 +107,118 @@ export default function Portfolios() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {portfolios.map((portfolio) => (
-            <Link
-            key={portfolio.id}
-            href={`/dashboard/portfolios/${portfolio.id}`}
-            className="relative border border-border rounded-xl p-6 hover:border-accent transition-colors"
-          >
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setDeleteTarget(portfolio);
-              }}
-              className="absolute top-3 right-3 text-foreground/30 hover:text-red-500 transition-colors text-sm"
-              aria-label="Delete portfolio"
+            <div
+              key={portfolio.id}
+              className="relative border border-border rounded-xl p-6 hover:border-accent transition-colors group"
             >
-              ✕
-            </button>
-            <div className="flex items-center justify-between mb-3 pr-6">
-              <div className="text-2xl">🌐</div>
-              {portfolio.is_published ? (
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                  Published
-                </span>
-              ) : (
-                <span className="text-xs bg-foreground/5 text-foreground/50 px-2 py-1 rounded-full">
-                  Draft
-                </span>
-              )}
-            </div>
-            <h3 className="font-semibold mb-1">{portfolio.title}</h3>
-            <p className="text-xs text-foreground/40">
-              Updated {new Date(portfolio.updated_at).toLocaleDateString()}
-            </p>
-          </Link>
-          ))}
-        </div>
-        )}
-
-        {deleteTarget && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-            <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
-              <h3 className="text-xl font-bold mb-2">Delete portfolio?</h3>
-              <p className="text-foreground/60 text-sm mb-6">
-                This will permanently delete "{deleteTarget.title}". This can't be undone.
-              </p>
-              <div className="flex flex-col gap-3">
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                  onClick={confirmDelete}
-                  disabled={deleting}
-                  className="bg-red-500 text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRenameTarget(portfolio);
+                  }}
+                  className="text-foreground/30 hover:text-accent transition-colors text-sm mr-3"
+                  aria-label="Rename portfolio"
                 >
-                  {deleting ? "Deleting..." : "Delete"}
+                  ✎
                 </button>
                 <button
-                  onClick={() => setDeleteTarget(null)}
-                  disabled={deleting}
-                  className="text-foreground/60 text-sm font-medium py-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteTarget(portfolio);
+                  }}
+                  className="text-foreground/30 hover:text-red-500 transition-colors text-sm"
+                  aria-label="Delete portfolio"
                 >
-                  Cancel
+                  ✕
                 </button>
               </div>
+              <Link
+                href={`/dashboard/portfolios/${portfolio.id}`}
+                className="block"
+              >
+                <div className="flex items-center justify-between mb-3 pr-6">
+                  <div className="text-2xl">🌐</div>
+                  {portfolio.is_published ? (
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                      Published
+                    </span>
+                  ) : (
+                    <span className="text-xs bg-foreground/5 text-foreground/50 px-2 py-1 rounded-full">
+                      Draft
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-semibold mb-1">{portfolio.title}</h3>
+                <p className="text-xs text-foreground/40">
+                  Updated {new Date(portfolio.updated_at).toLocaleDateString()}
+                </p>
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-2">Delete portfolio?</h3>
+            <p className="text-foreground/60 text-sm mb-6">
+              This will permanently delete "{deleteTarget.title}". This can't be
+              undone.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="bg-red-500 text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="text-foreground/60 text-sm font-medium py-2"
+              >
+                Cancel
+              </button>
             </div>
           </div>
-        )}
-      </div>
-    );
-  }
+        </div>
+      )}
+
+{renameTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-2">Rename Portfolio</h3>
+            <input
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && confirmRename()}
+              placeholder="Enter new name"
+              className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors mb-6"
+              autoFocus
+            />
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={confirmRename}
+                disabled={renaming || !renameValue.trim()}
+                className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+              >
+                {renaming ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={() => { setRenameTarget(null); setRenameValue(""); }}
+                disabled={renaming}
+                className="text-foreground/60 text-sm font-medium py-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
