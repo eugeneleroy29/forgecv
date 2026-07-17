@@ -115,9 +115,9 @@ export async function PATCH(request) {
             .eq('id', existingSub.id)
         } else {
           // Insert new subscription (admin override — no payment)
-          await supabaseAdmin.from('subscriptions').insert({
+          const { error: insertError } = await supabaseAdmin.from('subscriptions').insert({
             user_id: userId,
-            provider: 'admin_override',
+            provider: 'stripe',
             provider_subscription_id: `admin_${userId}_${Date.now()}`,
             plan: newTier,
             billing_cycle: 'monthly',
@@ -125,6 +125,11 @@ export async function PATCH(request) {
             status: 'active',
             current_period_end: periodEnd.toISOString(),
           })
+
+          if (insertError) {
+            console.error('Failed to insert admin override subscription:', insertError)
+            return Response.json({ error: 'Failed to create subscription record' }, { status: 500 })
+          }
         }
       }
     }

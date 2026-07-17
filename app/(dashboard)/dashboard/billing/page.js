@@ -62,6 +62,7 @@ export default function Billing() {
         .from('subscriptions')
         .select('plan, billing_cycle, renewal_type, status, provider, current_period_end, cancel_at_period_end, provider_subscription_id')
         .eq('user_id', user.id)
+        .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle()
