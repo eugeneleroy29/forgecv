@@ -29,9 +29,10 @@ async function syncSubscription(subscription) {
   const periodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
 
   const payload = {
-    status: subscription.status, // active, canceled, past_due, unpaid, etc.
+    status: subscription.status,
     current_period_end: periodEnd,
     cancel_at_period_end: subscription.cancel_at_period_end,
+    provider_customer_id: subscription.customer,
     updated_at: new Date().toISOString(),
   }
 
@@ -127,6 +128,7 @@ export async function POST(request) {
         const { error } = await supabaseAdmin.from('subscriptions').insert({
           user_id: userId,
           provider: 'stripe',
+          provider_customer_id: session.customer,
           provider_subscription_id: stripeSubscription.id,
           plan: planInfo.plan,
           billing_cycle: planInfo.cycle,
@@ -160,6 +162,7 @@ export async function POST(request) {
           payment_method: 'card',
           status: 'paid',
           provider: 'stripe',
+          provider_customer_id: session.customer,
           payment_type: 'lifetime_slot',
           slots_purchased: planInfo.slots,
         })
