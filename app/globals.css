@@ -44,6 +44,10 @@ body {
   display: none;
 }
 
+#print-only-cover-letter {
+  display: none;
+}
+
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;
@@ -71,6 +75,18 @@ body {
   #print-only-resume #resume-preview {
     background: white !important;
     box-shadow: none !important;
+    min-height: 100vh !important;
+  }
+
+  #print-only-cover-letter,
+  #print-only-cover-letter * {
+    display: revert !important;
+  }
+  #print-only-cover-letter .flex {
+    display: flex !important;
+  }
+  #print-only-cover-letter {
+    background: white !important;
     min-height: 100vh !important;
   }
   @page {

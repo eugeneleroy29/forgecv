@@ -69,15 +69,14 @@ export default function NewPortfolio() {
         {TEMPLATE_IDS.map((templateId) => {
           const theme = getPortfolioTheme(templateId);
           return (
-            <button
+            <div
               key={templateId}
-              onClick={() => createPortfolio(templateId, theme.label)}
-              disabled={creating}
-              className="text-left border border-border rounded-xl p-4 hover:border-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-3"
+              onClick={() => !creating && createPortfolio(templateId, theme.label)}
+              className={`text-left border border-border rounded-xl p-4 hover:border-accent transition-colors flex flex-col items-center gap-3 cursor-pointer ${creating ? 'opacity-50 pointer-events-none' : ''}`}
             >
               <PortfolioThumbnail template={templateId} />
               <h3 className="font-semibold">{theme.label}</h3>
-            </button>
+            </div>
           );
         })}
       </div>

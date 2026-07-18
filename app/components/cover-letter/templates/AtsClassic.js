@@ -5,7 +5,7 @@ export default function AtsClassic({ content }) {
   const fontFamily = getFontFamily(content)
 
   return (
-    <div className="bg-white text-black p-8 max-w-[8.5in] mx-auto" style={{ fontFamily, minHeight: '11in' }}>
+    <div className="bg-white text-black p-8 max-w-[8.5in] mx-auto" style={{ fontFamily }}>
       {/* Sender Info */}
       <div className="mb-6">
         <h1 className="text-xl font-bold mb-1">{personalInfo?.fullName || 'Your Name'}</h1>

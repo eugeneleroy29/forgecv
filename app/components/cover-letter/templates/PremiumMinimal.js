@@ -6,7 +6,7 @@ export default function PremiumMinimal({ content }) {
   const accentColor = customization?.accentColor || '#4F46E5'
 
   return (
-    <div className="bg-white text-black p-10 max-w-[8.5in] mx-auto" style={{ fontFamily, minHeight: '11in' }}>
+    <div className="bg-white text-black p-10 max-w-[8.5in] mx-auto" style={{ fontFamily }}>
       {/* Minimal Header */}
       <div className="text-center mb-10">
         <h1 className="text-2xl font-light tracking-widest uppercase mb-2" style={{ color: accentColor }}>{personalInfo?.fullName || 'Your Name'}</h1>

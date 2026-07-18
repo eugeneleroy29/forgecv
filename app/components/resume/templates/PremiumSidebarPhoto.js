@@ -5,13 +5,10 @@ import {
   getCustomSectionById,
   getAccentColor,
   getFontFamily,
-
   getPhotoShape,
 } from "../resumeHelpers";
 
-// Sidebar sections: personalInfo (photo + contact) and skills live in the
-// colored left column. Everything else renders in the main content area.
-const SIDEBAR_SECTIONS = ["personalInfo", "skills"];
+const SIDEBAR_SECTIONS = ["personalInfo", "skills", "education"];
 
 export default function PremiumSidebarPhoto({ content }) {
   const { personalInfo, summary, experience, education, skills, customization } = content;
@@ -85,6 +82,25 @@ export default function PremiumSidebarPhoto({ content }) {
             </ul>
           </div>
         );
+      case "education":
+        return (
+          <div key={key} className={`mb-6 ${breakClass}`}>
+            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 border-b border-white/30 pb-1">
+              Education
+            </h2>
+            <div className="flex flex-col gap-3 mt-2">
+              {education.map((edu, index) => (
+                <div key={edu.id || `edu-${index}`}>
+                  <h3 className="text-sm font-semibold">{edu.degree}</h3>
+                  <p className="text-sm text-white/80">{edu.school}</p>
+                  <p className="text-xs text-white/60">
+                    {formatDate(edu.startDate)} – {edu.current ? "Present" : formatDate(edu.endDate)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -135,31 +151,6 @@ export default function PremiumSidebarPhoto({ content }) {
             </div>
           </div>
         );
-      case "education":
-        return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
-              style={{ color: accentColor }}
-            >
-              Education
-            </h2>
-            <div className="flex flex-col gap-3 mt-2">
-              {education.map((edu, index) => (
-                <div key={edu.id || `edu-${index}`}>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{edu.degree}</h3>
-                    <span className="text-xs text-gray-500">
-                      {formatDate(edu.startDate)} –{" "}
-                      {edu.current ? "Present" : formatDate(edu.endDate)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">{edu.school}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
       default: {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
@@ -186,7 +177,7 @@ export default function PremiumSidebarPhoto({ content }) {
 
   return (
     <div
-      className="bg-white text-black max-w-[8.5in] mx-auto flex"
+      className="bg-white text-black max-w-[8.5in] mx-auto flex min-h-[11in]"
       id="resume-preview"
       style={{ fontFamily }}
     >
@@ -199,12 +190,13 @@ export default function PremiumSidebarPhoto({ content }) {
         }
       `}</style>
       <div
-        className={`w-1/3 text-white $p-6`}
+        className="w-1/3 text-white p-6 flex flex-col"
         style={{ backgroundColor: accentColor }}
       >
         {sidebarKeys.map((key) => renderSidebarSection(key, content.pageBreaks?.[key]))}
+        <div className="flex-1"></div>
       </div>
-      <div className={`w-2/3 $p-8`}>
+      <div className="w-2/3 p-8">
         {mainKeys.map((key) => renderMainSection(key, content.pageBreaks?.[key]))}
       </div>
     </div>

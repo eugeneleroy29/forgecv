@@ -5,7 +5,7 @@ export default function AtsModern({ content }) {
   const fontFamily = getFontFamily(content)
 
   return (
-    <div className="bg-white text-black p-8 max-w-[8.5in] mx-auto" style={{ fontFamily, minHeight: '11in' }}>
+    <div className="bg-white text-black p-8 max-w-[8.5in] mx-auto" style={{ fontFamily }}>
       {/* Header with accent line */}
       <div className="border-b-2 border-gray-800 pb-4 mb-6">
         <h1 className="text-2xl font-bold mb-1 tracking-wide">{personalInfo?.fullName || 'Your Name'}</h1>

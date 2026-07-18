@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { getCoverLetterTemplateComponent } from "@/app/components/cover-letter/templates";
 import CoverLetterPreviewPanel from "@/app/components/ui/CoverLetterPreviewPanel";
+import PrintPortal from "@/app/components/resume/PrintPortal";
 
 export default function CoverLetterEditor() {
   const { id } = useParams();
@@ -565,13 +566,14 @@ export default function CoverLetterEditor() {
         </div>
       </div>
 
-      {/* Print-only for PDF export */}
-      <div className="hidden print-only">
-        {(() => {
-          const TemplateComponent = getCoverLetterTemplateComponent(coverLetter.template);
-          return <TemplateComponent content={previewContent} />;
-        })()}
-      </div>
+      <PrintPortal>
+        <div id="print-only-cover-letter">
+          {(() => {
+            const TemplateComponent = getCoverLetterTemplateComponent(coverLetter.template);
+            return <TemplateComponent content={previewContent} />;
+          })()}
+        </div>
+      </PrintPortal>
     </div>
   );
 }
