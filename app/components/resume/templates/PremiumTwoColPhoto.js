@@ -53,11 +53,12 @@ export default function PremiumTwoColPhoto({ content }) {
       );
   };
 
-  const renderLeftSection = (key) => {
+  const renderLeftSection = (key, shouldBreak) => {
+    const breakClass = shouldBreak ? 'page-break-before' : '';
     switch (key) {
       case "summary":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -69,7 +70,7 @@ export default function PremiumTwoColPhoto({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -88,11 +89,12 @@ export default function PremiumTwoColPhoto({ content }) {
     }
   };
 
-  const renderRightSection = (key) => {
+  const renderRightSection = (key, shouldBreak) => {
+    const breakClass = shouldBreak ? 'page-break-before' : '';
     switch (key) {
       case "experience":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -122,7 +124,7 @@ export default function PremiumTwoColPhoto({ content }) {
         );
       case "education":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -149,7 +151,7 @@ export default function PremiumTwoColPhoto({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -175,6 +177,14 @@ export default function PremiumTwoColPhoto({ content }) {
       id="resume-preview"
       style={{ fontFamily }}
     >
+      <style>{`
+        @media print {
+          .page-break-before {
+            break-before: page !important;
+            page-break-before: always !important;
+          }
+        }
+      `}</style>
       <div className="text-center mb-6 border-b border-gray-300 pb-4">
         <PhotoCircle />
         <h1 className="text-2xl font-bold mb-1">{personalInfo?.fullName}</h1>
@@ -188,8 +198,8 @@ export default function PremiumTwoColPhoto({ content }) {
         )}
       </div>
       <div className="flex gap-8">
-        <div className="w-1/3">{leftKeys.map(renderLeftSection)}</div>
-        <div className="w-2/3">{rightKeys.map(renderRightSection)}</div>
+        <div className="w-1/3">{leftKeys.map((key) => renderLeftSection(key, content.pageBreaks?.[key]))}</div>
+        <div className="w-2/3">{rightKeys.map((key) => renderRightSection(key, content.pageBreaks?.[key]))}</div>
       </div>
     </div>
   );

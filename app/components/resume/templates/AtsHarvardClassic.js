@@ -14,7 +14,8 @@ export default function AtsHarvardClassic({ content }) {
   )
   const fontFamily = getFontFamily(content)
 
-  const renderSection = (key) => {
+  const renderSection = (key, shouldBreak) => {
+    const breakClass = shouldBreak ? 'page-break-before' : '';
     switch (key) {
       case 'personalInfo':
         return (
@@ -32,7 +33,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'summary':
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Summary
             </h2>
@@ -41,7 +42,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'experience':
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Experience
             </h2>
@@ -67,7 +68,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'education':
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Education
             </h2>
@@ -88,7 +89,7 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'skills':
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               Skills
             </h2>
@@ -99,7 +100,7 @@ export default function AtsHarvardClassic({ content }) {
         const customSection = getCustomSectionById(key, content)
         if (!customSection) return null
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
               {customSection.title}
             </h2>
@@ -118,7 +119,15 @@ export default function AtsHarvardClassic({ content }) {
 
   return (
     <div className={`bg-white text-black $p-8 max-w-[8.5in] mx-auto`} id="resume-preview" style={{ fontFamily }}>
-      {orderedSections.map(renderSection)}
+      <style>{`
+        @media print {
+          .page-break-before {
+            break-before: page !important;
+            page-break-before: always !important;
+          }
+        }
+      `}</style>
+      {orderedSections.map((key) => renderSection(key, content.pageBreaks?.[key]))}
     </div>
   )
 }

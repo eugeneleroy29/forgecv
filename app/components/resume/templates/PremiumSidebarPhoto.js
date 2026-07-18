@@ -56,11 +56,12 @@ export default function PremiumSidebarPhoto({ content }) {
     );
   };
 
-  const renderSidebarSection = (key) => {
+  const renderSidebarSection = (key, shouldBreak) => {
+    const breakClass = shouldBreak ? 'page-break-before' : '';
     switch (key) {
       case "personalInfo":
         return (
-          <div key={key} className="mb-6 text-center">
+          <div key={key} className={`mb-6 text-center ${breakClass}`}>
             <PhotoCircle />
             <h1 className="text-xl font-bold mb-3">{personalInfo?.fullName}</h1>
             <div className="text-sm space-y-1 text-white/90">
@@ -73,7 +74,7 @@ export default function PremiumSidebarPhoto({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2 className="text-sm font-bold uppercase tracking-wide mb-2 border-b border-white/30 pb-1">
               Skills
             </h2>
@@ -89,11 +90,12 @@ export default function PremiumSidebarPhoto({ content }) {
     }
   };
 
-  const renderMainSection = (key) => {
+  const renderMainSection = (key, shouldBreak) => {
+    const breakClass = shouldBreak ? 'page-break-before' : '';
     switch (key) {
       case "summary":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -105,7 +107,7 @@ export default function PremiumSidebarPhoto({ content }) {
         );
       case "experience":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -135,7 +137,7 @@ export default function PremiumSidebarPhoto({ content }) {
         );
       case "education":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -162,7 +164,7 @@ export default function PremiumSidebarPhoto({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -188,14 +190,22 @@ export default function PremiumSidebarPhoto({ content }) {
       id="resume-preview"
       style={{ fontFamily }}
     >
+      <style>{`
+        @media print {
+          .page-break-before {
+            break-before: page !important;
+            page-break-before: always !important;
+          }
+        }
+      `}</style>
       <div
         className={`w-1/3 text-white $p-6`}
         style={{ backgroundColor: accentColor }}
       >
-        {sidebarKeys.map(renderSidebarSection)}
+        {sidebarKeys.map((key) => renderSidebarSection(key, content.pageBreaks?.[key]))}
       </div>
       <div className={`w-2/3 $p-8`}>
-        {mainKeys.map(renderMainSection)}
+        {mainKeys.map((key) => renderMainSection(key, content.pageBreaks?.[key]))}
       </div>
     </div>
   );

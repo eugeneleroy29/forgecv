@@ -49,6 +49,11 @@ body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+  html, body {
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   body * {
     display: none !important;
   }
@@ -59,7 +64,21 @@ body {
   #print-only-resume .flex {
     display: flex !important;
   }
+  #print-only-resume {
+    background: white !important;
+    min-height: 100vh !important;
+  }
+  #print-only-resume #resume-preview {
+    background: white !important;
+    box-shadow: none !important;
+    min-height: 100vh !important;
+  }
   @page {
     margin: 0.4in;
+    background: white;
+  }
+  .page-break-before {
+    break-before: page !important;
+    page-break-before: always !important;
   }
 }

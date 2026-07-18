@@ -22,7 +22,8 @@ export default function AtsHarvardModern({ content }) {
     </h2>
   );
 
-  const renderSection = (key) => {
+  const renderSection = (key, shouldBreak) => {
+    const breakClass = shouldBreak ? 'page-break-before' : '';
     switch (key) {
       case "personalInfo":
         return (
@@ -48,14 +49,14 @@ export default function AtsHarvardModern({ content }) {
         );
       case "summary":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <SectionHeading>Summary</SectionHeading>
             <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
           </div>
         );
       case "experience":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <SectionHeading>Experience</SectionHeading>
             <div className="flex flex-col gap-4 mt-2">
               {experience.map((exp, index) => (
@@ -80,7 +81,7 @@ export default function AtsHarvardModern({ content }) {
         );
       case "education":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <SectionHeading>Education</SectionHeading>
             <div className="flex flex-col gap-3 mt-2">
               {education.map((edu, index) => (
@@ -100,7 +101,7 @@ export default function AtsHarvardModern({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <SectionHeading>Skills</SectionHeading>
             <p className="text-sm text-gray-800 mt-2">{skills.join(" • ")}</p>
           </div>
@@ -109,7 +110,7 @@ export default function AtsHarvardModern({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <SectionHeading>{customSection.title}</SectionHeading>
             <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
               {customSection.items
@@ -130,7 +131,15 @@ export default function AtsHarvardModern({ content }) {
       id="resume-preview"
       style={{ fontFamily }}
     >
-      {orderedSections.map(renderSection)}
+      <style>{`
+        @media print {
+          .page-break-before {
+            break-before: page !important;
+            page-break-before: always !important;
+          }
+        }
+      `}</style>
+      {orderedSections.map((key) => renderSection(key, content.pageBreaks?.[key]))}
     </div>
   );
 }

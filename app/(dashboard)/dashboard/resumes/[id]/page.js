@@ -90,6 +90,7 @@ export default function ResumeEditor() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiUsage, setAiUsage] = useState({ used: 0, limit: 0, plan: "free", isAdmin: false });
   const [showAts, setShowAts] = useState(false);
+  const [pageBreaks, setPageBreaks] = useState({});
   const [atsResult, setAtsResult] = useState(null);
   const [showJobOptimizer, setShowJobOptimizer] = useState(false)
   const [showAiLimitModal, setShowAiLimitModal] = useState(false)
@@ -142,6 +143,9 @@ export default function ResumeEditor() {
     }
     if (data.content?.customization?.photoShape) {
       setPhotoShape(data.content.customization.photoShape);
+    }
+    if (data.content?.pageBreaks) {
+      setPageBreaks(data.content.pageBreaks);
     }
     if (data.content?.customSections) {
       setCustomSections(data.content.customSections);
@@ -615,6 +619,7 @@ export default function ResumeEditor() {
       customization: { ...resume.content?.customization, accentColor, fontFamily, photoShape },
       customSections,
       sectionOrder: ["personalInfo", ...getEffectiveOrder(sectionOrder, customSections)],
+      pageBreaks,
     };
     await supabase
       .from("resumes")
@@ -626,6 +631,11 @@ export default function ResumeEditor() {
       .eq("id", id);
     setResume({ ...resume, content: updatedContent });
     setSaving(false);
+  };
+
+  
+  const togglePageBreak = (sectionKey, value) => {
+    setPageBreaks((prev) => ({ ...prev, [sectionKey]: value }));
   };
 
   if (loading) {
@@ -897,13 +907,24 @@ export default function ResumeEditor() {
           className="w-full border border-border rounded-lg px-4 py-3 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none"
         />
 
-        <button
-          onClick={saveResume}
-          disabled={saving}
-          className="mt-4 text-sm text-accent hover:underline font-medium"
-        >
-          {saving ? "Saving..." : "Save section"}
-        </button>
+<div className="flex items-center justify-between mt-4">
+          <label className="flex items-center gap-2 text-xs text-foreground/60 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={pageBreaks.summary || false}
+              onChange={(e) => togglePageBreak("summary", e.target.checked)}
+              className="rounded border-border"
+            />
+            Start on new page
+          </label>
+          <button
+            onClick={saveResume}
+            disabled={saving}
+            className="text-sm text-accent hover:underline font-medium"
+          >
+            {saving ? "Saving..." : "Save section"}
+          </button>
+        </div>
       </div>
 
       {/* Work Experience Section */}
@@ -1041,13 +1062,24 @@ export default function ResumeEditor() {
           ))}
         </div>
 
-        <button
-          onClick={saveResume}
-          disabled={saving}
-          className="mt-4 text-sm text-accent hover:underline font-medium"
-        >
-          {saving ? "Saving..." : "Save section"}
-        </button>
+        <div className="flex items-center justify-between mt-4">
+          <label className="flex items-center gap-2 text-xs text-foreground/60 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={pageBreaks.experience || false}
+              onChange={(e) => togglePageBreak("experience", e.target.checked)}
+              className="rounded border-border"
+            />
+            Start on new page
+          </label>
+          <button
+            onClick={saveResume}
+            disabled={saving}
+            className="text-sm text-accent hover:underline font-medium"
+          >
+            {saving ? "Saving..." : "Save section"}
+          </button>
+        </div>
       </div>
 
       {/* Education Section */}
@@ -1172,13 +1204,24 @@ export default function ResumeEditor() {
           ))}
         </div>
 
-        <button
-          onClick={saveResume}
-          disabled={saving}
-          className="mt-4 text-sm text-accent hover:underline font-medium"
-        >
-          {saving ? "Saving..." : "Save section"}
-        </button>
+        <div className="flex items-center justify-between mt-4">
+          <label className="flex items-center gap-2 text-xs text-foreground/60 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={pageBreaks.education || false}
+              onChange={(e) => togglePageBreak("education", e.target.checked)}
+              className="rounded border-border"
+            />
+            Start on new page
+          </label>
+          <button
+            onClick={saveResume}
+            disabled={saving}
+            className="text-sm text-accent hover:underline font-medium"
+          >
+            {saving ? "Saving..." : "Save section"}
+          </button>
+        </div>
       </div>
 
       {/* Skills Section */}
@@ -1254,13 +1297,24 @@ export default function ResumeEditor() {
           </div>
         )}
 
-<button
-          onClick={saveResume}
-          disabled={saving}
-          className="mt-4 text-sm text-accent hover:underline font-medium block"
-        >
-          {saving ? "Saving..." : "Save section"}
-        </button>
+        <div className="flex items-center justify-between mt-4">
+          <label className="flex items-center gap-2 text-xs text-foreground/60 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={pageBreaks.skills || false}
+              onChange={(e) => togglePageBreak("skills", e.target.checked)}
+              className="rounded border-border"
+            />
+            Start on new page
+          </label>
+          <button
+            onClick={saveResume}
+            disabled={saving}
+            className="text-sm text-accent hover:underline font-medium"
+          >
+            {saving ? "Saving..." : "Save section"}
+          </button>
+        </div>
       </div>
 
       {/* Additional (Custom) Sections - each is its own reorderable card */}
@@ -1329,13 +1383,24 @@ export default function ResumeEditor() {
           >
             + Add Line
           </button>
-          <button
-            onClick={saveResume}
-            disabled={saving}
-            className="mt-4 text-sm text-accent hover:underline font-medium block"
-          >
-            {saving ? "Saving..." : "Save section"}
-          </button>
+          <div className="flex items-center justify-between mt-4">
+            <label className="flex items-center gap-2 text-xs text-foreground/60 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={pageBreaks[section.id] || false}
+                onChange={(e) => togglePageBreak(section.id, e.target.checked)}
+                className="rounded border-border"
+              />
+              Start on new page
+            </label>
+            <button
+              onClick={saveResume}
+              disabled={saving}
+              className="text-sm text-accent hover:underline font-medium"
+            >
+              {saving ? "Saving..." : "Save section"}
+            </button>
+          </div>
         </div>
       ))}
       </div>

@@ -46,11 +46,12 @@ export default function PremiumTopHeaderPhoto({ content }) {
       );
     };
 
-  const renderBodySection = (key) => {
+    const renderBodySection = (key, shouldBreak) => {
+      const breakClass = shouldBreak ? 'page-break-before' : '';
     switch (key) {
       case "summary":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -62,7 +63,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "experience":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -92,7 +93,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "education":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -117,7 +118,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -131,7 +132,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className="mb-6">
+          <div key={key} className={`mb-6 ${breakClass}`}>
             <h2
               className="text-sm font-bold uppercase tracking-wide mb-2"
               style={{ color: accentColor }}
@@ -157,6 +158,14 @@ export default function PremiumTopHeaderPhoto({ content }) {
       id="resume-preview"
       style={{ fontFamily }}
     >
+      <style>{`
+        @media print {
+          .page-break-before {
+            break-before: page !important;
+            page-break-before: always !important;
+          }
+        }
+      `}</style>
       <div
         className={`text-white $p-8 flex items-center gap-6`}
         style={{ backgroundColor: accentColor }}
@@ -176,7 +185,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
           )}
         </div>
       </div>
-      <div className="p-8">{bodyKeys.map(renderBodySection)}</div>
+      <div className="p-8">{bodyKeys.map((key) => renderBodySection(key, content.pageBreaks?.[key]))}</div>
     </div>
   );
 }
