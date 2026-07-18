@@ -31,88 +31,142 @@ export default function Navbar() {
   }, [user])
 
   return (
-    <nav className="border-b border-border px-6 py-4">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        
+    <nav className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="text-accent font-bold text-xl tracking-tight">
+        <Link 
+          href="/" 
+          className="text-accent font-bold text-xl tracking-tight hover:opacity-80 transition-opacity"
+        >
           ForgeCV
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/pricing" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+        <div className="hidden md:flex items-center gap-8">
+          <Link 
+            href="/pricing" 
+            className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors"
+          >
             Pricing
           </Link>
-          <Link href="/templates" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+          <Link 
+            href="/templates" 
+            className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors"
+          >
             Templates
           </Link>
+          
           {user ? (
-              <>
-                <Link href="/dashboard" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
-                  Hi, {firstName || user.email?.split('@')[0]}
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm text-foreground/60 hover:text-foreground transition-colors"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                  Log in
-                </Link>
-                <Link href="/signup" className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors">
-                  Get Started Free
-                </Link>
-              </>
-            )}
-          </div>
+            <>
+              <Link 
+                href="/dashboard" 
+                className="text-sm font-medium text-foreground hover:text-accent transition-colors"
+              >
+                {firstName || user.email?.split('@')[0]}
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link 
+                href="/login" 
+                className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors"
+              >
+                Log in
+              </Link>
+              <Link 
+                href="/signup" 
+                className="text-sm font-semibold bg-accent text-white px-5 py-2.5 rounded-xl hover:bg-accent-hover transition-colors"
+              >
+                Get Started Free
+              </Link>
+            </>
+          )}
+        </div>
 
-          {/* Mobile Menu Button */}
+        {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-foreground"
+          className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
         >
-          {menuOpen ? '✕' : '☰'}
+          <svg 
+            className="w-5 h-5 text-foreground" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            strokeWidth={2}
+          >
+            {menuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
         </button>
       </div>
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden mt-4 flex flex-col gap-4 px-2 pb-4 border-t border-border pt-4">
-          <Link href="/pricing" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-            Pricing
-          </Link>
-          <Link href="/templates" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-            Templates
-          </Link>
-          {user ? (
+        <div className="md:hidden border-t border-border bg-background px-6 py-4">
+          <div className="flex flex-col gap-4">
+            <Link 
+              href="/pricing" 
+              className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors py-2"
+              onClick={() => setMenuOpen(false)}
+            >
+              Pricing
+            </Link>
+            <Link 
+              href="/templates" 
+              className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors py-2"
+              onClick={() => setMenuOpen(false)}
+            >
+              Templates
+            </Link>
+            
+            {user ? (
               <>
-                <Link href="/dashboard" className="text-sm font-medium text-foreground hover:text-accent transition-colors">
-                  Hi, {firstName || user.email?.split('@')[0]}
+                <Link 
+                  href="/dashboard" 
+                  className="text-sm font-medium text-foreground hover:text-accent transition-colors py-2"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {firstName || user.email?.split('@')[0]}
                 </Link>
                 <button
-                  onClick={handleSignOut}
-                  className="text-sm text-foreground/60 hover:text-foreground transition-colors text-left"
+                  onClick={() => { setMenuOpen(false); handleSignOut(); }}
+                  className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors text-left py-2"
                 >
                   Sign out
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
+                <Link 
+                  href="/login" 
+                  className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors py-2"
+                  onClick={() => setMenuOpen(false)}
+                >
                   Log in
                 </Link>
-                <Link href="/signup" className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors text-center">
+                <Link 
+                  href="/signup" 
+                  className="text-sm font-semibold bg-accent text-white px-5 py-2.5 rounded-xl hover:bg-accent-hover transition-colors text-center"
+                  onClick={() => setMenuOpen(false)}
+                >
                   Get Started Free
                 </Link>
               </>
             )}
           </div>
-        )}
+        </div>
+      )}
     </nav>
   )
 }

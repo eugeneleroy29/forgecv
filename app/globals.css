@@ -7,6 +7,8 @@
   --accent: #4F46E5;
   --accent-hover: #4338CA;
   --border: #E5E5E5;
+  --muted: #F0F0EE;
+  --card: #FFFFFF;
   --font-sans: 'Inter', sans-serif;
 }
 
@@ -16,6 +18,8 @@
   --accent: #4F46E5;
   --accent-hover: #6366F1;
   --border: #2E2E2E;
+  --muted: #1F1F1F;
+  --card: #222222;
 }
 
 @theme inline {
@@ -24,12 +28,14 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
   --font-family-sans: var(--font-sans);
 }
 
-* {
-  margin: 0;
-  padding: 0;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -40,13 +46,55 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-#print-only-resume {
-  display: none;
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-#print-only-cover-letter {
-  display: none;
+.animate-fade-in {
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+
+/* Marquee scroll animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Mask for fade edges on marquee */
+.mask-fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+/* Print styles */
+#print-only-resume { display: none; }
+#print-only-cover-letter { display: none; }
 
 @media print {
   * {
@@ -58,16 +106,9 @@ body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  body * {
-    display: none !important;
-  }
-  #print-only-resume,
-  #print-only-resume * {
-    display: revert !important;
-  }
-  #print-only-resume .flex {
-    display: flex !important;
-  }
+  body * { display: none !important; }
+  #print-only-resume, #print-only-resume * { display: revert !important; }
+  #print-only-resume .flex { display: flex !important; }
   #print-only-resume {
     background: white !important;
     min-height: 100vh !important;
@@ -77,14 +118,8 @@ body {
     box-shadow: none !important;
     min-height: 100vh !important;
   }
-
-  #print-only-cover-letter,
-  #print-only-cover-letter * {
-    display: revert !important;
-  }
-  #print-only-cover-letter .flex {
-    display: flex !important;
-  }
+  #print-only-cover-letter, #print-only-cover-letter * { display: revert !important; }
+  #print-only-cover-letter .flex { display: flex !important; }
   #print-only-cover-letter {
     background: white !important;
     min-height: 100vh !important;
