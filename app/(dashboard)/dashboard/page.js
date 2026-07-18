@@ -10,11 +10,12 @@ import { getUserEntitlements } from '@/lib/entitlements'
 export default function Dashboard() {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const [stats, setStats] = useState({ 
-    resumes: 0, 
-    portfolios: 0, 
-    aiUsed: 0, 
-    aiLimit: 0, 
+  const [stats, setStats] = useState({
+    resumes: 0,
+    portfolios: 0,
+    coverLetters: 0,
+    aiUsed: 0,
+    aiLimit: 0,
     plan: 'free',
     isAdmin: false,
     totalPublishSlots: 0,
@@ -39,6 +40,11 @@ export default function Dashboard() {
         .eq('user_id', user.id)
         .eq('is_published', true)
 
+      const { count: coverLetterCount } = await supabase
+        .from('cover_letters')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
       const entitlements = await getUserEntitlements(user.id)
       const { data: profile } = await supabase
         .from('profiles')
@@ -49,6 +55,7 @@ export default function Dashboard() {
       setStats({
         resumes: resumeCount || 0,
         portfolios: portfolioCount || 0,
+        coverLetters: coverLetterCount || 0,
         aiUsed: profile?.ai_generations_used || 0,
         aiLimit: entitlements.aiGenerationsPerMonth || 0,
         plan: entitlements.plan || 'free',
@@ -76,12 +83,16 @@ export default function Dashboard() {
 
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there'
 
-  const resumeLimitDisplay = stats.isAdmin 
-    ? '∞' 
+  const resumeLimitDisplay = stats.isAdmin
+    ? '∞'
     : stats.plan === 'free' ? 1 : stats.plan === 'starter' ? 3 : '∞'
-  
-  const aiLimitDisplay = stats.isAdmin 
-    ? '∞' 
+
+  const coverLetterLimitDisplay = stats.isAdmin
+    ? '∞'
+    : stats.plan === 'free' ? 0 : stats.plan === 'starter' ? 3 : '∞'
+
+  const aiLimitDisplay = stats.isAdmin
+    ? '∞'
     : stats.aiLimit === 0 ? 0 : stats.aiLimit
 
   return (
@@ -94,7 +105,7 @@ export default function Dashboard() {
       </p>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Link href="/dashboard/resumes" className="block group">
           <div className="border border-border rounded-xl p-6 hover:border-accent transition-colors cursor-pointer h-full">
             <p className="text-sm text-foreground/60 mb-1">Resumes</p>
@@ -111,10 +122,22 @@ export default function Dashboard() {
           <div className="border border-border rounded-xl p-6 hover:border-accent transition-colors cursor-pointer h-full">
             <p className="text-sm text-foreground/60 mb-1">Portfolio</p>
             <p className="text-3xl font-bold">
-              {stats.portfolios} <span className="text-sm font-normal text-foreground/40">/ {stats.isAdmin ? '∞' : stats.totalPublishSlots} published</span>
+              {stats.portfolios} <span className="text-sm font-normal text-foreground/40">/ {stats.isAdmin ? '∞' : stats.totalPublishSlots} published</span>      
             </p>
             <p className="text-xs text-foreground/40 mt-2 group-hover:text-accent transition-colors">
               Manage your portfolios →
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/dashboard/cover-letters" className="block group">
+          <div className="border border-border rounded-xl p-6 hover:border-accent transition-colors cursor-pointer h-full">
+            <p className="text-sm text-foreground/60 mb-1">Cover Letters</p>
+            <p className="text-3xl font-bold">
+              {stats.coverLetters} <span className="text-sm font-normal text-foreground/40">/ {coverLetterLimitDisplay}</span>
+            </p>
+            <p className="text-xs text-foreground/40 mt-2 group-hover:text-accent transition-colors">
+              Manage your cover letters →
             </p>
           </div>
         </Link>
@@ -134,7 +157,7 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/dashboard/resumes/new" className="block">
           <div className="border border-border rounded-xl p-6 hover:border-accent transition-colors cursor-pointer h-full">
             <div className="text-2xl mb-3">📄</div>
@@ -150,6 +173,14 @@ export default function Dashboard() {
             <p className="text-sm text-foreground/60">Create your professional portfolio website</p>
           </div>
         </Link>
+
+        <Link href="/dashboard/cover-letters/new" className="block">
+          <div className="border border-border rounded-xl p-6 hover:border-accent transition-colors cursor-pointer h-full">
+            <div className="text-2xl mb-3">✉️</div>
+            <h3 className="font-semibold mb-1">Write a Cover Letter</h3>
+            <p className="text-sm text-foreground/60">Create a tailored cover letter for any job</p>
+          </div>
+        </Link>
       </div>
 
       {/* Plan Banner */}
@@ -159,8 +190,8 @@ export default function Dashboard() {
           <p className="text-lg font-semibold capitalize">{stats.plan}</p>
         </div>
         {stats.plan === 'free' && (
-          <Link 
-            href="/dashboard/billing" 
+          <Link
+            href="/dashboard/billing"
             className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors"
           >
             Upgrade

@@ -57,6 +57,18 @@ export async function POST(request) {
       );
     }
 
+    // Admin-override subscriptions have fake IDs starting with 'admin_'
+    // These cannot be upgraded via Stripe — user must checkout normally
+    if (subscription.provider_subscription_id.startsWith("admin_")) {
+      return Response.json(
+        {
+          error: "Admin-granted subscription cannot be upgraded. Please checkout to subscribe.",
+          redirectToCheckout: true,
+        },
+        { status: 400 },
+      );
+    }
+
     const stripeSub = await stripe.subscriptions.retrieve(
       subscription.provider_subscription_id,
     );

@@ -11,6 +11,7 @@ const menuItems = [
   { name: "Overview", href: "/dashboard", icon: "🏠" },
   { name: "Resumes", href: "/dashboard/resumes", icon: "📄" },
   { name: "Portfolio", href: "/dashboard/portfolios", icon: "🌐" },
+  { name: "Cover Letters", href: "/dashboard/cover-letters", icon: "✉️" },
   { name: "AI Tools", href: "/dashboard/ai-tools", icon: "🤖" },
   { name: "Billing", href: "/dashboard/billing", icon: "💳" },
   { name: "Settings", href: "/dashboard/settings", icon: "⚙️" },

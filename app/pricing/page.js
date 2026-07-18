@@ -288,6 +288,10 @@ export default function Pricing() {
           : "";
         alert(`Upgrade successful!${amountMsg}`);
         window.location.reload();
+      } else if (data.redirectToCheckout) {
+        // Admin-granted or missing subscription — redirect to checkout
+        setShowUpgradeModal(false);
+        startCheckout(upgradeTargetKey);
       } else {
         console.error("Upgrade failed:", data.error);
         alert(data.error || "Upgrade failed. Please try again.");
