@@ -10,7 +10,6 @@ import CoverLetterThumbnail from "@/app/components/cover-letter/CoverLetterThumb
 const TEMPLATE_OPTIONS = [
   { id: "ats-classic", label: "ATS Classic" },
   { id: "ats-modern", label: "ATS Modern" },
-  { id: "premium-sidebar", label: "Sidebar" },
   { id: "premium-minimal", label: "Minimal" },
 ];
 

@@ -40,6 +40,7 @@ export default function CoverLetterEditor() {
   const [showAiLimitModal, setShowAiLimitModal] = useState(false);
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [keySkills, setKeySkills] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
   const [currentRole, setCurrentRole] = useState("");
 
   useEffect(() => {
@@ -84,6 +85,9 @@ export default function CoverLetterEditor() {
     }
     if (data.content?.keySkills) {
       setKeySkills(data.content.keySkills);
+    if (data.content?.jobDescription) {
+      setJobDescription(data.content.jobDescription);
+    }
     }
     if (data.content?.currentRole) {
       setCurrentRole(data.content.currentRole);
@@ -146,6 +150,8 @@ export default function CoverLetterEditor() {
             hiringManager: recipient.hiringManager,
             tone,
             keySkills,
+            keySkills,
+            jobDescription,
             currentRole,
           },
         }),
@@ -175,6 +181,7 @@ export default function CoverLetterEditor() {
       closing,
       tone,
       keySkills,
+      jobDescription,
       currentRole,
       customization: { accentColor, fontFamily },
     };
@@ -331,6 +338,16 @@ export default function CoverLetterEditor() {
                   value={keySkills}
                   onChange={(e) => setKeySkills(e.target.value)}
                   rows={3}
+                  className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-1.5 block">Job Description (optional)</label>
+                <textarea
+                  placeholder="Paste the job description here for a more tailored cover letter..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  rows={4}
                   className="w-full border border-border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent transition-colors resize-none"
                 />
               </div>
@@ -567,7 +584,7 @@ export default function CoverLetterEditor() {
       </div>
 
       <PrintPortal>
-        <div id="print-only-cover-letter">
+        <div id="print-only-cover-letter" style={{ display: 'none' }}>
           {(() => {
             const TemplateComponent = getCoverLetterTemplateComponent(coverLetter.template);
             return <TemplateComponent content={previewContent} />;

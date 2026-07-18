@@ -268,6 +268,7 @@ Respond in this EXACT JSON format only, no other text:
       - Name: ${data.personalInfo?.fullName || "Candidate"}
       - Current/Recent Role: ${data.currentRole || "Professional"}
       - Key Skills/Experience: ${data.keySkills || "Relevant experience in the field"}
+      - Job Description: ${data.jobDescription || "Not provided"}
 
       Requirements:
       - 3-4 paragraphs maximum
@@ -275,7 +276,8 @@ Respond in this EXACT JSON format only, no other text:
       - Mention why the candidate is a good fit for the role
       - Include a call to action in the closing paragraph
       - Do not use placeholders like [Your Name] — use the actual name provided
-      - Do not include the date, company address, or signature block — only the body paragraphs`;
+      - Do not include the date, company address, or signature block — only the body paragraphs
+- If a job description is provided, reference specific requirements and responsibilities from it`;
     }
 
     if (!userPrompt) {
