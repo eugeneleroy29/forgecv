@@ -789,21 +789,21 @@ export default function ResumeEditor() {
 
               {["premium-sidebar-photo", "premium-topheader-photo", "premium-twocol-photo"].includes(resume.template) && (
                 <div className="md:col-span-2">
-                  <label className="text-sm font-medium mb-1.5 block text-foreground/80">Profile Photo (JPG/PNG, max 2MB)</label>
-                  <div className="flex items-center gap-4">
-                    {personalInfo.photoUrl && (
-                      <img src={personalInfo.photoUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-border" />
-                    )}
-                    <input type="file" accept="image/jpeg,image/png" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="text-sm" />
-                    {personalInfo.photoUrl && (
-                      <button onClick={removePhoto} type="button" className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors">
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  {uploadingPhoto && <p className="text-xs text-foreground/60 mt-2">Uploading...</p>}
-                  {photoError && <p className="text-xs text-red-500 mt-2">{photoError}</p>}
+                <label className="text-sm font-medium mb-1.5 block text-foreground/80">Profile Photo (JPG/PNG, max 2MB)</label>
+                <div className="flex flex-wrap items-center gap-3">
+                  {personalInfo.photoUrl && (
+                    <img src={personalInfo.photoUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-border shrink-0" />
+                  )}
+                  <input type="file" accept="image/jpeg,image/png" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="text-sm" />
+                  {personalInfo.photoUrl && (
+                    <button onClick={removePhoto} type="button" className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors">
+                      Remove
+                    </button>
+                  )}
                 </div>
+                {uploadingPhoto && <p className="text-xs text-foreground/60 mt-2">Uploading...</p>}
+                {photoError && <p className="text-xs text-red-500 mt-2">{photoError}</p>}
+              </div>
               )}
             </div>
             <button onClick={saveResume} disabled={saving} className="mt-5 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">

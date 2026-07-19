@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Maximize2, Minimize2, Info } from "lucide-react";
 
 const PAGE_WIDTH = 816;
@@ -66,19 +67,20 @@ export default function CoverLetterPreviewPanel({ children, title = "Cover Lette
     </div>
   );
 
-  if (isFullscreen) {
-    return (
-      <div className="fixed inset-0 z-100 bg-black/90 flex flex-col">
-        {toolbar}
-        {previewBody}
-      </div>
-    );
-  }
-
-  return (
-    <div className={`flex flex-col h-full ${className}`}>
+  const fullscreenContent = (
+    <div className="fixed inset-0 bg-black/90 flex flex-col" style={{ zIndex: 9999 }}>
       {toolbar}
       {previewBody}
     </div>
+  );
+
+  return (
+    <>
+      <div className={`flex flex-col h-full ${className}`}>
+        {toolbar}
+        {previewBody}
+      </div>
+      {isFullscreen && typeof document !== "undefined" && createPortal(fullscreenContent, document.body)}
+    </>
   );
 }

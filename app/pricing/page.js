@@ -7,6 +7,43 @@ import { useAuth } from "@/app/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { detectPaymentProviderAsync } from "@/lib/payments/detectProvider";
 
+// ─── SVG Icons ───────────────────────────────────────────────────────────────
+
+const CheckIcon = ({ className }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+);
+
+const GlobeIcon = ({ className }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="12" r="10" /><line x1="2" x2="22" y1="12" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
+const RocketIcon = ({ className }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  </svg>
+);
+
+const LoaderIcon = ({ className }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+
+const AlertTriangleIcon = ({ className }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" />
+  </svg>
+);
+
+// ─── Plan Data ───────────────────────────────────────────────────────────────
+
 const PLANS = {
   starter: {
     name: "Starter",
@@ -66,7 +103,7 @@ const LIFETIME_PLANS = [
     slots: 1,
     pricePHP: 499,
     priceUSD: 9.99,
-    icon: "🌐",
+    icon: GlobeIcon,
     name: "1 Portfolio",
     desc: "Premium template, live forever",
   },
@@ -75,7 +112,7 @@ const LIFETIME_PLANS = [
     slots: 3,
     pricePHP: 999,
     priceUSD: 19.99,
-    icon: "🚀",
+    icon: RocketIcon,
     name: "3 Portfolios",
     desc: "Premium templates, live forever",
   },
@@ -104,6 +141,37 @@ function isCurrentPlan(currentPlan, currentCycle, targetPlan, targetCycle) {
   return currentPlan === targetPlan && currentCycle === targetCycle;
 }
 
+// ─── Toggle Switch Component ─────────────────────────────────────────────────
+
+const ToggleSwitch = ({ checked, onChange, labelLeft, labelRight, badge }) => (
+  <div className="flex items-center gap-3">
+    <span className={`text-sm font-medium transition-colors ${!checked ? "text-foreground" : "text-foreground/50"}`}>
+      {labelLeft}
+    </span>
+    <button
+      onClick={onChange}
+      className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${checked ? "bg-accent" : "bg-muted border border-border"}`}
+      aria-label={`Switch to ${checked ? labelRight : labelLeft}`}
+    >
+      <div
+        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${
+          checked ? "right-0.5" : "left-0.5"
+        }`}
+      />
+    </button>
+    <span className={`text-sm font-medium transition-colors ${checked ? "text-foreground" : "text-foreground/50"}`}>
+      {labelRight}
+    </span>
+    {badge && (
+      <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">
+        {badge}
+      </span>
+    )}
+  </div>
+);
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+
 export default function Pricing() {
   const [annual, setAnnual] = useState(false);
   const [provider, setProvider] = useState("paymongo");
@@ -112,27 +180,22 @@ export default function Pricing() {
   const { user } = useAuth();
   const router = useRouter();
 
-  // User's existing subscriptions/purchases
   const [userPlan, setUserPlan] = useState(null);
   const [userCycle, setUserCycle] = useState("monthly");
   const [lifetimeSlotsOwned, setLifetimeSlotsOwned] = useState(0);
   const [loadingUserData, setLoadingUserData] = useState(true);
 
-  // Upgrade confirmation modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeTargetPlan, setUpgradeTargetPlan] = useState(null);
   const [upgradeTargetKey, setUpgradeTargetKey] = useState(null);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
 
-  // Detect provider + currency on mount
   useEffect(() => {
     let mounted = true;
-
     const runDetection = async () => {
       try {
         const detected = await detectPaymentProviderAsync();
         if (!mounted) return;
-
         if (detected === "paymongo") {
           setProvider("paymongo");
           setCurrency("PHP");
@@ -142,28 +205,21 @@ export default function Pricing() {
         }
       } catch (err) {
         console.error("Provider detection failed:", err);
-        // Default stays as paymongo/PHP
       } finally {
         if (mounted) setDetecting(false);
       }
     };
-
     runDetection();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
-  // Fetch user's existing plan and lifetime slots
   useEffect(() => {
     if (!user) {
       setLoadingUserData(false);
       return;
     }
-
     const loadUserData = async () => {
       try {
-        // Check if admin first
         const { data: profile } = await supabase
           .from("profiles")
           .select("is_admin")
@@ -176,7 +232,6 @@ export default function Pricing() {
           return;
         }
 
-        // Check active subscription
         const { data: subscription } = await supabase
           .from("subscriptions")
           .select("plan, status, billing_cycle")
@@ -191,7 +246,6 @@ export default function Pricing() {
         setUserPlan(plan);
         setUserCycle(cycle);
 
-        // Check lifetime slots purchased
         const { data: lifetimePayments } = await supabase
           .from("payments")
           .select("slots_purchased")
@@ -210,7 +264,6 @@ export default function Pricing() {
         setLoadingUserData(false);
       }
     };
-
     loadUserData();
   }, [user]);
 
@@ -221,10 +274,7 @@ export default function Pricing() {
       router.push("/login");
       return;
     }
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: {
@@ -233,9 +283,7 @@ export default function Pricing() {
       },
       body: JSON.stringify({ provider, planKey }),
     });
-
     const data = await res.json();
-
     if (data.url) {
       window.location.href = data.url;
     } else {
@@ -249,12 +297,9 @@ export default function Pricing() {
       router.push("/login");
       return;
     }
-
-    // Find plan details for the modal
     const planKeyParts = planKey.split("_");
     const planName = planKeyParts[0] === "starter" ? "Starter" : "Pro";
     const cycleName = planKeyParts[1] === "annual" ? "Annual" : "Monthly";
-
     setUpgradeTargetPlan(`${planName} (${cycleName})`);
     setUpgradeTargetKey(planKey);
     setShowUpgradeModal(true);
@@ -262,14 +307,9 @@ export default function Pricing() {
 
   const handleUpgrade = async () => {
     if (!upgradeTargetKey) return;
-
     setUpgradeLoading(true);
-
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch("/api/billing/upgrade-subscription", {
         method: "POST",
         headers: {
@@ -278,9 +318,7 @@ export default function Pricing() {
         },
         body: JSON.stringify({ targetPlanKey: upgradeTargetKey }),
       });
-
       const data = await res.json();
-
       if (data.success) {
         setShowUpgradeModal(false);
         const amountMsg = data.amountCharged
@@ -289,7 +327,6 @@ export default function Pricing() {
         alert(`Upgrade successful!${amountMsg}`);
         window.location.reload();
       } else if (data.redirectToCheckout) {
-        // Admin-granted or missing subscription — redirect to checkout
         setShowUpgradeModal(false);
         startCheckout(upgradeTargetKey);
       } else {
@@ -304,7 +341,6 @@ export default function Pricing() {
     }
   };
 
-  // Plan ownership helpers
   const isFree = userPlan === "free" || userPlan === null;
   const isStarter = userPlan === "starter";
   const isPro = userPlan === "pro";
@@ -318,86 +354,74 @@ export default function Pricing() {
     return `₱${php.toLocaleString()}`;
   };
 
-  // Helper to render a plan card
-  const renderPlanCard = (
-    key,
-    plan,
-    isCurrent,
-    isDisabled,
-    isUpgradeable = false,
-  ) => {
+  const renderPlanCard = (key, plan, isCurrent, isDisabled, isUpgradeable = false) => {
     const price = isUSD
-      ? annual
-        ? plan.annualPriceUSD
-        : plan.monthlyPriceUSD
-      : annual
-        ? plan.annualPrice
-        : plan.monthlyPrice;
+      ? annual ? plan.annualPriceUSD : plan.monthlyPriceUSD
+      : annual ? plan.annualPrice : plan.monthlyPrice;
     const planKey = annual ? plan.annualKey : plan.monthlyKey;
-    const isStarter = key === "starter";
+    const isStarterPlan = key === "starter";
 
     return (
       <div
         key={key}
-        className={`rounded-xl p-8 flex flex-col relative ${
+        className={`rounded-2xl p-8 flex flex-col relative transition-all duration-300 ${
           isCurrent
-            ? "border-2 border-accent bg-accent/5"
+            ? "border-2 border-accent bg-accent/[0.03] shadow-lg shadow-accent/10"
             : isDisabled
               ? "border border-border bg-muted/30 opacity-60"
-              : isStarter
-                ? "border-2 border-accent"
-                : "border border-border"
+              : isStarterPlan
+                ? "border-2 border-accent hover:shadow-lg hover:shadow-accent/10"
+                : "border border-border hover:shadow-lg hover:shadow-accent/5 hover:border-accent/30"
         }`}
       >
         {isCurrent && (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs px-3 py-1 rounded-full font-medium">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg shadow-accent/20">
             Current Plan
           </div>
         )}
-        {isStarter && !isCurrent && !isDisabled && (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs px-3 py-1 rounded-full font-medium">
+        {isStarterPlan && !isCurrent && !isDisabled && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg shadow-accent/20">
             Most Popular
           </div>
         )}
-        <h2 className="text-lg font-semibold mb-1">{plan.name}</h2>
+        <h2 className="text-lg font-semibold tracking-tight mb-1">{plan.name}</h2>
         <p className="text-foreground/60 text-sm mb-6">{plan.tagline}</p>
         <div className="mb-6">
-          <span className="text-4xl font-bold">
+          <span className="text-4xl font-bold tracking-tight">
             {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
           </span>
-          <span className="text-foreground/60 text-sm">
-            {" "}
+          <span className="text-foreground/50 text-sm ml-1">
             / {annual ? "year" : "month"}
           </span>
         </div>
         <ul className="flex flex-col gap-3 mb-8 flex-1">
           {plan.features.map((feature) => (
-            <li key={feature} className="flex items-center gap-2 text-sm">
-              <span className="text-accent">✓</span>
-              {feature}
+            <li key={feature} className="flex items-start gap-2.5 text-sm">
+              <CheckIcon className="text-accent mt-0.5 shrink-0" />
+              <span className="text-foreground/80">{feature}</span>
             </li>
           ))}
         </ul>
         {isCurrent ? (
           <button
             disabled
-            className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
+            className="w-full bg-muted text-foreground/40 py-2.5 rounded-xl text-sm font-medium cursor-not-allowed"
           >
             Current Plan
           </button>
         ) : isDisabled ? (
           <button
             disabled
-            className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
+            className="w-full bg-muted text-foreground/40 py-2.5 rounded-xl text-sm font-medium cursor-not-allowed"
           >
             {isAdmin ? "Admin — Unlimited" : "Not Available"}
           </button>
         ) : isUpgradeable ? (
           <button
             onClick={() => openUpgradeModal(planKey)}
-            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isStarter
-                ? "bg-accent text-white hover:bg-accent-hover"
+            className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              isStarterPlan
+                ? "bg-accent text-white hover:bg-accent-hover shadow-lg shadow-accent/10 hover:shadow-accent/20"
                 : "border border-border text-foreground hover:border-accent hover:text-accent"
             }`}
           >
@@ -406,9 +430,9 @@ export default function Pricing() {
         ) : (
           <button
             onClick={() => startCheckout(planKey)}
-            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isStarter
-                ? "bg-accent text-white hover:bg-accent-hover"
+            className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              isStarterPlan
+                ? "bg-accent text-white hover:bg-accent-hover shadow-lg shadow-accent/10 hover:shadow-accent/20"
                 : "border border-border text-foreground hover:border-accent hover:text-accent"
             }`}
           >
@@ -424,38 +448,32 @@ export default function Pricing() {
       <Navbar />
 
       {/* Header */}
-      <section className="max-w-4xl mx-auto px-6 pt-20 pb-8 text-center">
-        <h1 className="text-4xl font-bold mb-4">Simple, transparent pricing</h1>
-        <p className="text-foreground/60 text-lg">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 text-center">
+        <h1 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">Simple, transparent pricing</h1>
+        <p className="text-foreground/60 text-lg max-w-xl mx-auto">
           Start for free. Upgrade when you need more.
         </p>
 
         {/* Currency Toggle + Monthly/Annual Toggle */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
           {/* Currency Toggle */}
-          <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+          <div className="flex items-center gap-1 bg-muted rounded-full p-1 border border-border">
             <button
-              onClick={() => {
-                setCurrency("PHP");
-                setProvider("paymongo");
-              }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              onClick={() => { setCurrency("PHP"); setProvider("paymongo"); }}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 currency === "PHP"
-                  ? "bg-background shadow-sm"
-                  : "text-foreground/60 hover:text-foreground"
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-foreground/50 hover:text-foreground"
               }`}
             >
               PHP ₱
             </button>
             <button
-              onClick={() => {
-                setCurrency("USD");
-                setProvider("stripe");
-              }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              onClick={() => { setCurrency("USD"); setProvider("stripe"); }}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 currency === "USD"
-                  ? "bg-background shadow-sm"
-                  : "text-foreground/60 hover:text-foreground"
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-foreground/50 hover:text-foreground"
               }`}
             >
               USD $
@@ -463,34 +481,15 @@ export default function Pricing() {
           </div>
 
           {/* Monthly/Annual Toggle */}
-          <div className="flex items-center gap-3">
-            <span
-              className={`text-sm font-medium ${!annual ? "" : "text-foreground/60"}`}
-            >
-              Monthly
-            </span>
-            <button
-              onClick={() => setAnnual(!annual)}
-              className="w-12 h-6 bg-accent rounded-full relative cursor-pointer"
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  annual ? "right-0.5" : "left-0.5"
-                }`}
-              />
-            </button>
-            <span
-              className={`text-sm font-medium ${annual ? "" : "text-foreground/60"}`}
-            >
-              Annual
-            </span>
-            <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full font-medium">
-              Save 17%
-            </span>
-          </div>
+          <ToggleSwitch
+            checked={annual}
+            onChange={() => setAnnual(!annual)}
+            labelLeft="Monthly"
+            labelRight="Annual"
+            badge="Save 17%"
+          />
         </div>
 
-        {/* Detection status */}
         {detecting && (
           <p className="text-xs text-foreground/40 mt-3">
             Detecting your region...
@@ -499,8 +498,8 @@ export default function Pricing() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {/* Free */}
           {renderPlanCard(
             "free",
@@ -530,18 +529,8 @@ export default function Pricing() {
             PLANS.starter,
             isStarter,
             isPro || isAdmin,
-            isUpgrade(
-              "free",
-              userCycle,
-              "starter",
-              annual ? "annual" : "monthly",
-            ) ||
-              isUpgrade(
-                "starter",
-                userCycle,
-                "starter",
-                annual ? "annual" : "monthly",
-              ),
+            isUpgrade("free", userCycle, "starter", annual ? "annual" : "monthly") ||
+              isUpgrade("starter", userCycle, "starter", annual ? "annual" : "monthly"),
           )}
 
           {/* Pro */}
@@ -550,33 +539,23 @@ export default function Pricing() {
             PLANS.pro,
             isPro,
             isAdmin,
-            isUpgrade(
-              "free",
-              userCycle,
-              "pro",
-              annual ? "annual" : "monthly",
-            ) ||
-              isUpgrade(
-                "starter",
-                userCycle,
-                "pro",
-                annual ? "annual" : "monthly",
-              ) ||
+            isUpgrade("free", userCycle, "pro", annual ? "annual" : "monthly") ||
+              isUpgrade("starter", userCycle, "pro", annual ? "annual" : "monthly") ||
               isUpgrade("pro", userCycle, "pro", annual ? "annual" : "monthly"),
           )}
         </div>
 
         {/* One-time Payment Section */}
-        <div className="mt-16 border border-border rounded-xl p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2">Just need a portfolio?</h2>
-            <p className="text-foreground/60 text-sm">
+        <div className="mt-20 bg-card border border-border rounded-2xl p-8 sm:p-10 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Just need a portfolio?</h2>
+            <p className="text-foreground/60 text-sm sm:text-base">
               One-time payment. No subscription. Yours forever.
             </p>
             {lifetimeSlotsOwned > 0 && (
-              <p className="text-accent text-sm mt-2 font-medium">
-                You already own {lifetimeSlotsOwned} lifetime slot
-                {lifetimeSlotsOwned === 1 ? "" : "s"}.
+              <p className="text-accent text-sm mt-3 font-medium flex items-center justify-center gap-1.5">
+                <CheckIcon className="text-accent" />
+                You already own {lifetimeSlotsOwned} lifetime slot{lifetimeSlotsOwned === 1 ? "" : "s"}
               </p>
             )}
           </div>
@@ -584,35 +563,36 @@ export default function Pricing() {
             {LIFETIME_PLANS.map((lt) => {
               const isOwned = lt.slots === 1 ? lifetime1Owned : lifetime3Owned;
               const price = isUSD ? lt.priceUSD : lt.pricePHP;
+              const IconComponent = lt.icon;
 
               return (
                 <div
                   key={lt.key}
-                  className={`border rounded-xl p-6 text-center transition-colors ${
+                  className={`border rounded-2xl p-6 text-center transition-all duration-300 ${
                     isOwned
                       ? "border-border bg-muted/30 opacity-60"
-                      : "border-border hover:border-accent"
+                      : "border-border hover:border-accent hover:shadow-lg hover:shadow-accent/5"
                   }`}
                 >
-                  <div className="text-3xl mb-3">{lt.icon}</div>
-                  <h3 className="font-semibold mb-1">{lt.name}</h3>
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent mx-auto mb-4">
+                    <IconComponent />
+                  </div>
+                  <h3 className="font-semibold text-lg tracking-tight mb-1">{lt.name}</h3>
                   <p className="text-foreground/60 text-sm mb-4">{lt.desc}</p>
-                  <div className="text-3xl font-bold mb-4">
-                    {isUSD
-                      ? `$${price.toFixed(2)}`
-                      : `₱${price.toLocaleString()}`}
+                  <div className="text-3xl font-bold tracking-tight mb-5">
+                    {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
                   </div>
                   {isOwned ? (
                     <button
                       disabled
-                      className="w-full bg-muted text-foreground/40 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed"
+                      className="w-full bg-muted text-foreground/40 py-2.5 rounded-xl text-sm font-medium cursor-not-allowed"
                     >
                       {isAdmin ? "Admin — Unlimited" : "Already Owned"}
                     </button>
                   ) : (
                     <button
                       onClick={() => startCheckout(lt.key)}
-                      className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+                      className="w-full bg-accent text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-hover transition-all shadow-lg shadow-accent/10 hover:shadow-accent/20"
                     >
                       Buy Now
                     </button>
@@ -624,28 +604,33 @@ export default function Pricing() {
         </div>
       </section>
 
-            {/* Upgrade Confirmation Modal */}
-            {showUpgradeModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-background border border-border rounded-xl p-8 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-2">Confirm Upgrade</h3>
+      {/* Upgrade Confirmation Modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl shadow-elevated max-w-md w-full p-8 animate-fade-in">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                <AlertTriangleIcon />
+              </div>
+              <h3 className="text-xl font-bold tracking-tight">Confirm Upgrade</h3>
+            </div>
             <p className="text-foreground/60 text-sm mb-6">
-              You are about to upgrade to <strong>{upgradeTargetPlan}</strong>. 
-              You will be charged the prorated difference immediately. 
+              You are about to upgrade to <strong className="text-foreground">{upgradeTargetPlan}</strong>.
+              You will be charged the prorated difference immediately.
               Your card on file will be billed automatically.
             </p>
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleUpgrade}
                 disabled={upgradeLoading}
-                className="bg-accent text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+                className="bg-accent text-white text-center py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-hover transition-all disabled:opacity-50 shadow-lg shadow-accent/10"
               >
-                {upgradeLoading ? 'Processing...' : 'Confirm Upgrade'}
+                {upgradeLoading ? <span className="flex items-center justify-center gap-2"><LoaderIcon className="animate-spin" /> Processing...</span> : 'Confirm Upgrade'}
               </button>
               <button
                 onClick={() => setShowUpgradeModal(false)}
                 disabled={upgradeLoading}
-                className="text-foreground/60 text-sm font-medium py-2"
+                className="text-foreground/60 text-sm font-medium py-2 hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
@@ -656,5 +641,5 @@ export default function Pricing() {
 
       <Footer />
     </main>
-  )
+  );
 }
