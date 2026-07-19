@@ -4,7 +4,6 @@ import {
   isSectionEmpty,
   getCustomSectionById,
   getFontFamily,
-
 } from '../resumeHelpers'
 
 export default function AtsHarvardClassic({ content }) {
@@ -19,45 +18,45 @@ export default function AtsHarvardClassic({ content }) {
     switch (key) {
       case 'personalInfo':
         return (
-          <div key={key} className="text-center mb-6 border-b border-gray-400 pb-4">
-            <h1 className="text-2xl font-bold mb-1 tracking-wide">{personalInfo?.fullName}</h1>
-            <p className="text-sm text-gray-700">
+          <div key={key} className="text-center mb-4 border-b border-gray-400 pb-3">
+            <h1 className="text-xl font-bold mb-0.5 tracking-wide">{personalInfo?.fullName}</h1>
+            <p className="text-xs text-gray-700">
               {[personalInfo?.email, personalInfo?.phone, personalInfo?.location]
                 .filter(Boolean)
                 .join(' | ')}
             </p>
             {personalInfo?.linkedin && (
-              <p className="text-sm text-gray-700 mt-1">{personalInfo.linkedin}</p>
+              <p className="text-xs text-gray-700 mt-0.5">{personalInfo.linkedin}</p>
             )}
           </div>
         )
       case 'summary':
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
+          <div key={key} className={`mb-4 ${breakClass}`}>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-1.5 border-b border-gray-300 pb-0.5">
               Summary
             </h2>
-            <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
+            <p className="text-xs text-gray-800 leading-snug">{summary}</p>
           </div>
         )
       case 'experience':
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
+          <div key={key} className={`mb-4 ${breakClass}`}>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-1.5 border-b border-gray-300 pb-0.5">
               Experience
             </h2>
-            <div className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-2.5 mt-1.5">
               {experience.map((exp, index) => (
                 <div key={exp.id || `exp-${index}`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
-                    <span className="text-xs text-gray-600">
+                    <h3 className="text-xs font-semibold">{exp.jobTitle}</h3>
+                    <span className="text-[10px] text-gray-600">
                       {formatDate(exp.startDate)} – {exp.current ? 'Present' : formatDate(exp.endDate)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700 italic mb-1">{exp.company}</p>
+                  <p className="text-xs text-gray-700 italic mb-0.5">{exp.company}</p>
                   {exp.description && (
-                    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
+                    <p className="text-xs text-gray-800 leading-snug whitespace-pre-line">
                       {exp.description}
                     </p>
                   )}
@@ -68,20 +67,20 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'education':
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
+          <div key={key} className={`mb-4 ${breakClass}`}>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-1.5 border-b border-gray-300 pb-0.5">
               Education
             </h2>
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="flex flex-col gap-2 mt-1.5">
               {education.map((edu, index) => (
                 <div key={edu.id || `edu-${index}`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{edu.degree}</h3>
-                    <span className="text-xs text-gray-600">
+                    <h3 className="text-xs font-semibold">{edu.degree}</h3>
+                    <span className="text-[10px] text-gray-600">
                       {formatDate(edu.startDate)} – {edu.current ? 'Present' : formatDate(edu.endDate)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700">{edu.school}</p>
+                  <p className="text-xs text-gray-700">{edu.school}</p>
                 </div>
               ))}
             </div>
@@ -89,22 +88,22 @@ export default function AtsHarvardClassic({ content }) {
         )
       case 'skills':
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
+          <div key={key} className={`mb-4 ${breakClass}`}>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-1.5 border-b border-gray-300 pb-0.5">
               Skills
             </h2>
-            <p className="text-sm text-gray-800 mt-2">{skills.join(', ')}</p>
+            <p className="text-xs text-gray-800 mt-1.5">{skills.join(', ')}</p>
           </div>
         )
       default: {
         const customSection = getCustomSectionById(key, content)
         if (!customSection) return null
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">
+          <div key={key} className={`mb-4 ${breakClass}`}>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-1.5 border-b border-gray-300 pb-0.5">
               {customSection.title}
             </h2>
-            <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
+            <ul className="text-xs text-gray-800 mt-1.5 list-disc list-inside">
               {customSection.items
                 .filter((item) => item.text?.trim())
                 .map((item) => (
@@ -118,7 +117,7 @@ export default function AtsHarvardClassic({ content }) {
   }
 
   return (
-    <div className={`bg-white text-black $p-8 max-w-[8.5in] mx-auto`} id="resume-preview" style={{ fontFamily }}>
+    <div className={`bg-white text-black p-6 max-w-[8.5in] mx-auto`} id="resume-preview" style={{ fontFamily }}>
       <style>{`
         @media print {
           .page-break-before {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Maximize2, Minimize2, Info } from "lucide-react";
 
 const PAGE_WIDTH = 816;
@@ -67,11 +68,12 @@ export default function ResumePreviewPanel({ children, title = "Resume Preview",
   );
 
   if (isFullscreen) {
-    return (
-      <div className="fixed inset-0 z-100 bg-black/90 flex flex-col">
+    return createPortal(
+      <div className="fixed inset-0 bg-black/90 flex flex-col" style={{ zIndex: 9999 }}>
         {toolbar}
         {previewBody}
-      </div>
+      </div>,
+      document.body
     );
   }
 

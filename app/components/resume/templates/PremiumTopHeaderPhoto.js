@@ -5,7 +5,6 @@ import {
   getCustomSectionById,
   getAccentColor,
   getFontFamily,
-
   getPhotoShape,
 } from "../resumeHelpers";
 
@@ -15,7 +14,6 @@ export default function PremiumTopHeaderPhoto({ content }) {
   const orderedSections = getOrderedSections(content).filter(
     (key) => !isSectionEmpty(key, content),
   );
-  // Header is rendered separately above; skip personalInfo in the body loop.
   const bodyKeys = orderedSections.filter((key) => key !== "personalInfo");
   const accentColor = getAccentColor(content);
   const fontFamily = getFontFamily(content);
@@ -27,7 +25,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
         <img
           src={personalInfo.photoUrl}
           alt={personalInfo?.fullName || "Profile photo"}
-          className={`w-24 h-24 ${shapeClass} object-cover border-4 border-white/30 shrink-0`}
+          className={`w-20 h-20 ${shapeClass} object-cover border-2 border-white/30 shrink-0`}
         />
       );
     }
@@ -40,7 +38,7 @@ export default function PremiumTopHeaderPhoto({ content }) {
       .toUpperCase();
       const placeholderShape = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
       return (
-        <div className={`w-24 h-24 ${placeholderShape} bg-white/20 flex items-center justify-center text-xl font-bold shrink-0`}>
+        <div className={`w-20 h-20 ${placeholderShape} bg-white/20 flex items-center justify-center text-lg font-bold shrink-0`}>
           {initials || "?"}
         </div>
       );
@@ -51,38 +49,38 @@ export default function PremiumTopHeaderPhoto({ content }) {
     switch (key) {
       case "summary":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               Summary
             </h2>
-            <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
+            <p className="text-xs text-gray-800 leading-snug">{summary}</p>
           </div>
         );
       case "experience":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               Experience
             </h2>
-            <div className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-2.5 mt-1.5">
               {experience.map((exp, index) => (
                 <div key={exp.id || `exp-${index}`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
-                    <span className="text-xs text-gray-500">
+                    <h3 className="text-xs font-semibold">{exp.jobTitle}</h3>
+                    <span className="text-[10px] text-gray-500">
                       {formatDate(exp.startDate)} –{" "}
                       {exp.current ? "Present" : formatDate(exp.endDate)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">{exp.company}</p>
+                  <p className="text-xs text-gray-600 mb-0.5">{exp.company}</p>
                   {exp.description && (
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    <p className="text-xs text-gray-700 leading-snug whitespace-pre-line">
                       {exp.description}
                     </p>
                   )}
@@ -93,24 +91,24 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "education":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               Education
             </h2>
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="flex flex-col gap-2 mt-1.5">
               {education.map((edu, index) => (
                 <div key={edu.id || `edu-${index}`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{edu.degree}</h3>
-                    <span className="text-xs text-gray-500">
+                    <h3 className="text-xs font-semibold">{edu.degree}</h3>
+                    <span className="text-[10px] text-gray-500">
                       {formatDate(edu.startDate)} –{" "}
                       {edu.current ? "Present" : formatDate(edu.endDate)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">{edu.school}</p>
+                  <p className="text-xs text-gray-600">{edu.school}</p>
                 </div>
               ))}
             </div>
@@ -118,28 +116,28 @@ export default function PremiumTopHeaderPhoto({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               Skills
             </h2>
-            <p className="text-sm text-gray-800 mt-2">{skills.join(" • ")}</p>
+            <p className="text-xs text-gray-800 mt-1.5">{skills.join(" • ")}</p>
           </div>
         );
       default: {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               {customSection.title}
             </h2>
-            <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
+            <ul className="text-xs text-gray-800 mt-1.5 list-disc list-inside">
               {customSection.items
                 .filter((item) => item.text?.trim())
                 .map((item) => (
@@ -167,25 +165,25 @@ export default function PremiumTopHeaderPhoto({ content }) {
         }
       `}</style>
       <div
-        className={`text-white $p-8 flex items-center gap-6`}
+        className={`text-white p-6 flex items-center gap-5`}
         style={{ backgroundColor: accentColor }}
       >
         <PhotoCircle />
         <div>
-          <h1 className="text-2xl font-bold mb-1">{personalInfo?.fullName}</h1>
-          <p className="text-sm text-white/90">
+          <h1 className="text-xl font-bold mb-0.5">{personalInfo?.fullName}</h1>
+          <p className="text-xs text-white/90">
             {[personalInfo?.email, personalInfo?.phone, personalInfo?.location]
               .filter(Boolean)
               .join(" • ")}
           </p>
           {personalInfo?.linkedin && (
-            <p className="text-sm text-white/90 mt-1">
+            <p className="text-xs text-white/90 mt-0.5">
               {personalInfo.linkedin}
             </p>
           )}
         </div>
       </div>
-      <div className="p-8">{bodyKeys.map((key) => renderBodySection(key, content.pageBreaks?.[key]))}</div>
+      <div className="p-6">{bodyKeys.map((key) => renderBodySection(key, content.pageBreaks?.[key]))}</div>
     </div>
   );
 }

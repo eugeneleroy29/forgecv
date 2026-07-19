@@ -34,7 +34,7 @@ export default function PremiumSidebarPhoto({ content }) {
         <img
           src={personalInfo.photoUrl}
           alt={personalInfo.fullName || "Profile"}
-          className={`w-28 h-28 ${shapeClass} object-cover mx-auto mb-4 border-4 border-white/30`}
+          className={`w-24 h-24 ${shapeClass} object-cover mx-auto mb-3 border-2 border-white/30`}
         />
       );
     }
@@ -47,7 +47,7 @@ export default function PremiumSidebarPhoto({ content }) {
       .toUpperCase();
     const placeholderShape = photoShape === 'circle' ? 'rounded-full' : photoShape === 'rounded' ? 'rounded-lg' : 'rounded-none';
     return (
-      <div className={`w-28 h-28 ${placeholderShape} bg-white/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold`}>
+      <div className={`w-24 h-24 ${placeholderShape} bg-white/20 flex items-center justify-center mx-auto mb-3 text-xl font-bold`}>
         {initials || "?"}
       </div>
     );
@@ -58,10 +58,10 @@ export default function PremiumSidebarPhoto({ content }) {
     switch (key) {
       case "personalInfo":
         return (
-          <div key={key} className={`mb-6 text-center ${breakClass}`}>
+          <div key={key} className={`mb-4 text-center ${breakClass}`}>
             <PhotoCircle />
-            <h1 className="text-xl font-bold mb-3">{personalInfo?.fullName}</h1>
-            <div className="text-sm space-y-1 text-white/90">
+            <h1 className="text-lg font-bold mb-2">{personalInfo?.fullName}</h1>
+            <div className="text-xs space-y-0.5 text-white/90">
               {personalInfo?.email && <p>{personalInfo.email}</p>}
               {personalInfo?.phone && <p>{personalInfo.phone}</p>}
               {personalInfo?.location && <p>{personalInfo.location}</p>}
@@ -71,11 +71,11 @@ export default function PremiumSidebarPhoto({ content }) {
         );
       case "skills":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 border-b border-white/30 pb-1">
+          <div key={key} className={`mb-4 ${breakClass}`}>
+            <h2 className="text-xs font-bold uppercase tracking-wide mb-1.5 border-b border-white/30 pb-0.5">
               Skills
             </h2>
-            <ul className="text-sm space-y-1 mt-2">
+            <ul className="text-xs space-y-0.5 mt-1.5">
               {skills.map((skill, i) => (
                 <li key={i}>{skill}</li>
               ))}
@@ -84,16 +84,16 @@ export default function PremiumSidebarPhoto({ content }) {
         );
       case "education":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-2 border-b border-white/30 pb-1">
+          <div key={key} className={`mb-4 ${breakClass}`}>
+            <h2 className="text-xs font-bold uppercase tracking-wide mb-1.5 border-b border-white/30 pb-0.5">
               Education
             </h2>
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="flex flex-col gap-2 mt-1.5">
               {education.map((edu, index) => (
                 <div key={edu.id || `edu-${index}`}>
-                  <h3 className="text-sm font-semibold">{edu.degree}</h3>
-                  <p className="text-sm text-white/80">{edu.school}</p>
-                  <p className="text-xs text-white/60">
+                  <h3 className="text-xs font-semibold">{edu.degree}</h3>
+                  <p className="text-xs text-white/80">{edu.school}</p>
+                  <p className="text-[10px] text-white/60">
                     {formatDate(edu.startDate)} – {edu.current ? "Present" : formatDate(edu.endDate)}
                   </p>
                 </div>
@@ -111,38 +111,38 @@ export default function PremiumSidebarPhoto({ content }) {
     switch (key) {
       case "summary":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               Summary
             </h2>
-            <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
+            <p className="text-xs text-gray-800 leading-snug">{summary}</p>
           </div>
         );
       case "experience":
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               Experience
             </h2>
-            <div className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-2.5 mt-1.5">
               {experience.map((exp, index) => (
                 <div key={exp.id || `exp-${index}`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
-                    <span className="text-xs text-gray-500">
+                    <h3 className="text-xs font-semibold">{exp.jobTitle}</h3>
+                    <span className="text-[10px] text-gray-500">
                       {formatDate(exp.startDate)} –{" "}
                       {exp.current ? "Present" : formatDate(exp.endDate)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">{exp.company}</p>
+                  <p className="text-xs text-gray-600 mb-0.5">{exp.company}</p>
                   {exp.description && (
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    <p className="text-xs text-gray-700 leading-snug whitespace-pre-line">
                       {exp.description}
                     </p>
                   )}
@@ -155,14 +155,14 @@ export default function PremiumSidebarPhoto({ content }) {
         const customSection = getCustomSectionById(key, content);
         if (!customSection) return null;
         return (
-          <div key={key} className={`mb-6 ${breakClass}`}>
+          <div key={key} className={`mb-4 ${breakClass}`}>
             <h2
-              className="text-sm font-bold uppercase tracking-wide mb-2"
+              className="text-xs font-bold uppercase tracking-wide mb-1.5"
               style={{ color: accentColor }}
             >
               {customSection.title}
             </h2>
-            <ul className="text-sm text-gray-800 mt-2 list-disc list-inside">
+            <ul className="text-xs text-gray-800 mt-1.5 list-disc list-inside">
               {customSection.items
                 .filter((item) => item.text?.trim())
                 .map((item) => (
@@ -190,13 +190,13 @@ export default function PremiumSidebarPhoto({ content }) {
         }
       `}</style>
       <div
-        className="w-1/3 text-white p-6 flex flex-col"
+        className="w-1/3 text-white p-5 flex flex-col"
         style={{ backgroundColor: accentColor }}
       >
         {sidebarKeys.map((key) => renderSidebarSection(key, content.pageBreaks?.[key]))}
         <div className="flex-1"></div>
       </div>
-      <div className="w-2/3 p-8">
+      <div className="w-2/3 p-6">
         {mainKeys.map((key) => renderMainSection(key, content.pageBreaks?.[key]))}
       </div>
     </div>

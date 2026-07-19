@@ -15,6 +15,24 @@ const TEMPLATE_OPTIONS = [
   { id: "premium-twocol-photo", label: "Two-Column" },
 ];
 
+const ArrowLeftIcon = ({ className }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
+  </svg>
+);
+
+const LoaderIcon = ({ className }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+
+const AlertTriangleIcon = ({ className }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" />
+  </svg>
+);
+
 export default function NewResume() {
   const { user } = useAuth();
   const router = useRouter();
@@ -71,7 +89,7 @@ export default function NewResume() {
 
   if (checkingLimit) {
     return (
-      <div className="px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
         <p className="text-foreground/60">Loading...</p>
       </div>
     );
@@ -79,15 +97,20 @@ export default function NewResume() {
 
   if (limitReached) {
     return (
-      <div className="px-8 py-8">
-        <div className="border border-border rounded-xl p-8 max-w-md">
-          <h3 className="text-xl font-bold mb-2">Resume limit reached</h3>
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+        <div className="bg-card border border-border rounded-2xl p-8 max-w-md">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+              <AlertTriangleIcon />
+            </div>
+            <h3 className="text-xl font-bold tracking-tight">Resume limit reached</h3>
+          </div>
           <p className="text-foreground/60 text-sm mb-6">
-            You've used all {entitlements?.resumeLimit} resume
+            You&apos;ve used all {entitlements?.resumeLimit} resume
             {entitlements?.resumeLimit === 1 ? "" : "s"} on your current plan.
             Upgrade to create more.
           </p>
-          <a href="/pricing" className="bg-accent text-white text-center block py-2.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors">
+          <a href="/pricing" className="bg-accent text-white text-center block py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-hover transition-all shadow-lg shadow-accent/10">
             View Plans
           </a>
         </div>
@@ -96,33 +119,53 @@ export default function NewResume() {
   }
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+      {/* Back link */}
+      <a
+        href="/dashboard/resumes"
+        className="inline-flex items-center gap-1.5 text-sm text-foreground/60 hover:text-accent transition-colors mb-6"
+      >
+        <ArrowLeftIcon />
+        Back to Resumes
+      </a>
+
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">Choose a Template</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Choose a Template</h1>
         <p className="text-foreground/60">
           Pick the style that best fits your profession. You can customize everything after.
         </p>
       </div>
+
       {error && (
-        <div className="mb-6 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+        <div className="mb-6 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
           {error}
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {TEMPLATE_OPTIONS.map(({ id, label }) => (
           <button
             key={id}
             onClick={() => createResume(id, label)}
             disabled={creating}
-            className="text-left border border-border rounded-xl p-4 hover:border-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-3"
+            className="text-left bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:shadow-accent/5 hover:border-accent/30 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-4 group"
           >
-            <ResumeThumbnail template={id} />
-            <h3 className="font-semibold">{label}</h3>
+            <div className="relative">
+              <ResumeThumbnail template={id} />
+            </div>
+            <div className="w-full">
+              <h3 className="font-semibold text-center group-hover:text-accent transition-colors">{label}</h3>
+              <p className="text-xs text-foreground/40 text-center mt-1">Click to create</p>
+            </div>
           </button>
         ))}
       </div>
+
       {creating && (
-        <p className="text-sm text-foreground/60 mt-6">Creating your resume...</p>
+        <div className="flex items-center justify-center gap-2 mt-6 text-sm text-foreground/60">
+          <LoaderIcon className="animate-spin" />
+          Creating your resume...
+        </div>
       )}
     </div>
   );
