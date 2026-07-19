@@ -25,9 +25,19 @@ const PORTFOLIO_TEMPLATES = [
   { id: "basic", label: "General" },
 ];
 
-// SVG Icons
+// ─── SVG Icons ───────────────────────────────────────────────────────────────
+
 const FileTextIcon = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
     <polyline points="14 2 14 8 20 8" />
     <line x1="16" y1="13" x2="8" y2="13" />
@@ -37,15 +47,49 @@ const FileTextIcon = () => (
 );
 
 const GlobeIcon = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <line x1="2" y1="12" x2="22" y2="12" />
     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
   </svg>
 );
 
+const MailIcon = () => (
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect width="20" height="16" x="2" y="4" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+);
+
 const SparklesIcon = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
     <path d="M5 3v4" />
     <path d="M19 17v4" />
@@ -55,14 +99,32 @@ const SparklesIcon = () => (
 );
 
 const ArrowRightIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M5 12h14" />
     <path d="m12 5 7 7-7 7" />
   </svg>
 );
 
 const LayoutTemplateIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect width="18" height="18" x="3" y="3" rx="2" />
     <path d="M3 9h18" />
     <path d="M9 21V9" />
@@ -70,7 +132,16 @@ const LayoutTemplateIcon = () => (
 );
 
 const PenToolIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="m12 19 7-7 3 3-7 7-3-3z" />
     <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
     <path d="m2 2 7.5 8.6" />
@@ -79,7 +150,16 @@ const PenToolIcon = () => (
 );
 
 const SlidersIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="4" y1="21" x2="4" y2="14" />
     <line x1="4" y1="10" x2="4" y2="3" />
     <line x1="12" y1="21" x2="12" y2="12" />
@@ -93,7 +173,16 @@ const SlidersIcon = () => (
 );
 
 const RocketIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
     <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
     <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
@@ -102,17 +191,35 @@ const RocketIcon = () => (
 );
 
 const QuoteIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+  <svg
+    width="32"
+    height="32"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="none"
+  >
     <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21c0 1 0 1 1 1z" />
     <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
   </svg>
 );
 
 const ChevronDownIcon = ({ className }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
     <path d="m6 9 6 6 6-6" />
   </svg>
 );
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function Home() {
   const router = useRouter();
@@ -125,7 +232,7 @@ export default function Home() {
     {
       icon: <FileTextIcon />,
       title: "ATS-Friendly Resumes",
-      desc: "Beat applicant tracking systems with optimized resume templates built to get you noticed by recruiters.",
+      desc: "Beat applicant tracking systems with Harvard-style ATS-optimized templates, plus premium designs with photo support.",
     },
     {
       icon: <GlobeIcon />,
@@ -133,9 +240,14 @@ export default function Home() {
       desc: "Publish a stunning portfolio website tailored to your niche in just a few clicks. No coding required.",
     },
     {
+      icon: <MailIcon />,
+      title: "Cover Letter Builder",
+      desc: "Create tailored cover letters with AI assistance. Choose from professional templates and export to PDF.",
+    },
+    {
       icon: <SparklesIcon />,
       title: "AI-Powered Tools",
-      desc: "Generate professional summaries, check ATS scores, and optimize for any job description instantly.",
+      desc: "Generate professional summaries, check ATS scores, suggest skills, and optimize for any job description.",
     },
   ];
 
@@ -144,7 +256,7 @@ export default function Home() {
       number: "01",
       icon: <LayoutTemplateIcon />,
       title: "Choose a Template",
-      desc: "Pick from professionally designed resume and portfolio templates tailored to your industry.",
+      desc: "Pick from professionally designed resume, portfolio, and cover letter templates tailored to your industry.",
     },
     {
       number: "02",
@@ -162,34 +274,41 @@ export default function Home() {
       number: "04",
       icon: <RocketIcon />,
       title: "Publish & Share",
-      desc: "Download your resume as PDF or publish your portfolio with a custom URL. Ready in minutes.",
+      desc: "Download your resume or cover letter as PDF, or publish your portfolio with a shareable public link.",
     },
   ];
 
+  // ─── FAQ data — verified against entitlements.js and pricing/page.js ─────
   const faqs = [
     {
       question: "Is ForgeCV really free?",
-      answer: "Yes. You can build unlimited resumes and portfolios with our free plan. Premium features like AI tools, custom domains, and advanced templates are available through our affordable paid plans.",
+      answer:
+        "Yes. You can build one resume and experiment with portfolio building on the free plan — no credit card required. Upgrading to Starter or Pro unlocks more resumes, cover letters, portfolio publishing, and AI tools.",
     },
     {
       question: "Are the resume templates ATS-friendly?",
-      answer: "Absolutely. All our resume templates are specifically designed and tested to pass through Applicant Tracking Systems (ATS) while maintaining a clean, professional appearance.",
+      answer:
+        "Two of our five resume templates are specifically designed and tested to pass through Applicant Tracking Systems (ATS): the Harvard Classic and Harvard Modern layouts. We also offer three premium templates with photo support for roles where visual presentation matters.",
     },
     {
-      question: "Can I use my own custom domain for my portfolio?",
-      answer: "Yes. Pro and Business plans include custom domain support. You can connect your own domain to your portfolio website in just a few clicks.",
+      question: "Can I publish a portfolio on the free plan?",
+      answer:
+        "You can build a portfolio using any of our 9 templates for free, but publishing it to a live public URL requires a Starter plan, Pro plan, or a one-time lifetime slot purchase.",
     },
     {
       question: "How does the AI content generation work?",
-      answer: "Our AI analyzes your experience and the job description to generate tailored professional summaries, bullet points, and skill recommendations. You remain in full control — edit, accept, or regenerate any suggestion.",
+      answer:
+        "Our AI tools include a Professional Summary Generator, Skills Suggester, ATS Score Checker, Job Description Optimizer, Portfolio Bio Generator, and Cover Letter Generator. You provide your experience details and optionally a job posting, and the AI generates tailored content you can edit before finalizing.",
     },
     {
       question: "Can I download my resume as a PDF?",
-      answer: "Yes. All plans allow you to download your resume as a high-quality, print-ready PDF. The layout is optimized for both digital sharing and physical printing.",
+      answer:
+        "Yes. All plans, including Free, allow you to download your resume as a high-quality, print-ready PDF. The layout is optimized for both digital sharing and physical printing.",
     },
     {
-      question: "What happens to my data?",
-      answer: "Your data is securely stored and never sold to third parties. We use industry-standard encryption and comply with GDPR. You can export or delete your data at any time.",
+      question: "What payment methods do you accept?",
+      answer:
+        "We accept international cards, Apple Pay, and Google Pay via Stripe, plus GCash, Maya, and local cards via PayMongo for customers in the Philippines.",
     },
   ];
 
@@ -221,8 +340,8 @@ export default function Home() {
             </h1>
 
             <p className="text-lg md:text-xl text-foreground/60 max-w-xl mx-auto mb-10 leading-relaxed">
-              ATS-friendly resume builder and portfolio websites powered by AI.
-              No design skills needed.
+              ATS-friendly resume builder, portfolio websites, and cover letters
+              powered by AI. No design skills needed.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
@@ -242,19 +361,25 @@ export default function Home() {
 
             <div className="flex items-center justify-center gap-3">
               <div className="flex -space-x-2">
-                {["#6366F1", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981"].map(
-                  (color, i) => (
-                    <div
-                      key={i}
-                      className="w-8 h-8 rounded-full border-2 border-background"
-                      style={{ backgroundColor: color }}
-                    />
-                  ),
-                )}
+                {[
+                  "#6366F1",
+                  "#8B5CF6",
+                  "#EC4899",
+                  "#F59E0B",
+                  "#10B981",
+                ].map((color, i) => (
+                  <div
+                    key={i}
+                    className="w-8 h-8 rounded-full border-2 border-background"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
               </div>
               <p className="text-sm text-foreground/50">
                 Trusted by{" "}
-                <span className="font-semibold text-foreground/70">2,000+</span>{" "}
+                <span className="font-semibold text-foreground/70">
+                  2,000+
+                </span>{" "}
                 professionals
               </p>
             </div>
@@ -263,10 +388,7 @@ export default function Home() {
           <div className="mask-fade-x">
             <div className="flex animate-marquee gap-6 w-max py-4">
               {allTemplates.map((template, i) => (
-                <div
-                  key={`${template.id}-${i}`}
-                  className="flex-shrink-0 group"
-                >
+                <div key={`${template.id}-${i}`} className="flex-shrink-0 group">
                   <div className="bg-card border border-border rounded-2xl p-3 shadow-sm hover:shadow-xl hover:shadow-accent/5 transition-all duration-300 hover:-translate-y-1">
                     <ResumeThumbnail template={template.id} />
                   </div>
@@ -296,7 +418,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -329,7 +451,8 @@ export default function Home() {
               A website for every niche
             </h2>
             <p className="text-lg text-foreground/60 max-w-2xl mx-auto leading-relaxed">
-              Choose from 9 professionally designed portfolio templates tailored to your industry
+              Choose from 9 professionally designed portfolio templates
+              tailored to your industry
             </p>
           </div>
 
@@ -426,7 +549,8 @@ export default function Home() {
               <QuoteIcon />
             </div>
             <blockquote className="text-2xl sm:text-3xl md:text-4xl font-medium leading-snug tracking-tight text-foreground mb-8">
-              I landed three interviews within a week of updating my resume with ForgeCV. The ATS-friendly template made all the difference.
+              I landed three interviews within a week of updating my resume with
+              ForgeCV. The ATS-friendly template made all the difference.
             </blockquote>
           </div>
 
@@ -436,7 +560,9 @@ export default function Home() {
             </div>
             <div className="text-left">
               <p className="font-semibold text-foreground">Maria Santos</p>
-              <p className="text-sm text-foreground/60">Medical Virtual Assistant</p>
+              <p className="text-sm text-foreground/60">
+                Medical Virtual Assistant
+              </p>
             </div>
           </div>
         </div>
@@ -450,7 +576,8 @@ export default function Home() {
             Ready to build your professional presence?
           </h2>
           <p className="text-lg text-foreground/60 max-w-xl mx-auto leading-relaxed mb-10">
-            Start free today. Upgrade when you need more templates, AI credits, or custom domains.
+            Start free today. Upgrade when you need more resumes, cover letters,
+            AI credits, or portfolio publishing.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -500,11 +627,17 @@ export default function Home() {
                     {faq.question}
                   </span>
                   <ChevronDownIcon
-                    className={`flex-shrink-0 text-foreground/50 transition-transform duration-300 ${openFaq === index ? "rotate-180" : ""}`}
+                    className={`flex-shrink-0 text-foreground/50 transition-transform duration-300 ${
+                      openFaq === index ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-out ${openFaq === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+                  className={`overflow-hidden transition-all duration-300 ease-out ${
+                    openFaq === index
+                      ? "max-h-96 opacity-100"
+                      : "max-h-0 opacity-0"
+                  }`}
                 >
                   <div className="px-6 pb-6 text-foreground/60 leading-relaxed">
                     {faq.answer}
