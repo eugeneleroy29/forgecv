@@ -340,7 +340,7 @@ export default function Home() {
                 className="group bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 onClick={() => router.push("/templates")}
               >
-                <div className="rounded-xl overflow-hidden mb-4">
+                <div className="rounded-xl overflow-hidden mb-4 flex justify-center">
                   <PortfolioThumbnail template={template.id} />
                 </div>
                 <div className="px-2 pb-2">

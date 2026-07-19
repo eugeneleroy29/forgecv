@@ -8,30 +8,44 @@ import { getUserEntitlements } from "@/lib/entitlements";
 import ResumeThumbnail from "@/app/components/resume/ResumeThumbnail";
 
 const TEMPLATE_OPTIONS = [
-  { id: "ats-harvard-classic", label: "ATS Classic" },
-  { id: "ats-harvard-modern", label: "ATS Modern" },
-  { id: "premium-sidebar-photo", label: "Sidebar" },
-  { id: "premium-topheader-photo", label: "Modern Header" },
-  { id: "premium-twocol-photo", label: "Two-Column" },
+  { id: "ats-harvard-classic", label: "ATS Classic", description: "Clean, traditional layout optimized for ATS." },
+  { id: "ats-harvard-modern", label: "ATS Modern", description: "Modern design with subtle visual hierarchy." },
+  { id: "premium-sidebar-photo", label: "Sidebar", description: "Professional sidebar with photo and accent." },
+  { id: "premium-topheader-photo", label: "Modern Header", description: "Bold header with photo and two-column body." },
+  { id: "premium-twocol-photo", label: "Two-Column", description: "Elegant two-column with rich detail sections." },
 ];
 
-const ArrowLeftIcon = ({ className }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
-  </svg>
-);
+function ArrowLeftIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
+    </svg>
+  );
+}
 
-const LoaderIcon = ({ className }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-);
+function LoaderIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  );
+}
 
-const AlertTriangleIcon = ({ className }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" />
-  </svg>
-);
+function AlertTriangleIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
 
 export default function NewResume() {
   const { user } = useAuth();
@@ -89,19 +103,22 @@ export default function NewResume() {
 
   if (checkingLimit) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
-        <p className="text-foreground/60">Loading...</p>
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 text-foreground/60">
+          <LoaderIcon className="w-4 h-4 animate-spin" />
+          Loading...
+        </div>
       </div>
     );
   }
 
   if (limitReached) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
-        <div className="bg-card border border-border rounded-2xl p-8 max-w-md">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
-              <AlertTriangleIcon />
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
+        <div className="bg-card border border-border rounded-2xl p-8 max-w-md animate-fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 shrink-0">
+              <AlertTriangleIcon className="w-5 h-5" />
             </div>
             <h3 className="text-xl font-bold tracking-tight">Resume limit reached</h3>
           </div>
@@ -110,8 +127,12 @@ export default function NewResume() {
             {entitlements?.resumeLimit === 1 ? "" : "s"} on your current plan.
             Upgrade to create more.
           </p>
-          <a href="/pricing" className="bg-accent text-white text-center block py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-hover transition-all shadow-lg shadow-accent/10">
+          <a
+            href="/pricing"
+            className="bg-accent text-white text-center block py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-hover transition-all shadow-lg shadow-accent/10 flex items-center justify-center gap-1.5"
+          >
             View Plans
+            <ArrowRightIcon className="w-4 h-4" />
           </a>
         </div>
       </div>
@@ -119,15 +140,15 @@ export default function NewResume() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
       {/* Back link */}
-      <a
-        href="/dashboard/resumes"
+      <button
+        onClick={() => router.push('/dashboard/resumes')}
         className="inline-flex items-center gap-1.5 text-sm text-foreground/60 hover:text-accent transition-colors mb-6"
       >
-        <ArrowLeftIcon />
+        <ArrowLeftIcon className="w-4 h-4" />
         Back to Resumes
-      </a>
+      </button>
 
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Choose a Template</h1>
@@ -142,20 +163,20 @@ export default function NewResume() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {TEMPLATE_OPTIONS.map(({ id, label }) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {TEMPLATE_OPTIONS.map(({ id, label, description }) => (
           <button
             key={id}
             onClick={() => createResume(id, label)}
             disabled={creating}
-            className="text-left bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:shadow-accent/5 hover:border-accent/30 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-4 group"
+            className="text-left bg-white border border-border rounded-2xl p-5 hover:shadow-lg hover:shadow-accent/5 hover:border-accent/30 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-4 group"
           >
             <div className="relative">
               <ResumeThumbnail template={id} />
             </div>
             <div className="w-full">
-              <h3 className="font-semibold text-center group-hover:text-accent transition-colors">{label}</h3>
-              <p className="text-xs text-foreground/40 text-center mt-1">Click to create</p>
+              <h3 className="font-semibold text-sm text-center group-hover:text-accent transition-colors">{label}</h3>
+              <p className="text-xs text-foreground/40 text-center mt-1 leading-relaxed">{description}</p>
             </div>
           </button>
         ))}
@@ -163,7 +184,7 @@ export default function NewResume() {
 
       {creating && (
         <div className="flex items-center justify-center gap-2 mt-6 text-sm text-foreground/60">
-          <LoaderIcon className="animate-spin" />
+          <LoaderIcon className="w-4 h-4 animate-spin" />
           Creating your resume...
         </div>
       )}

@@ -1,79 +1,74 @@
-const THUMBNAIL_STYLES = {
-  'ats-classic': {
-    wrapper: 'border-2 border-gray-800 p-3 bg-white',
-    header: 'text-center mb-3',
-    name: 'h-3 bg-gray-800 rounded-sm w-2/3 mx-auto mb-1',
-    contact: 'h-1.5 bg-gray-400 rounded-sm w-3/4 mx-auto mb-3',
-    date: 'h-1.5 bg-gray-300 rounded-sm w-1/3 mb-2',
-    recipient: 'mb-2',
-    recipientLine1: 'h-1.5 bg-gray-600 rounded-sm w-1/2 mb-1',
-    recipientLine2: 'h-1.5 bg-gray-400 rounded-sm w-2/5',
-    salutation: 'h-1.5 bg-gray-500 rounded-sm w-1/3 mb-2',
-    body: 'space-y-1 mb-3',
-    bodyLine: 'h-1 bg-gray-300 rounded-sm',
-    closing: 'h-1.5 bg-gray-400 rounded-sm w-1/4 mb-2',
-    signature: 'h-2 bg-gray-600 rounded-sm w-1/3',
+"use client"
+
+import { getCoverLetterTemplateComponent } from './templates'
+
+const FULL_WIDTH = 850
+const FULL_HEIGHT = 1100
+const THUMB_WIDTH = 260
+const THUMB_HEIGHT = 336
+
+const SAMPLE_COVER_LETTER_CONTENT = {
+  personalInfo: {
+    fullName: 'Maria Santos',
+    email: 'maria.santos@email.com',
+    phone: '+63 912 345 6789',
+    location: 'Cebu City, Philippines',
+    linkedin: 'linkedin.com/in/mariasantos',
   },
-  'ats-modern': {
-    wrapper: 'border-2 border-gray-600 p-3 bg-white rounded-sm',
-    header: 'text-center mb-3 border-b-2 border-gray-600 pb-2',
-    name: 'h-3 bg-gray-700 rounded-sm w-2/3 mx-auto mb-1',
-    contact: 'h-1.5 bg-gray-400 rounded-sm w-3/4 mx-auto',
-    date: 'h-1.5 bg-gray-300 rounded-sm w-1/3 mb-2',
-    recipient: 'mb-2',
-    recipientLine1: 'h-1.5 bg-gray-600 rounded-sm w-1/2 mb-1',
-    recipientLine2: 'h-1.5 bg-gray-400 rounded-sm w-2/5',
-    salutation: 'h-1.5 bg-gray-500 rounded-sm w-1/3 mb-2',
-    body: 'space-y-1 mb-3',
-    bodyLine: 'h-1 bg-gray-300 rounded-sm',
-    closing: 'h-1.5 bg-gray-400 rounded-sm w-1/4 mb-2',
-    signature: 'h-2 bg-gray-700 rounded-sm w-1/3',
+  recipient: {
+    hiringManager: 'Sarah Mitchell',
+    company: 'TechStart Global Inc.',
   },
-  'premium-minimal': {
-    wrapper: 'border-2 border-gray-300 p-3 bg-white',
-    header: 'text-center mb-4',
-    name: 'h-2.5 bg-gray-400 rounded-sm w-1/2 mx-auto mb-2',
-    divider: 'w-8 h-0.5 bg-gray-400 mx-auto mb-2',
-    contact: 'h-1 bg-gray-300 rounded-sm w-2/3 mx-auto',
-    date: 'h-1.5 bg-gray-300 rounded-sm w-1/3 mb-2',
-    recipient: 'mb-2',
-    recipientLine1: 'h-1.5 bg-gray-600 rounded-sm w-1/2 mb-1',
-    recipientLine2: 'h-1.5 bg-gray-400 rounded-sm w-2/5',
-    salutation: 'h-1.5 bg-gray-500 rounded-sm w-1/3 mb-2',
-    body: 'space-y-1 mb-3',
-    bodyLine: 'h-1 bg-gray-300 rounded-sm',
-    closing: 'h-1.5 bg-gray-400 rounded-sm w-1/4 mb-2',
-    signature: 'h-2 bg-gray-600 rounded-sm w-1/3',
+  body: `Dear Sarah Mitchell,
+
+I am writing to express my strong interest in the Executive Virtual Assistant position at TechStart Global Inc. With over six years of experience supporting C-level executives in fast-paced remote environments, I am confident in my ability to contribute effectively to your team.
+
+In my current role at Bright Solutions LLC, I manage complex calendars for four executives across multiple time zones, coordinate international travel arrangements, and serve as the primary liaison for over 200 client accounts. I have also implemented CRM workflow improvements that reduced response times by 40%.
+
+My proficiency in HubSpot, Salesforce, Google Workspace, and Microsoft 365, combined with my exceptional organizational skills and attention to detail, make me well-suited for the demands of this position. I am particularly drawn to TechStart Global's commitment to innovation and remote-first culture.
+
+I would welcome the opportunity to discuss how my background and skills align with your team's needs. Thank you for considering my application.
+
+Sincerely,`,
+  closing: 'Sincerely,',
+  customization: {
+    fontFamily: 'inter',
   },
 }
 
+const ACCENT_BY_TEMPLATE = {
+  'ats-classic': null,
+  'ats-modern': null,
+  'premium-minimal': '#1B4D3E',
+}
+
 export default function CoverLetterThumbnail({ template }) {
-  const s = THUMBNAIL_STYLES[template] || THUMBNAIL_STYLES['ats-classic']
+  const TemplateComponent = getCoverLetterTemplateComponent(template)
+  const accentColor = ACCENT_BY_TEMPLATE[template]
+
+  const sampleContent = {
+    ...SAMPLE_COVER_LETTER_CONTENT,
+    ...(accentColor ? { customization: { ...SAMPLE_COVER_LETTER_CONTENT.customization, accentColor } } : {}),
+  }
+
+  const scale = THUMB_WIDTH / FULL_WIDTH
 
   return (
-    <div className={`w-full aspect-[8.5/11] ${s.wrapper}`}>
-      <div className={s.header}>
-        <div className={s.name} />
-        <div className={s.contact} />
+    <div
+      className="relative overflow-hidden rounded-xl border border-border bg-white"
+      style={{ width: THUMB_WIDTH, height: THUMB_HEIGHT }}
+    >
+      <div
+        style={{
+          width: FULL_WIDTH,
+          height: FULL_HEIGHT,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          pointerEvents: 'none',
+        }}
+      >
+        <TemplateComponent content={sampleContent} />
       </div>
-      <div className={s.date} />
-      <div className={s.recipient}>
-        <div className={s.recipientLine1} />
-        <div className={s.recipientLine2} />
-      </div>
-      <div className={s.salutation} />
-      <div className={s.body}>
-        <div className={`${s.bodyLine} w-full`} />
-        <div className={`${s.bodyLine} w-5/6`} />
-        <div className={`${s.bodyLine} w-full`} />
-        <div className={`${s.bodyLine} w-4/5`} />
-        <div className={`${s.bodyLine} w-full`} />
-        <div className={`${s.bodyLine} w-3/4`} />
-        <div className={`${s.bodyLine} w-full`} />
-        <div className={`${s.bodyLine} w-5/6`} />
-      </div>
-      <div className={s.closing} />
-      <div className={s.signature} />
     </div>
   )
 }
