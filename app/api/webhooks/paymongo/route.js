@@ -52,24 +52,26 @@ async function paymentExists(providerPaymentId) {
   return !!data
 }
 
-// ── IDEMPOTENCY: Check if subscription already exists for this checkout session ──
-async function subscriptionExists(providerSubscriptionId) {
+// ── IDEMPOTENCY: Check if subscription already exists for this user+provider ──
+// For PayMongo, provider_subscription_id is always NULL, so we check by user_id + provider
+async function subscriptionExistsForUser(userId, provider) {
   const { data, error } = await supabaseAdmin
     .from('subscriptions')
     .select('id')
-    .eq('provider_subscription_id', providerSubscriptionId)
+    .eq('user_id', userId)
+    .eq('provider', provider)
     .maybeSingle()
 
   if (error) {
-    logWebhook('error', 'subscriptionExists query failed', { providerSubscriptionId, error: error.message })
+    logWebhook('error', 'subscriptionExistsForUser query failed', { userId, provider, error: error.message })
     return false
   }
   return !!data
 }
 
-// ── UPDATE existing subscription (for renewals) instead of inserting duplicate ──
+// ── UPDATE existing subscription (for renewals/upgrades) instead of inserting duplicate ──
 async function upsertSubscription({ userId, plan, cycle, providerSubscriptionId, periodEnd, renewalType = 'manual' }) {
-  const exists = await subscriptionExists(providerSubscriptionId)
+  const exists = await subscriptionExistsForUser(userId, 'paymongo')
 
   if (exists) {
     const { error } = await supabaseAdmin
@@ -80,15 +82,17 @@ async function upsertSubscription({ userId, plan, cycle, providerSubscriptionId,
         status: 'active',
         current_period_end: periodEnd,
         renewal_type: renewalType,
+        provider_subscription_id: providerSubscriptionId,
         updated_at: new Date().toISOString(),
       })
-      .eq('provider_subscription_id', providerSubscriptionId)
+      .eq('user_id', userId)
+      .eq('provider', 'paymongo')
 
     if (error) {
       logWebhook('error', 'Failed to update subscription', { userId, providerSubscriptionId, error: error.message })
       throw error
     }
-    logWebhook('info', 'Subscription updated (renewal)', { userId, plan, cycle, providerSubscriptionId })
+    logWebhook('info', 'Subscription updated (renewal/upgrade)', { userId, plan, cycle, providerSubscriptionId })
   } else {
     const { error } = await supabaseAdmin.from('subscriptions').insert({
       user_id: userId,
@@ -218,7 +222,7 @@ export async function POST(request) {
 
         const periodEnd = new Date(Date.now() + planInfo.periodDays * 24 * 60 * 60 * 1000)
 
-        // ── Upsert subscription (insert new OR update existing) ──
+        // ── Upsert subscription by user_id + provider ──
         await upsertSubscription({
           userId,
           plan: planInfo.plan,
