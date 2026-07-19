@@ -37,23 +37,76 @@ async function resetAiGenerations(userId) {
   }
 }
 
-async function insertSubscription({ userId, plan, cycle, providerSubscriptionId, periodEnd, renewalType = 'manual' }) {
-  const { error } = await supabaseAdmin.from('subscriptions').insert({
-    user_id: userId,
-    provider: 'paymongo',
-    provider_subscription_id: providerSubscriptionId,
-    plan,
-    billing_cycle: cycle,
-    renewal_type: renewalType,
-    status: 'active',
-    current_period_end: periodEnd,
-  })
+// ── IDEMPOTENCY: Check if payment already exists ──
+async function paymentExists(providerPaymentId) {
+  const { data, error } = await supabaseAdmin
+    .from('payments')
+    .select('id')
+    .eq('provider_payment_id', providerPaymentId)
+    .maybeSingle()
 
   if (error) {
-    logWebhook('error', 'Failed to insert subscription', { userId, error: error.message, plan, cycle })
-    throw error
+    logWebhook('error', 'paymentExists query failed', { providerPaymentId, error: error.message })
+    return false
   }
-  logWebhook('info', 'Subscription inserted', { userId, plan, cycle, providerSubscriptionId })
+  return !!data
+}
+
+// ── IDEMPOTENCY: Check if subscription already exists for this checkout session ──
+async function subscriptionExists(providerSubscriptionId) {
+  const { data, error } = await supabaseAdmin
+    .from('subscriptions')
+    .select('id')
+    .eq('provider_subscription_id', providerSubscriptionId)
+    .maybeSingle()
+
+  if (error) {
+    logWebhook('error', 'subscriptionExists query failed', { providerSubscriptionId, error: error.message })
+    return false
+  }
+  return !!data
+}
+
+// ── UPDATE existing subscription (for renewals) instead of inserting duplicate ──
+async function upsertSubscription({ userId, plan, cycle, providerSubscriptionId, periodEnd, renewalType = 'manual' }) {
+  const exists = await subscriptionExists(providerSubscriptionId)
+
+  if (exists) {
+    const { error } = await supabaseAdmin
+      .from('subscriptions')
+      .update({
+        plan,
+        billing_cycle: cycle,
+        status: 'active',
+        current_period_end: periodEnd,
+        renewal_type: renewalType,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('provider_subscription_id', providerSubscriptionId)
+
+    if (error) {
+      logWebhook('error', 'Failed to update subscription', { userId, providerSubscriptionId, error: error.message })
+      throw error
+    }
+    logWebhook('info', 'Subscription updated (renewal)', { userId, plan, cycle, providerSubscriptionId })
+  } else {
+    const { error } = await supabaseAdmin.from('subscriptions').insert({
+      user_id: userId,
+      provider: 'paymongo',
+      provider_subscription_id: providerSubscriptionId,
+      plan,
+      billing_cycle: cycle,
+      renewal_type: renewalType,
+      status: 'active',
+      current_period_end: periodEnd,
+    })
+
+    if (error) {
+      logWebhook('error', 'Failed to insert subscription', { userId, error: error.message, plan, cycle })
+      throw error
+    }
+    logWebhook('info', 'Subscription inserted', { userId, plan, cycle, providerSubscriptionId })
+  }
 }
 
 async function syncProfileSubscription({ userId, plan, status, endDate }) {
@@ -147,6 +200,14 @@ export async function POST(request) {
       }
 
       const paymentAttrs = payment.attributes || {}
+      const providerPaymentId = payment.id
+
+      // ── IDEMPOTENCY: Skip if payment already processed ──
+      const alreadyPaid = await paymentExists(providerPaymentId)
+      if (alreadyPaid) {
+        logWebhook('info', 'Payment already processed — skipping', { providerPaymentId, checkoutSessionId: checkoutSession.id })
+        return Response.json({ received: true, idempotent: true })
+      }
 
       if (paymentType === 'subscription') {
         const planInfo = getPlanInfoFromKey(planKey)
@@ -157,7 +218,8 @@ export async function POST(request) {
 
         const periodEnd = new Date(Date.now() + planInfo.periodDays * 24 * 60 * 60 * 1000)
 
-        await insertSubscription({
+        // ── Upsert subscription (insert new OR update existing) ──
+        await upsertSubscription({
           userId,
           plan: planInfo.plan,
           cycle: planInfo.cycle,
@@ -182,7 +244,7 @@ export async function POST(request) {
           paymentMethod: paymentAttrs.source?.type || 'qrph',
           status: 'succeeded',
           provider: 'paymongo',
-          providerPaymentId: payment.id,
+          providerPaymentId,
           paymentType: 'subscription',
         })
 
@@ -202,7 +264,7 @@ export async function POST(request) {
           paymentMethod: paymentAttrs.source?.type || 'qrph',
           status: 'succeeded',
           provider: 'paymongo',
-          providerPaymentId: payment.id,
+          providerPaymentId,
           paymentType: 'lifetime_slot',
         })
 
