@@ -2,11 +2,9 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export default function Signup() {
-  const router = useRouter()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -14,9 +12,11 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   const handleSignup = async () => {
     setError('')
+    setSuccess(false)
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.')
@@ -53,22 +53,10 @@ export default function Signup() {
         first_name: firstName,
         last_name: lastName,
       })
-
-      // Send welcome email via server API
-      try {
-        await fetch('/api/email/welcome', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name: `${firstName} ${lastName}` }),
-        })
-      } catch (emailErr) {
-        // Silently fail — don't block signup if email fails
-        console.error('Welcome email failed:', emailErr)
-      }
     }
 
-    // Redirect to dashboard immediately (no email confirmation needed)
-    router.push('/dashboard')
+    setSuccess(true)
+    setLoading(false)
   }
 
   const handleGoogleSignup = async () => {
@@ -80,11 +68,74 @@ export default function Signup() {
     })
   }
 
+  // Success screen — check your email
+  if (success) {
+    return (
+      <main className="min-h-screen bg-background text-foreground flex">
+        <div className="hidden lg:flex lg:w-1/2 bg-accent/5 relative flex-col justify-between p-12">
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-20 left-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
+          </div>
+          <div className="relative">
+            <Link href="/" className="text-accent font-bold text-2xl tracking-tight">
+              ForgeCV
+            </Link>
+          </div>
+          <div className="relative">
+            <blockquote className="text-xl font-medium leading-relaxed text-foreground/80 mb-6 max-w-md">
+              "I landed three interviews within a week of updating my resume with ForgeCV. The ATS-friendly template made all the difference."
+            </blockquote>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
+                MS
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Maria Santos</p>
+                <p className="text-xs text-foreground/50">Medical Virtual Assistant</p>
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <p className="text-xs text-foreground/40">
+              © {new Date().getFullYear()} ForgeCV. All rights reserved.
+            </p>
+          </div>
+        </div>
+
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12">
+          <div className="w-full max-w-md text-center">
+            <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight mb-3">Check your email</h1>
+            <p className="text-foreground/60 mb-2">
+              We sent a confirmation link to <strong className="text-foreground">{email}</strong>
+            </p>
+            <p className="text-foreground/60 text-sm mb-8">
+              Click the link in the email to verify your account and get started.
+            </p>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-accent font-semibold text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to login
+            </Link>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground flex">
       {/* Left Side — Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-accent/5 relative flex-col justify-between p-12">
-        {/* Background pattern */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-20 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
