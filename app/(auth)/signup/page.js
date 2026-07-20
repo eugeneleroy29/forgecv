@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { sendWelcomeEmail } from '@/lib/email/signup'
 
 export default function Signup() {
   const router = useRouter()
@@ -56,8 +55,17 @@ export default function Signup() {
         last_name: lastName,
       })
 
-      // Send welcome email
-      await sendWelcomeEmail({ email, name: `${firstName} ${lastName}` })
+      // Send welcome email via server API
+      try {
+        await fetch('/api/email/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name: `${firstName} ${lastName}` }),
+        })
+      } catch (emailErr) {
+        // Silently fail — don't block signup if email fails
+        console.error('Welcome email failed:', emailErr)
+      }
     }
 
     setLoading(false)
