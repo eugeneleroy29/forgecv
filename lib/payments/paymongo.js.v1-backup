@@ -1,0 +1,70 @@
+import Paymongo from 'paymongo-node'
+
+const paymongo = Paymongo(process.env.PAYMONGO_SECRET_KEY)
+
+/**
+ * Maps a ForgeCV plan key to the PayMongo amount in centavos.
+ */
+function getPaymongoAmount(planKey) {
+  const map = {
+    starter_monthly: 14900,
+    starter_annual: 149000,
+    pro_monthly: 29900,
+    pro_annual: 299000,
+    lifetime_1_slot: 49900,
+    lifetime_3_slots: 99900,
+  }
+  return map[planKey]
+}
+
+/**
+ * Creates a PayMongo Checkout Session for QRPh payments.
+ * QRPh is the only active payment method for PH launch (GCash/cards require KYB).
+ */
+export async function createPaymongoCheckoutSession({
+  userId,
+  paymentType,
+  planKey,
+  successUrl,
+  cancelUrl,
+}) {
+  const amount = getPaymongoAmount(planKey)
+  if (!amount) {
+    throw new Error(`Unknown PayMongo plan key: ${planKey}`)
+  }
+
+  const description =
+    paymentType === 'lifetime_slot'
+      ? 'ForgeCV Lifetime Portfolio Slot'
+      : `ForgeCV ${planKey.replace('_', ' ').toUpperCase()}`
+
+  const checkoutSession = await paymongo.checkoutSessions.create({
+    data: {
+      attributes: {
+        billing: { name: 'ForgeCV Customer', email: 'customer@forgecv.com' },
+        send_email_receipt: true,
+        show_description: true,
+        show_line_items: true,
+        description,
+        line_items: [
+          {
+            name: description,
+            amount,
+            currency: 'PHP',
+            quantity: 1,
+          },
+        ],
+        payment_method_types: ['card', 'gcash', 'paymaya', 'qrph'], // QRPh only for PH launch
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          userId,
+          paymentType,
+          planKey,
+        },
+      },
+    },
+  })
+
+  return checkoutSession.data.attributes.checkout_url
+}
