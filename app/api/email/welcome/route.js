@@ -16,7 +16,7 @@ export async function POST(request) {
 
     const { subject, html } = welcomeEmail({ name, email })
     const result = await sendEmail({
-      to: email,
+      to: 'eugene.sunie@gmail.com',
       subject,
       html,
       idempotencyKey: `welcome-${email}`,
