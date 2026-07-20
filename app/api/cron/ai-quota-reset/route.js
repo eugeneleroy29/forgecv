@@ -8,9 +8,9 @@ import { aiQuotaResetEmail } from '@/lib/email/templates'
  */
 
 const PLAN_QUOTAS = {
-  free: 5,
-  starter: 50,
-  pro: 200,
+  free: 0,
+  starter: 30,
+  pro: 60,
 }
 
 function logCron(level, message, data = {}) {
