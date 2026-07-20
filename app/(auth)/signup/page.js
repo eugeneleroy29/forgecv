@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { sendWelcomeEmail } from '@/lib/email/signup'
 
 export default function Signup() {
   const router = useRouter()
@@ -54,6 +55,9 @@ export default function Signup() {
         first_name: firstName,
         last_name: lastName,
       })
+
+      // Send welcome email
+      await sendWelcomeEmail({ email, name: `${firstName} ${lastName}` })
     }
 
     setLoading(false)
