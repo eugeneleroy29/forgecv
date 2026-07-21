@@ -625,7 +625,7 @@ export default function PortfolioEditor() {
   };
 
   const copyPortfolioLink = async () => {
-    const url = `https://forgecv.com/p/${portfolio.slug}`;
+    const url = `https://forgecv.org/p/${portfolio.slug}`;
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
@@ -1184,7 +1184,7 @@ export default function PortfolioEditor() {
             <h2 className="font-semibold text-lg tracking-tight mb-5">Publish</h2>
             <label className="text-sm font-medium mb-1.5 block text-foreground/80">Portfolio URL</label>
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-sm text-foreground/40 whitespace-nowrap">forgecv.com/p/</span>
+              <span className="text-sm text-foreground/40 whitespace-nowrap">forgecv.org/p/</span>
               <input
                 type="text"
                 placeholder="your-name"
@@ -1217,12 +1217,12 @@ export default function PortfolioEditor() {
                 <label className="text-sm font-medium mb-1.5 block text-foreground/80">Here&apos;s your live portfolio link</label>
                 <div className="flex items-center gap-2">
                   <a
-                    href={`https://forgecv.com/p/${portfolio.slug}`}
+                    href={`https://forgecv.org/p/${portfolio.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 border border-border rounded-xl px-4 py-2.5 text-sm bg-background text-accent hover:underline truncate flex items-center gap-2"
                   >
-                    <GlobeIcon /> forgecv.com/p/{portfolio.slug}
+                    <GlobeIcon /> forgecv.org/p/{portfolio.slug}
                   </a>
                   <button
                     onClick={copyPortfolioLink}
@@ -1250,7 +1250,7 @@ export default function PortfolioEditor() {
             <PortfolioPreviewPanel
               title="Portfolio Preview"
               className="h-full"
-              externalLink={portfolio?.slug ? `https://forgecv.com/p/${portfolio.slug}` : null}
+              externalLink={portfolio?.slug ? `https://forgecv.org/p/${portfolio.slug}` : null}
             >
               <PublicPortfolio portfolio={previewPortfolio} />
             </PortfolioPreviewPanel>
