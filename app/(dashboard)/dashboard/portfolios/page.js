@@ -91,7 +91,7 @@ export default function Portfolios() {
   };
 
   const createPortfolio = () => {
-    if (entitlements && portfolios.length >= entitlements.portfolioLimit) {
+    if (entitlements && portfolios.length >= entitlements.portfolioPublishSlots) {
       setShowLimitModal(true);
       return;
     }
@@ -252,8 +252,8 @@ export default function Portfolios() {
             </div>
             <h3 className="text-xl font-bold tracking-tight mb-2">Portfolio limit reached</h3>
             <p className="text-foreground/60 text-sm mb-6 leading-relaxed">
-              You've used all {entitlements?.portfolioLimit} portfolio
-              {entitlements?.portfolioLimit === 1 ? "" : "s"} on your current plan.
+              You've used all {entitlements?.portfolioPublishSlots} portfolio
+              {entitlements?.portfolioPublishSlots === 1 ? "" : "s"} on your current plan.
               Upgrade to create more.
             </p>
             <div className="flex flex-col gap-3">
