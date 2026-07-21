@@ -606,7 +606,7 @@ export default function PublicPortfolio({ portfolio }) {
           <span>
             Portfolio made with{" "}
             <a
-              href="https://forgecv-eight.vercel.app"
+              href="https://forgecv.org"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-foreground/60 hover:text-accent transition-colors"
