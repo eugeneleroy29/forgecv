@@ -110,11 +110,11 @@ function SupportEmailButton() {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText("support@forgecv.com");
+      await navigator.clipboard.writeText("support@forgecv.org");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      window.location.href = "mailto:support@forgecv.com";
+      window.location.href = "mailto:support@forgecv.org";
     }
   };
 
@@ -131,7 +131,7 @@ function SupportEmailButton() {
       ) : (
         <>
           <CopyIcon className="w-4 h-4" />
-          support@forgecv.com
+          support@forgecv.org
         </>
       )}
     </button>

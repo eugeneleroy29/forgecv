@@ -94,7 +94,7 @@ const SECTIONS = [
     heading: "6. Data Retention",
     body: [
       "If you cancel a subscription or your plan expires, your account data and content are not deleted. Your access to paid features is simply restricted until you resubscribe, so you do not lose your resumes or portfolio content.",
-      "If you would like your account and associated data permanently deleted, you can contact us at support@forgecv.com to request this.",
+      "If you would like your account and associated data permanently deleted, you can contact us at support@forgecv.org to request this.",
     ],
   },
   {
@@ -109,7 +109,7 @@ const SECTIONS = [
     id: "rights",
     heading: "8. Your Rights",
     body: [
-      "Depending on your location, you may have rights to access, correct, or delete your personal information. You can update most of your account information directly from your dashboard, or contact us at support@forgecv.com for anything else.",
+      "Depending on your location, you may have rights to access, correct, or delete your personal information. You can update most of your account information directly from your dashboard, or contact us at support@forgecv.org for anything else.",
     ],
   },
   {
@@ -130,7 +130,7 @@ const SECTIONS = [
     id: "contact",
     heading: "11. Contact Us",
     body: [
-      "If you have any questions about this Privacy Policy, contact us at support@forgecv.com.",
+      "If you have any questions about this Privacy Policy, contact us at support@forgecv.org.",
     ],
   },
 ];

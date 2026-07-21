@@ -78,7 +78,7 @@ const SECTIONS = [
     id: "refunds",
     heading: "4. Refunds",
     body: [
-      "Refund requests are handled on a case-by-case basis. Please see our Refund Policy for details, or contact us at support@forgecv.com.",
+      "Refund requests are handled on a case-by-case basis. Please see our Refund Policy for details, or contact us at support@forgecv.org.",
     ],
   },
   {
@@ -129,7 +129,7 @@ const SECTIONS = [
     id: "contact",
     heading: "11. Contact Us",
     body: [
-      "If you have any questions about these Terms, contact us at support@forgecv.com.",
+      "If you have any questions about these Terms, contact us at support@forgecv.org.",
     ],
   },
 ];

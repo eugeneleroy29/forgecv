@@ -62,21 +62,21 @@ const SECTIONS = [
     body: [
       "Lifetime portfolio publish slots (1-slot or 3-slot, one-time purchase) are eligible for a full refund within 7 days of purchase, provided the slot has not yet been used to publish a portfolio.",
       "Once a lifetime slot has been used to publish a portfolio live, it is no longer eligible for a refund.",
-      "To request a refund on an unused lifetime slot within the 7-day window, contact us at support@forgecv.com with your account email and purchase date.",
+      "To request a refund on an unused lifetime slot within the 7-day window, contact us at support@forgecv.org with your account email and purchase date.",
     ],
   },
   {
     id: "billing-errors",
     heading: "3. Billing Errors",
     body: [
-      "If you believe you were charged in error, such as a duplicate charge or a charge after a subscription was already cancelled, contact us at support@forgecv.com and we will look into it.",
+      "If you believe you were charged in error, such as a duplicate charge or a charge after a subscription was already cancelled, contact us at support@forgecv.org and we will look into it.",
     ],
   },
   {
     id: "how-request",
     heading: "4. How to Request a Refund",
     body: [
-      "Where a refund applies under this policy, email us at support@forgecv.com with your account email, the date of purchase, and the reason for your request. We will review your request and respond as soon as possible.",
+      "Where a refund applies under this policy, email us at support@forgecv.org with your account email, the date of purchase, and the reason for your request. We will review your request and respond as soon as possible.",
     ],
   },
   {
@@ -90,7 +90,7 @@ const SECTIONS = [
     id: "contact",
     heading: "6. Contact Us",
     body: [
-      "If you have any questions about this Refund Policy, contact us at support@forgecv.com.",
+      "If you have any questions about this Refund Policy, contact us at support@forgecv.org.",
     ],
   },
 ];
