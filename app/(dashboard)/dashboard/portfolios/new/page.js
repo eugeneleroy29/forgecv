@@ -76,7 +76,7 @@ export default function NewPortfolio() {
         .eq("user_id", user.id),
     ]);
     setEntitlements(ent);
-    if (count >= ent.portfolioPublishSlots) {
+    if (count >= ent.totalPublishSlots) {
       setLimitReached(true);
     }
     setCheckingLimit(false);
@@ -129,8 +129,8 @@ export default function NewPortfolio() {
             <h3 className="text-xl font-bold tracking-tight">Portfolio limit reached</h3>
           </div>
           <p className="text-foreground/60 text-sm mb-6">
-            You&apos;ve used all {entitlements?.portfolioPublishSlots} portfolio
-            {entitlements?.portfolioPublishSlots === 1 ? "" : "s"} on your current plan.
+            You&apos;ve used all {entitlements?.totalPublishSlots} portfolio
+            {entitlements?.totalPublishSlots === 1 ? "" : "s"} on your current plan.
             Upgrade to create more.
           </p>
           <a
