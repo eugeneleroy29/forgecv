@@ -616,8 +616,11 @@ export default function Pricing() {
             </div>
             <p className="text-foreground/60 text-sm mb-6">
               You are about to upgrade to <strong className="text-foreground">{upgradeTargetPlan}</strong>.
-              You will be charged the prorated difference immediately.
-              Your card on file will be billed automatically.
+              {provider === 'paymongo' ? (
+                <> You will pay the prorated difference via QRPh. Your next renewal will be manual.</>
+              ) : (
+                <> You will be charged the prorated difference immediately. Your card on file will be billed automatically.</>
+              )}
             </p>
             <div className="flex flex-col gap-3">
               <button
