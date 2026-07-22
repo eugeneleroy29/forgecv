@@ -5,7 +5,7 @@ import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "@/app/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { detectPaymentProviderAsync } from "@/lib/payments/detectProvider";
+// import { detectPaymentProviderAsync } from "@/lib/payments/detectProvider";
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 
@@ -234,7 +234,7 @@ export default function Pricing() {
   const [annual, setAnnual] = useState(false);
   const [provider, setProvider] = useState("paymongo");
   const [currency, setCurrency] = useState("PHP");
-  const [detecting, setDetecting] = useState(true);
+  // Geo detection disabled — QRPh only for launch
   const { user } = useAuth();
   const router = useRouter();
 
@@ -248,30 +248,7 @@ export default function Pricing() {
   const [upgradeTargetKey, setUpgradeTargetKey] = useState(null);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
-    const runDetection = async () => {
-      try {
-        const detected = await detectPaymentProviderAsync();
-        if (!mounted) return;
-        if (detected === "paymongo") {
-          setProvider("paymongo");
-          setCurrency("PHP");
-        } else {
-          setProvider("stripe");
-          setCurrency("USD");
-        }
-      } catch (err) {
-        console.error("Provider detection failed:", err);
-      } finally {
-        if (mounted) setDetecting(false);
-      }
-    };
-    runDetection();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  // Provider detection disabled — QRPh only
 
   useEffect(() => {
     if (!user) {
@@ -532,39 +509,9 @@ export default function Pricing() {
           Start for free. Upgrade when you need more.
         </p>
 
-        {/* Currency Toggle + Monthly/Annual Toggle */}
+        {/* Billing Cycle Toggle */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-          {/* Currency Toggle — hidden when PayMongo is active (Philippines) */}
-          {provider !== "paymongo" && (
-            <div className="flex items-center gap-1 bg-muted rounded-full p-1 border border-border">
-              <button
-                onClick={() => {
-                  setCurrency("PHP");
-                  setProvider("paymongo");
-                }}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  currency === "PHP"
-                    ? "bg-card shadow-sm text-foreground"
-                    : "text-foreground/50 hover:text-foreground"
-                }`}
-              >
-                PHP ₱
-              </button>
-              <button
-                onClick={() => {
-                  setCurrency("USD");
-                  setProvider("stripe");
-                }}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  currency === "USD"
-                    ? "bg-card shadow-sm text-foreground"
-                    : "text-foreground/50 hover:text-foreground"
-                }`}
-              >
-                USD $
-              </button>
-            </div>
-          )}
+          {/* Currency: QRPh only */}
 
           {/* Monthly/Annual Toggle */}
           <ToggleSwitch
@@ -576,11 +523,7 @@ export default function Pricing() {
           />
         </div>
 
-        {detecting && (
-          <p className="text-xs text-foreground/40 mt-3">
-            Detecting your region...
-          </p>
-        )}
+      {/* Geo detection disabled — QRPh only */}
       </section>
 
       {/* Pricing Cards */}
