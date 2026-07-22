@@ -1,150 +1,213 @@
-import Paymongo from 'paymongo-node'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { sendEmail } from '@/lib/email'
-import { paymentSuccessEmail, lifetimeSlotEmail } from '@/lib/email/templates'
+import Paymongo from "paymongo-node";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { sendEmail } from "@/lib/email";
+import { paymentSuccessEmail, lifetimeSlotEmail } from "@/lib/email/templates";
 
-const paymongo = Paymongo(process.env.PAYMONGO_SECRET_KEY)
+const paymongo = Paymongo(process.env.PAYMONGO_SECRET_KEY);
 
 function logWebhook(level, message, data = {}) {
-  const timestamp = new Date().toISOString()
-  const logEntry = { timestamp, level, source: 'paymongo-webhook', message, ...data }
-  console.log(JSON.stringify(logEntry))
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    level,
+    source: "paymongo-webhook",
+    message,
+    ...data,
+  };
+  console.log(JSON.stringify(logEntry));
 }
 
 function getPlanInfoFromKey(planKey) {
   const map = {
-    starter_monthly: { plan: 'starter', cycle: 'monthly', periodDays: 30 },
-    starter_annual: { plan: 'starter', cycle: 'annual', periodDays: 365 },
-    pro_monthly: { plan: 'pro', cycle: 'monthly', periodDays: 30 },
-    pro_annual: { plan: 'pro', cycle: 'annual', periodDays: 365 },
-    lifetime_1_slot: { type: 'lifetime_slot', slots: 1 },
-    lifetime_3_slots: { type: 'lifetime_slot', slots: 3 },
-  }
-  return map[planKey] || null
+    starter_monthly: { plan: "starter", cycle: "monthly", periodDays: 30 },
+    starter_annual: { plan: "starter", cycle: "annual", periodDays: 365 },
+    pro_monthly: { plan: "pro", cycle: "monthly", periodDays: 30 },
+    pro_annual: { plan: "pro", cycle: "annual", periodDays: 365 },
+    lifetime_1_slot: { type: "lifetime_slot", slots: 1 },
+    lifetime_3_slots: { type: "lifetime_slot", slots: 3 },
+  };
+  return map[planKey] || null;
 }
 
 async function resetAiGenerations(userId) {
   const { error } = await supabaseAdmin
-    .from('profiles')
+    .from("profiles")
     .update({
       ai_generations_used: 0,
       ai_generations_reset_date: new Date().toISOString(),
     })
-    .eq('id', userId)
+    .eq("id", userId);
 
   if (error) {
-    logWebhook('error', 'Failed to reset AI generations', { userId, error: error.message })
+    logWebhook("error", "Failed to reset AI generations", {
+      userId,
+      error: error.message,
+    });
   } else {
-    logWebhook('info', 'AI generations reset', { userId })
+    logWebhook("info", "AI generations reset", { userId });
   }
 }
 
 async function getUserEmail(userId) {
   const { data, error } = await supabaseAdmin
-    .from('profiles')
-    .select('email, full_name')
-    .eq('id', userId)
-    .single()
+    .from("profiles")
+    .select("email, first_name, last_name")
+    .eq("id", userId)
+    .single();
 
   if (error) {
-    logWebhook('error', 'Failed to get user email', { userId, error: error.message })
-    return null
+    logWebhook("error", "Failed to get user email", {
+      userId,
+      error: error.message,
+    });
+    return null;
   }
-  return data
+  return data;
 }
 
 // ── IDEMPOTENCY: Check if payment already exists ──
 async function paymentExists(providerPaymentId) {
   const { data, error } = await supabaseAdmin
-    .from('payments')
-    .select('id')
-    .eq('provider_payment_id', providerPaymentId)
-    .maybeSingle()
+    .from("payments")
+    .select("id")
+    .eq("provider_payment_id", providerPaymentId)
+    .maybeSingle();
 
   if (error) {
-    logWebhook('error', 'paymentExists query failed', { providerPaymentId, error: error.message })
-    return false
+    logWebhook("error", "paymentExists query failed", {
+      providerPaymentId,
+      error: error.message,
+    });
+    return false;
   }
-  return !!data
+  return !!data;
 }
 
 // ── IDEMPOTENCY: Check if subscription already exists for this user+provider ──
 async function subscriptionExistsForUser(userId, provider) {
   const { data, error } = await supabaseAdmin
-    .from('subscriptions')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('provider', provider)
-    .maybeSingle()
+    .from("subscriptions")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("provider", provider)
+    .maybeSingle();
 
   if (error) {
-    logWebhook('error', 'subscriptionExistsForUser query failed', { userId, provider, error: error.message })
-    return false
+    logWebhook("error", "subscriptionExistsForUser query failed", {
+      userId,
+      provider,
+      error: error.message,
+    });
+    return false;
   }
-  return !!data
+  return !!data;
 }
 
-async function upsertSubscription({ userId, plan, cycle, providerSubscriptionId, periodEnd, renewalType = 'manual' }) {
-  const exists = await subscriptionExistsForUser(userId, 'paymongo')
+async function upsertSubscription({
+  userId,
+  plan,
+  cycle,
+  providerSubscriptionId,
+  periodEnd,
+  renewalType = "manual",
+}) {
+  const exists = await subscriptionExistsForUser(userId, "paymongo");
 
   if (exists) {
     const { error } = await supabaseAdmin
-      .from('subscriptions')
+      .from("subscriptions")
       .update({
         plan,
         billing_cycle: cycle,
-        status: 'active',
+        status: "active",
         current_period_end: periodEnd,
         renewal_type: renewalType,
         provider_subscription_id: providerSubscriptionId,
         updated_at: new Date().toISOString(),
       })
-      .eq('user_id', userId)
-      .eq('provider', 'paymongo')
+      .eq("user_id", userId)
+      .eq("provider", "paymongo");
 
     if (error) {
-      logWebhook('error', 'Failed to update subscription', { userId, providerSubscriptionId, error: error.message })
-      throw error
+      logWebhook("error", "Failed to update subscription", {
+        userId,
+        providerSubscriptionId,
+        error: error.message,
+      });
+      throw error;
     }
-    logWebhook('info', 'Subscription updated (renewal/upgrade)', { userId, plan, cycle, providerSubscriptionId })
+    logWebhook("info", "Subscription updated (renewal/upgrade)", {
+      userId,
+      plan,
+      cycle,
+      providerSubscriptionId,
+    });
   } else {
-    const { error } = await supabaseAdmin.from('subscriptions').insert({
+    const { error } = await supabaseAdmin.from("subscriptions").insert({
       user_id: userId,
-      provider: 'paymongo',
+      provider: "paymongo",
       provider_subscription_id: providerSubscriptionId,
       plan,
       billing_cycle: cycle,
       renewal_type: renewalType,
-      status: 'active',
+      status: "active",
       current_period_end: periodEnd,
-    })
+    });
 
     if (error) {
-      logWebhook('error', 'Failed to insert subscription', { userId, error: error.message, plan, cycle })
-      throw error
+      logWebhook("error", "Failed to insert subscription", {
+        userId,
+        error: error.message,
+        plan,
+        cycle,
+      });
+      throw error;
     }
-    logWebhook('info', 'Subscription inserted', { userId, plan, cycle, providerSubscriptionId })
+    logWebhook("info", "Subscription inserted", {
+      userId,
+      plan,
+      cycle,
+      providerSubscriptionId,
+    });
   }
 }
 
 async function syncProfileSubscription({ userId, plan, status, endDate }) {
   const { error } = await supabaseAdmin
-    .from('profiles')
+    .from("profiles")
     .update({
       subscription_tier: plan,
       subscription_status: status,
       subscription_end_date: endDate,
     })
-    .eq('id', userId)
+    .eq("id", userId);
 
   if (error) {
-    logWebhook('error', 'Failed to sync profile subscription', { userId, error: error.message })
+    logWebhook("error", "Failed to sync profile subscription", {
+      userId,
+      error: error.message,
+    });
   } else {
-    logWebhook('info', 'Profile subscription synced', { userId, plan, status, endDate })
+    logWebhook("info", "Profile subscription synced", {
+      userId,
+      plan,
+      status,
+      endDate,
+    });
   }
 }
 
-async function insertPayment({ userId, amount, currency, paymentMethod, status, provider, providerPaymentId, paymentType, slotsPurchased }) {
+async function insertPayment({
+  userId,
+  amount,
+  currency,
+  paymentMethod,
+  status,
+  provider,
+  providerPaymentId,
+  paymentType,
+  slotsPurchased,
+}) {
   const insertData = {
     user_id: userId,
     amount,
@@ -154,96 +217,113 @@ async function insertPayment({ userId, amount, currency, paymentMethod, status, 
     provider,
     provider_payment_id: providerPaymentId,
     payment_type: paymentType,
-  }
+  };
 
   if (slotsPurchased !== undefined) {
-    insertData.slots_purchased = slotsPurchased
+    insertData.slots_purchased = slotsPurchased;
   }
 
-  const { error } = await supabaseAdmin.from('payments').insert(insertData)
+  const { error } = await supabaseAdmin.from("payments").insert(insertData);
 
   if (error) {
-    logWebhook('error', 'Failed to insert payment', { userId, error: error.message })
-    throw error
+    logWebhook("error", "Failed to insert payment", {
+      userId,
+      error: error.message,
+    });
+    throw error;
   }
-  logWebhook('info', 'Payment inserted', { userId, amount, currency, paymentType })
+  logWebhook("info", "Payment inserted", {
+    userId,
+    amount,
+    currency,
+    paymentType,
+  });
 }
 
 export async function POST(request) {
-  const rawBody = await request.text()
-  const signatureHeader = request.headers.get('paymongo-signature') || ''
+  const rawBody = await request.text();
+  const signatureHeader = request.headers.get("paymongo-signature") || "";
 
-  logWebhook('info', 'Webhook received', {
+  logWebhook("info", "Webhook received", {
     signaturePresent: !!signatureHeader,
     bodyLength: rawBody.length,
-  })
+  });
 
-  let event
+  let event;
   try {
     event = paymongo.webhooks.constructEvent({
       payload: rawBody,
       signatureHeader,
       webhookSecretKey: process.env.PAYMONGO_WEBHOOK_SECRET,
-    })
+    });
   } catch (err) {
-    logWebhook('error', 'Webhook signature verification failed', {
+    logWebhook("error", "Webhook signature verification failed", {
       error: err.message,
-      signatureHeader: signatureHeader?.slice(0, 20) + '...',
-    })
-    return Response.json({ error: 'Invalid signature' }, { status: 400 })
+      signatureHeader: signatureHeader?.slice(0, 20) + "...",
+    });
+    return Response.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  logWebhook('info', 'Webhook verified', { eventType: event.type, eventId: event.id })
+  logWebhook("info", "Webhook verified", {
+    eventType: event.type,
+    eventId: event.id,
+  });
 
   try {
-    if (event.type === 'checkout_session.payment.paid') {
-      const checkoutSession = event.data?.attributes || event.resource?.attributes
+    if (event.type === "checkout_session.payment.paid") {
+      const checkoutSession =
+        event.data?.attributes || event.resource?.attributes;
 
       if (!checkoutSession) {
-        logWebhook('error', 'No checkout session data in payload', { event })
-        return Response.json({ error: 'Invalid payload' }, { status: 400 })
+        logWebhook("error", "No checkout session data in payload", { event });
+        return Response.json({ error: "Invalid payload" }, { status: 400 });
       }
 
-      const metadata = checkoutSession.metadata || {}
-      const { userId, paymentType, planKey } = metadata
-      const payment = checkoutSession.payments?.[0]
+      const metadata = checkoutSession.metadata || {};
+      const { userId, paymentType, planKey } = metadata;
+      const payment = checkoutSession.payments?.[0];
 
-      logWebhook('info', 'Processing checkout_session.payment.paid', {
+      logWebhook("info", "Processing checkout_session.payment.paid", {
         userId,
         paymentType,
         planKey,
         hasPayment: !!payment,
         checkoutSessionId: checkoutSession.id,
-      })
+      });
 
       if (!payment) {
-        logWebhook('error', 'No payment found on checkout session', {
+        logWebhook("error", "No payment found on checkout session", {
           checkoutSessionId: checkoutSession.id,
-        })
-        return Response.json({ error: 'No payment data' }, { status: 400 })
+        });
+        return Response.json({ error: "No payment data" }, { status: 400 });
       }
 
-      const paymentAttrs = payment.attributes || {}
-      const providerPaymentId = payment.id
+      const paymentAttrs = payment.attributes || {};
+      const providerPaymentId = payment.id;
 
       // ── IDEMPOTENCY: Skip if payment already processed ──
-      const alreadyPaid = await paymentExists(providerPaymentId)
+      const alreadyPaid = await paymentExists(providerPaymentId);
       if (alreadyPaid) {
-        logWebhook('info', 'Payment already processed — skipping', { providerPaymentId, checkoutSessionId: checkoutSession.id })
-        return Response.json({ received: true, idempotent: true })
+        logWebhook("info", "Payment already processed — skipping", {
+          providerPaymentId,
+          checkoutSessionId: checkoutSession.id,
+        });
+        return Response.json({ received: true, idempotent: true });
       }
 
       // Get user email for notification
-      const user = await getUserEmail(userId)
+      const user = await getUserEmail(userId);
 
-      if (paymentType === 'subscription') {
-        const planInfo = getPlanInfoFromKey(planKey)
+      if (paymentType === "subscription") {
+        const planInfo = getPlanInfoFromKey(planKey);
         if (!planInfo) {
-          logWebhook('error', 'Unknown plan key', { planKey })
-          return Response.json({ error: 'Unknown plan key' }, { status: 400 })
+          logWebhook("error", "Unknown plan key", { planKey });
+          return Response.json({ error: "Unknown plan key" }, { status: 400 });
         }
 
-        const periodEnd = new Date(Date.now() + planInfo.periodDays * 24 * 60 * 60 * 1000)
+        const periodEnd = new Date(
+          Date.now() + planInfo.periodDays * 24 * 60 * 60 * 1000,
+        );
 
         await upsertSubscription({
           userId,
@@ -251,112 +331,159 @@ export async function POST(request) {
           cycle: planInfo.cycle,
           providerSubscriptionId: checkoutSession.id,
           periodEnd: periodEnd.toISOString(),
-          renewalType: 'manual',
-        })
+          renewalType: "manual",
+        });
 
         await syncProfileSubscription({
           userId,
           plan: planInfo.plan,
-          status: 'active',
+          status: "active",
           endDate: periodEnd.toISOString(),
-        })
+        });
 
-        await resetAiGenerations(userId)
+        await resetAiGenerations(userId);
 
         await insertPayment({
           userId,
           amount: paymentAttrs.amount,
           currency: paymentAttrs.currency,
-          paymentMethod: paymentAttrs.source?.type || 'qrph',
-          status: 'paid',
-          provider: 'paymongo',
+          paymentMethod: paymentAttrs.source?.type || "qrph",
+          status: "paid",
+          provider: "paymongo",
           providerPaymentId,
-          paymentType: 'subscription',
-        })
+          paymentType: "subscription",
+        });
 
         // ── Send payment success email ──
+        logWebhook("info", "Preparing payment success email", {
+          userEmail: user?.email,
+          hasName: !!user?.full_name,
+          plan: planInfo.plan,
+        });
         if (user?.email) {
           const { subject, html } = paymentSuccessEmail({
-            name: user.full_name,
+            name: user.first_name,
             plan: planInfo.plan,
             billingCycle: planInfo.cycle,
             amount: paymentAttrs.amount,
             currency: paymentAttrs.currency,
-            paymentMethod: paymentAttrs.source?.type || 'qrph',
+            paymentMethod: paymentAttrs.source?.type || "qrph",
             periodEnd: periodEnd.toISOString(),
-          })
-          await sendEmail({
+          });
+          logWebhook("info", "Calling sendEmail", { to: user.email, subject });
+          const emailResult = await sendEmail({
             to: user.email,
             subject,
             html,
             idempotencyKey: `payment-success-${providerPaymentId}`,
-          })
+          });
+          logWebhook("info", "sendEmail result", {
+            success: emailResult.success,
+            error: emailResult.error,
+          });
+        } else {
+          logWebhook("warn", "No user email found, skipping payment email", {
+            userId,
+          });
         }
 
-        logWebhook('info', 'Subscription processed successfully', { userId, plan: planInfo.plan })
-      } else if (paymentType === 'lifetime_slot') {
-        const slotsPurchased = planKey === 'lifetime_1_slot' ? 1 : planKey === 'lifetime_3_slots' ? 3 : null
+        logWebhook("info", "Subscription processed successfully", {
+          userId,
+          plan: planInfo.plan,
+        });
+      } else if (paymentType === "lifetime_slot") {
+        const slotsPurchased =
+          planKey === "lifetime_1_slot"
+            ? 1
+            : planKey === "lifetime_3_slots"
+              ? 3
+              : null;
 
         if (!slotsPurchased) {
-          logWebhook('error', 'Unknown lifetime plan key', { planKey })
-          return Response.json({ error: 'Unknown lifetime plan key' }, { status: 400 })
+          logWebhook("error", "Unknown lifetime plan key", { planKey });
+          return Response.json(
+            { error: "Unknown lifetime plan key" },
+            { status: 400 },
+          );
         }
 
         await insertPayment({
           userId,
           amount: paymentAttrs.amount,
           currency: paymentAttrs.currency,
-          paymentMethod: paymentAttrs.source?.type || 'qrph',
-          status: 'paid',
-          provider: 'paymongo',
+          paymentMethod: paymentAttrs.source?.type || "qrph",
+          status: "paid",
+          provider: "paymongo",
           providerPaymentId,
-          paymentType: 'lifetime_slot',
+          paymentType: "lifetime_slot",
           slotsPurchased: slotsPurchased,
-        })
+        });
 
         // ── Send lifetime slot email ──
+        logWebhook("info", "Preparing lifetime slot email", {
+          userEmail: user?.email,
+          hasName: !!user?.first_name,
+          slots: slotsPurchased,
+        });
         if (user?.email) {
           const { subject, html } = lifetimeSlotEmail({
-            name: user.full_name,
+            name: user.first_name,
             slots: slotsPurchased,
             amount: paymentAttrs.amount,
             currency: paymentAttrs.currency,
-          })
-          await sendEmail({
+          });
+          logWebhook("info", "Calling sendEmail", { to: user.email, subject });
+          const emailResult = await sendEmail({
             to: user.email,
             subject,
             html,
             idempotencyKey: `lifetime-slot-${providerPaymentId}`,
-          })
+          });
+          logWebhook("info", "sendEmail result", {
+            success: emailResult.success,
+            error: emailResult.error,
+          });
+        } else {
+          logWebhook(
+            "warn",
+            "No user email found, skipping lifetime slot email",
+            { userId },
+          );
         }
 
-        logWebhook('info', 'Lifetime slot processed successfully', { userId, slotsPurchased })
+        logWebhook("info", "Lifetime slot processed successfully", {
+          userId,
+          slotsPurchased,
+        });
       }
-    } else if (event.type === 'payment.failed') {
-      const payment = event.data?.attributes || event.resource?.attributes
-      logWebhook('info', 'Payment failed event received', {
+    } else if (event.type === "payment.failed") {
+      const payment = event.data?.attributes || event.resource?.attributes;
+      logWebhook("info", "Payment failed event received", {
         paymentId: payment?.id,
         amount: payment?.amount,
         currency: payment?.currency,
-      })
-    } else if (event.type === 'payment.expired') {
-      const payment = event.data?.attributes || event.resource?.attributes
-      logWebhook('info', 'Payment expired event received', {
+      });
+    } else if (event.type === "payment.expired") {
+      const payment = event.data?.attributes || event.resource?.attributes;
+      logWebhook("info", "Payment expired event received", {
         paymentId: payment?.id,
         amount: payment?.amount,
         currency: payment?.currency,
-      })
+      });
     } else {
-      logWebhook('warn', 'Unhandled webhook event type', { eventType: event.type, eventId: event.id })
+      logWebhook("warn", "Unhandled webhook event type", {
+        eventType: event.type,
+        eventId: event.id,
+      });
     }
 
-    return Response.json({ received: true })
+    return Response.json({ received: true });
   } catch (error) {
-    logWebhook('error', 'Webhook processing error', {
+    logWebhook("error", "Webhook processing error", {
       error: error.message,
       stack: error.stack,
       eventType: event.type,
-    })
-    return Response.json({ error: 'Processing failed' }, { status: 500 })
+    });
+    return Response.json({ error: "Processing failed" }, { status: 500 });
   }
 }
