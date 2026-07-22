@@ -144,8 +144,8 @@ async function syncProfileSubscription({ userId, plan, status, endDate }) {
   }
 }
 
-async function insertPayment({ userId, amount, currency, paymentMethod, status, provider, providerPaymentId, paymentType }) {
-  const { error } = await supabaseAdmin.from('payments').insert({
+async function insertPayment({ userId, amount, currency, paymentMethod, status, provider, providerPaymentId, paymentType, slotsPurchased }) {
+  const insertData = {
     user_id: userId,
     amount,
     currency,
@@ -154,7 +154,13 @@ async function insertPayment({ userId, amount, currency, paymentMethod, status, 
     provider,
     provider_payment_id: providerPaymentId,
     payment_type: paymentType,
-  })
+  }
+
+  if (slotsPurchased !== undefined) {
+    insertData.slots_purchased = slotsPurchased
+  }
+
+  const { error } = await supabaseAdmin.from('payments').insert(insertData)
 
   if (error) {
     logWebhook('error', 'Failed to insert payment', { userId, error: error.message })
@@ -305,6 +311,7 @@ export async function POST(request) {
           provider: 'paymongo',
           providerPaymentId,
           paymentType: 'lifetime_slot',
+          slotsPurchased: slotsPurchased,
         })
 
         // ── Send lifetime slot email ──

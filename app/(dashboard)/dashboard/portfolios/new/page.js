@@ -87,24 +87,39 @@ export default function NewPortfolio() {
     setCreating(true);
     setError(null);
 
-    const { data, error } = await supabase
-      .from("portfolios")
-      .insert({
-        user_id: user.id,
-        title: `My ${templateName} Portfolio`,
-        content: {},
-        template: templateId,
-      })
-      .select()
-      .single();
+    // Get auth token
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
 
-    if (error) {
-      setError("Something went wrong creating your portfolio. Please try again.");
+    if (!token) {
+      setError("Authentication error. Please log in again.");
       setCreating(false);
       return;
     }
 
-    router.push(`/dashboard/portfolios/${data.id}`);
+    const res = await fetch('/api/portfolios', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ templateId, templateName }),
+    })
+
+    const result = await res.json()
+
+    if (!res.ok) {
+      if (res.status === 403) {
+        setLimitReached(true)
+        setError(`Portfolio limit reached. You can create up to ${result.limit} portfolio${result.limit === 1 ? '' : 's'}.`)
+      } else {
+        setError(result.error || "Something went wrong creating your portfolio. Please try again.")
+      }
+      setCreating(false)
+      return
+    }
+
+    router.push(`/dashboard/portfolios/${result.portfolio.id}`)
   };
 
   if (checkingLimit) {

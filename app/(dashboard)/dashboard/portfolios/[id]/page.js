@@ -552,8 +552,14 @@ export default function PortfolioEditor() {
   };
 
   const handlePublishClick = async () => {
-    const entitlements = await getUserEntitlements(user.id);
+    publishPortfolio();
+  };
 
+  const publishPortfolio = async () => {
+    setPublishError(null);
+
+    // Slot validation
+    const entitlements = await getUserEntitlements(user.id);
     const { count, error: countError } = await supabase
       .from("portfolios")
       .select("id", { count: "exact", head: true })
@@ -572,11 +578,6 @@ export default function PortfolioEditor() {
       return;
     }
 
-    publishPortfolio();
-  };
-
-  const publishPortfolio = async () => {
-    setPublishError(null);
     const finalSlug = slugify(slugInput || portfolio.title);
 
     if (!finalSlug) {
