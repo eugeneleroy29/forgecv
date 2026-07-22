@@ -10,19 +10,51 @@ import { detectPaymentProviderAsync } from "@/lib/payments/detectProvider";
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 
 const CheckIcon = ({ className }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
     <path d="M20 6 9 17l-5-5" />
   </svg>
 );
 
 const GlobeIcon = ({ className }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <circle cx="12" cy="12" r="10" /><line x1="2" x2="22" y1="12" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" x2="22" y1="12" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
   </svg>
 );
 
 const RocketIcon = ({ className }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
     <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
     <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
     <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
@@ -31,14 +63,36 @@ const RocketIcon = ({ className }) => (
 );
 
 const LoaderIcon = ({ className }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
     <path d="M21 12a9 9 0 1 1-6.219-8.56" />
   </svg>
 );
 
 const AlertTriangleIcon = ({ className }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" />
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" x2="12" y1="9" y2="13" />
+    <line x1="12" x2="12.01" y1="17" y2="17" />
   </svg>
 );
 
@@ -145,7 +199,9 @@ function isCurrentPlan(currentPlan, currentCycle, targetPlan, targetCycle) {
 
 const ToggleSwitch = ({ checked, onChange, labelLeft, labelRight, badge }) => (
   <div className="flex items-center gap-3">
-    <span className={`text-sm font-medium transition-colors ${!checked ? "text-foreground" : "text-foreground/50"}`}>
+    <span
+      className={`text-sm font-medium transition-colors ${!checked ? "text-foreground" : "text-foreground/50"}`}
+    >
       {labelLeft}
     </span>
     <button
@@ -159,7 +215,9 @@ const ToggleSwitch = ({ checked, onChange, labelLeft, labelRight, badge }) => (
         }`}
       />
     </button>
-    <span className={`text-sm font-medium transition-colors ${checked ? "text-foreground" : "text-foreground/50"}`}>
+    <span
+      className={`text-sm font-medium transition-colors ${checked ? "text-foreground" : "text-foreground/50"}`}
+    >
       {labelRight}
     </span>
     {badge && (
@@ -210,7 +268,9 @@ export default function Pricing() {
       }
     };
     runDetection();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -274,7 +334,9 @@ export default function Pricing() {
       router.push("/login");
       return;
     }
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: {
@@ -309,7 +371,9 @@ export default function Pricing() {
     if (!upgradeTargetKey) return;
     setUpgradeLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const res = await fetch("/api/billing/upgrade-subscription", {
         method: "POST",
         headers: {
@@ -354,10 +418,20 @@ export default function Pricing() {
     return `₱${php.toLocaleString()}`;
   };
 
-  const renderPlanCard = (key, plan, isCurrent, isDisabled, isUpgradeable = false) => {
+  const renderPlanCard = (
+    key,
+    plan,
+    isCurrent,
+    isDisabled,
+    isUpgradeable = false,
+  ) => {
     const price = isUSD
-      ? annual ? plan.annualPriceUSD : plan.monthlyPriceUSD
-      : annual ? plan.annualPrice : plan.monthlyPrice;
+      ? annual
+        ? plan.annualPriceUSD
+        : plan.monthlyPriceUSD
+      : annual
+        ? plan.annualPrice
+        : plan.monthlyPrice;
     const planKey = annual ? plan.annualKey : plan.monthlyKey;
     const isStarterPlan = key === "starter";
 
@@ -384,7 +458,9 @@ export default function Pricing() {
             Most Popular
           </div>
         )}
-        <h2 className="text-lg font-semibold tracking-tight mb-1">{plan.name}</h2>
+        <h2 className="text-lg font-semibold tracking-tight mb-1">
+          {plan.name}
+        </h2>
         <p className="text-foreground/60 text-sm mb-6">{plan.tagline}</p>
         <div className="mb-6">
           <span className="text-4xl font-bold tracking-tight">
@@ -449,36 +525,46 @@ export default function Pricing() {
 
       {/* Header */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">Simple, transparent pricing</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">
+          Simple, transparent pricing
+        </h1>
         <p className="text-foreground/60 text-lg max-w-xl mx-auto">
           Start for free. Upgrade when you need more.
         </p>
 
         {/* Currency Toggle + Monthly/Annual Toggle */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-          {/* Currency Toggle */}
-          <div className="flex items-center gap-1 bg-muted rounded-full p-1 border border-border">
-            <button
-              onClick={() => { setCurrency("PHP"); setProvider("paymongo"); }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                currency === "PHP"
-                  ? "bg-card shadow-sm text-foreground"
-                  : "text-foreground/50 hover:text-foreground"
-              }`}
-            >
-              PHP ₱
-            </button>
-            <button
-              onClick={() => { setCurrency("USD"); setProvider("stripe"); }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                currency === "USD"
-                  ? "bg-card shadow-sm text-foreground"
-                  : "text-foreground/50 hover:text-foreground"
-              }`}
-            >
-              USD $
-            </button>
-          </div>
+          {/* Currency Toggle — hidden when PayMongo is active (Philippines) */}
+          {provider !== "paymongo" && (
+            <div className="flex items-center gap-1 bg-muted rounded-full p-1 border border-border">
+              <button
+                onClick={() => {
+                  setCurrency("PHP");
+                  setProvider("paymongo");
+                }}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  currency === "PHP"
+                    ? "bg-card shadow-sm text-foreground"
+                    : "text-foreground/50 hover:text-foreground"
+                }`}
+              >
+                PHP ₱
+              </button>
+              <button
+                onClick={() => {
+                  setCurrency("USD");
+                  setProvider("stripe");
+                }}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  currency === "USD"
+                    ? "bg-card shadow-sm text-foreground"
+                    : "text-foreground/50 hover:text-foreground"
+                }`}
+              >
+                USD $
+              </button>
+            </div>
+          )}
 
           {/* Monthly/Annual Toggle */}
           <ToggleSwitch
@@ -529,8 +615,18 @@ export default function Pricing() {
             PLANS.starter,
             isStarter,
             isPro || isAdmin,
-            isUpgrade("free", userCycle, "starter", annual ? "annual" : "monthly") ||
-              isUpgrade("starter", userCycle, "starter", annual ? "annual" : "monthly"),
+            isUpgrade(
+              "free",
+              userCycle,
+              "starter",
+              annual ? "annual" : "monthly",
+            ) ||
+              isUpgrade(
+                "starter",
+                userCycle,
+                "starter",
+                annual ? "annual" : "monthly",
+              ),
           )}
 
           {/* Pro */}
@@ -539,8 +635,18 @@ export default function Pricing() {
             PLANS.pro,
             isPro,
             isAdmin,
-            isUpgrade("free", userCycle, "pro", annual ? "annual" : "monthly") ||
-              isUpgrade("starter", userCycle, "pro", annual ? "annual" : "monthly") ||
+            isUpgrade(
+              "free",
+              userCycle,
+              "pro",
+              annual ? "annual" : "monthly",
+            ) ||
+              isUpgrade(
+                "starter",
+                userCycle,
+                "pro",
+                annual ? "annual" : "monthly",
+              ) ||
               isUpgrade("pro", userCycle, "pro", annual ? "annual" : "monthly"),
           )}
         </div>
@@ -548,14 +654,17 @@ export default function Pricing() {
         {/* One-time Payment Section */}
         <div className="mt-20 bg-card border border-border rounded-2xl p-8 sm:p-10 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Just need a portfolio?</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+              Just need a portfolio?
+            </h2>
             <p className="text-foreground/60 text-sm sm:text-base">
               One-time payment. No subscription. Yours forever.
             </p>
             {lifetimeSlotsOwned > 0 && (
               <p className="text-accent text-sm mt-3 font-medium flex items-center justify-center gap-1.5">
                 <CheckIcon className="text-accent" />
-                You already own {lifetimeSlotsOwned} lifetime slot{lifetimeSlotsOwned === 1 ? "" : "s"}
+                You already own {lifetimeSlotsOwned} lifetime slot
+                {lifetimeSlotsOwned === 1 ? "" : "s"}
               </p>
             )}
           </div>
@@ -577,10 +686,14 @@ export default function Pricing() {
                   <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent mx-auto mb-4">
                     <IconComponent />
                   </div>
-                  <h3 className="font-semibold text-lg tracking-tight mb-1">{lt.name}</h3>
+                  <h3 className="font-semibold text-lg tracking-tight mb-1">
+                    {lt.name}
+                  </h3>
                   <p className="text-foreground/60 text-sm mb-4">{lt.desc}</p>
                   <div className="text-3xl font-bold tracking-tight mb-5">
-                    {isUSD ? `$${price.toFixed(2)}` : `₱${price.toLocaleString()}`}
+                    {isUSD
+                      ? `$${price.toFixed(2)}`
+                      : `₱${price.toLocaleString()}`}
                   </div>
                   {isOwned ? (
                     <button
@@ -612,14 +725,25 @@ export default function Pricing() {
               <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
                 <AlertTriangleIcon />
               </div>
-              <h3 className="text-xl font-bold tracking-tight">Confirm Upgrade</h3>
+              <h3 className="text-xl font-bold tracking-tight">
+                Confirm Upgrade
+              </h3>
             </div>
             <p className="text-foreground/60 text-sm mb-6">
-              You are about to upgrade to <strong className="text-foreground">{upgradeTargetPlan}</strong>.
-              {provider === 'paymongo' ? (
-                <> You will pay the prorated difference via QRPh. Your next renewal will be manual.</>
+              You are about to upgrade to{" "}
+              <strong className="text-foreground">{upgradeTargetPlan}</strong>.
+              {provider === "paymongo" ? (
+                <>
+                  {" "}
+                  You will pay the prorated difference via QRPh. Your next
+                  renewal will be manual.
+                </>
               ) : (
-                <> You will be charged the prorated difference immediately. Your card on file will be billed automatically.</>
+                <>
+                  {" "}
+                  You will be charged the prorated difference immediately. Your
+                  card on file will be billed automatically.
+                </>
               )}
             </p>
             <div className="flex flex-col gap-3">
@@ -628,7 +752,13 @@ export default function Pricing() {
                 disabled={upgradeLoading}
                 className="bg-accent text-white text-center py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-hover transition-all disabled:opacity-50 shadow-lg shadow-accent/10"
               >
-                {upgradeLoading ? <span className="flex items-center justify-center gap-2"><LoaderIcon className="animate-spin" /> Processing...</span> : 'Confirm Upgrade'}
+                {upgradeLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <LoaderIcon className="animate-spin" /> Processing...
+                  </span>
+                ) : (
+                  "Confirm Upgrade"
+                )}
               </button>
               <button
                 onClick={() => setShowUpgradeModal(false)}
