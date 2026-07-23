@@ -7,6 +7,21 @@ import { TOOLS_CATALOG } from "./toolsCatalog";
 import BrandIcon from "./BrandIcon";
 import PortfolioNavbar from "./PortfolioNavbar";
 
+// ─── NEW: Reusable Portfolio Components ─────────────────────────────────────
+import ProfileImage from "./ProfileImage";
+import SectionWrapper from "./SectionWrapper";
+import ServiceCard from "./ServiceCard";
+import PricingCard from "./PricingCard";
+import ToolBadge from "./ToolBadge";
+import TestimonialCard from "./TestimonialCard";
+import VideoEmbed from "./VideoEmbed";
+import SampleWorkCard from "./SampleWorkCard";
+import FAQItem from "./FAQItem";
+import ContactForm from "./ContactForm";
+import SocialLinks from "./SocialLinks";
+import StatsCounter from "./StatsCounter";
+import CTAButton from "./CTAButton";
+
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 
 function ArrowRightIcon({ className }) {
@@ -59,6 +74,26 @@ function ForgeCVLogoIcon({ className }) {
       <polyline points="14 2 14 8 20 8" />
       <path d="M12 18v-6" />
       <path d="M8 15l4-3 4 3" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   );
 }
@@ -130,10 +165,10 @@ function CopyEmailButton({ email, theme, className, children }) {
 
 // ─── Section Components ──────────────────────────────────────────────────────
 
-function ServicesSection({ services, theme, headingClass }) {
+function ServicesSection({ services, theme, headingClass, isAurora }) {
   if (!services.length) return null;
   return (
-    <section key="services" id="services" className="mb-16 sm:mb-20">
+    <SectionWrapper id="services" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
@@ -141,25 +176,43 @@ function ServicesSection({ services, theme, headingClass }) {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {services.map((s) => (
-          <div
+          <ServiceCard
             key={s.id}
-            className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
-          >
-            <h3 className="font-semibold text-foreground mb-2">{s.name}</h3>
-            <p className="text-sm text-foreground/60 leading-relaxed">
-              {s.description}
-            </p>
-          </div>
+            service={s}
+            accentColor={theme.accent}
+          />
         ))}
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
 
-function ToolsSection({ tools, theme, headingClass }) {
+function PackagesSection({ packages, theme, headingClass, isAurora }) {
+  if (!packages?.length) return null;
+  return (
+    <SectionWrapper id="packages" background="soft" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
+      <h2
+        className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
+      >
+        Packages & Pricing
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {packages.map((pkg, i) => (
+          <PricingCard
+            key={pkg.id || i}
+            package={pkg}
+            accentColor={theme.accent}
+          />
+        ))}
+      </div>
+    </SectionWrapper>
+  );
+}
+
+function ToolsSection({ tools, theme, headingClass, isAurora }) {
   if (!tools.length) return null;
   return (
-    <section key="tools" id="tools" className="mb-16 sm:mb-20">
+    <SectionWrapper id="tools" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
@@ -167,23 +220,21 @@ function ToolsSection({ tools, theme, headingClass }) {
       </h2>
       <div className="flex flex-wrap gap-2.5">
         {tools.map((tool) => (
-          <span
+          <ToolBadge
             key={tool}
-            className="text-sm px-3.5 py-1.5 rounded-full font-medium transition-transform hover:scale-105"
-            style={{ backgroundColor: theme.accentSoft, color: theme.accent }}
-          >
-            {tool}
-          </span>
+            tool={{ name: tool }}
+            accentColor={theme.accent}
+          />
         ))}
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
 
-function ExperienceSection({ experience, theme, headingClass }) {
+function ExperienceSection({ experience, theme, headingClass, isAurora }) {
   if (!experience.length) return null;
   return (
-    <section key="experience" id="experience" className="mb-16 sm:mb-20">
+    <SectionWrapper id="experience" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
@@ -207,14 +258,14 @@ function ExperienceSection({ experience, theme, headingClass }) {
           </div>
         ))}
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
 
-function PortfolioItemsSection({ portfolioItems, theme, headingClass }) {
+function PortfolioItemsSection({ portfolioItems, theme, headingClass, isAurora }) {
   if (!portfolioItems.length) return null;
   return (
-    <section key="portfolioItems" id="portfolio" className="mb-16 sm:mb-20">
+    <SectionWrapper id="portfolio" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
@@ -222,39 +273,21 @@ function PortfolioItemsSection({ portfolioItems, theme, headingClass }) {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {portfolioItems.map((item) => (
-          <div
+          <SampleWorkCard
             key={item.id}
-            className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 group"
-          >
-            <h3 className="font-semibold text-foreground mb-2">
-              {item.title}
-            </h3>
-            <p className="text-sm text-foreground/60 leading-relaxed mb-4">
-              {item.description}
-            </p>
-            {item.link && (
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors group-hover:gap-2"
-                style={{ color: theme.accent }}
-              >
-                View sample
-                <ArrowRightIcon className="w-4 h-4 transition-all group-hover:translate-x-0.5" />
-              </a>
-            )}
-          </div>
+            work={item}
+            accentColor={theme.accent}
+          />
         ))}
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
 
-function SkillsToolsSection({ skillsToolsByCategory, headingClass }) {
+function SkillsToolsSection({ skillsToolsByCategory, headingClass, isAurora, theme }) {
   if (!skillsToolsByCategory.length) return null;
   return (
-    <section key="skillsTools" className="mb-16 sm:mb-20">
+    <SectionWrapper background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
@@ -288,18 +321,18 @@ function SkillsToolsSection({ skillsToolsByCategory, headingClass }) {
           </div>
         ))}
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
 
-function CustomSectionsSection({ customSections, headingClass }) {
+function CustomSectionsSection({ customSections, headingClass, isAurora, theme }) {
   const validSections = (customSections || []).filter((section) =>
     section.items?.some((item) => item.text?.trim()),
   );
   if (!validSections.length) return null;
 
   return (
-    <section key="customSections" className="mb-16 sm:mb-20">
+    <SectionWrapper background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       {validSections.map((section) => (
         <div key={section.id} className="mb-10 last:mb-0">
           <h2
@@ -318,14 +351,14 @@ function CustomSectionsSection({ customSections, headingClass }) {
           </ul>
         </div>
       ))}
-    </section>
+    </SectionWrapper>
   );
 }
 
-function TestimonialsSection({ testimonials, theme, headingClass }) {
+function TestimonialsSection({ testimonials, theme, headingClass, isAurora }) {
   if (!testimonials.length) return null;
   return (
-    <section key="testimonials" id="testimonials" className="mb-16 sm:mb-20">
+    <SectionWrapper id="testimonials" background="soft" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
@@ -333,31 +366,50 @@ function TestimonialsSection({ testimonials, theme, headingClass }) {
       </h2>
       <div className="flex flex-col gap-5">
         {testimonials.map((t) => (
-          <div
+          <TestimonialCard
             key={t.id}
-            className="rounded-2xl p-6 border border-transparent"
-            style={{ backgroundColor: theme.accentSoft }}
-          >
-            <QuoteIcon
-              className="w-5 h-5 mb-3 opacity-40"
-              style={{ color: theme.accent }}
-            />
-            <p className="text-foreground/80 italic leading-relaxed mb-4">
-              &ldquo;{t.quote}&rdquo;
-            </p>
-            <p className="text-sm font-semibold text-foreground">
-              {t.name}
-              {t.role && (
-                <span className="text-foreground/50 font-normal">
-                  {" "}
-                  · {t.role}
-                </span>
-              )}
-            </p>
-          </div>
+            testimonial={t}
+            accentColor={theme.accent}
+          />
         ))}
       </div>
-    </section>
+    </SectionWrapper>
+  );
+}
+
+function VideoSection({ videoUrl, headingClass, isAurora, theme }) {
+  if (!videoUrl) return null;
+  return (
+    <SectionWrapper id="video" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
+      <h2
+        className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
+      >
+        Introduction
+      </h2>
+      <VideoEmbed url={videoUrl} title="Video introduction" />
+    </SectionWrapper>
+  );
+}
+
+function FAQSection({ faq, theme, headingClass, isAurora }) {
+  if (!faq?.length) return null;
+  return (
+    <SectionWrapper id="faq" background="soft" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
+      <h2
+        className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
+      >
+        Frequently Asked Questions
+      </h2>
+      <div className="flex flex-col gap-3">
+        {faq.map((item, i) => (
+          <FAQItem
+            key={item.id || i}
+            faq={item}
+            accentColor={theme.accent}
+          />
+        ))}
+      </div>
+    </SectionWrapper>
   );
 }
 
@@ -367,6 +419,10 @@ export default function PublicPortfolio({ portfolio }) {
   const baseTheme = getPortfolioTheme(portfolio.template);
   const content = portfolio.content || {};
   const customization = content.customization || {};
+  
+  // Aurora specific logic
+  const isAurora = portfolio.template === 'aurora' || baseTheme.variant === 'aurora';
+  
   const theme = {
     ...baseTheme,
     accent: customization.accentColor || baseTheme.accent,
@@ -385,6 +441,15 @@ export default function PublicPortfolio({ portfolio }) {
     testimonials = [],
     contact = {},
     skillsTools = [],
+    // NEW fields (backward compatible — undefined if not present)
+    packages = [],
+    videoUrl = "",
+    faq = [],
+    socialLinks = {},
+    stats = [],
+    availabilityStatus = "",
+    resumeUrl = "",
+    about = {},
   } = content;
 
   const skillsToolsByCategory = TOOLS_CATALOG.map((category) => ({
@@ -420,10 +485,20 @@ export default function PublicPortfolio({ portfolio }) {
         services={services}
         theme={theme}
         headingClass={headingClass}
+        isAurora={isAurora}
+      />
+    ),
+    packages: (
+      <PackagesSection
+        key="packages"
+        packages={packages}
+        theme={theme}
+        headingClass={headingClass}
+        isAurora={isAurora}
       />
     ),
     tools: (
-      <ToolsSection key="tools" tools={tools} theme={theme} headingClass={headingClass} />
+      <ToolsSection key="tools" tools={tools} theme={theme} headingClass={headingClass} isAurora={isAurora} />
     ),
     experience: (
       <ExperienceSection
@@ -431,6 +506,7 @@ export default function PublicPortfolio({ portfolio }) {
         experience={experience}
         theme={theme}
         headingClass={headingClass}
+        isAurora={isAurora}
       />
     ),
     portfolioItems: (
@@ -439,6 +515,7 @@ export default function PublicPortfolio({ portfolio }) {
         portfolioItems={portfolioItems}
         theme={theme}
         headingClass={headingClass}
+        isAurora={isAurora}
       />
     ),
     skillsTools: (
@@ -446,6 +523,8 @@ export default function PublicPortfolio({ portfolio }) {
         key="skillsTools"
         skillsToolsByCategory={skillsToolsByCategory}
         headingClass={headingClass}
+        isAurora={isAurora}
+        theme={theme}
       />
     ),
     customSections: (
@@ -453,6 +532,8 @@ export default function PublicPortfolio({ portfolio }) {
         key="customSections"
         customSections={content.customSections}
         headingClass={headingClass}
+        isAurora={isAurora}
+        theme={theme}
       />
     ),
     testimonials: (
@@ -461,17 +542,32 @@ export default function PublicPortfolio({ portfolio }) {
         testimonials={testimonials}
         theme={theme}
         headingClass={headingClass}
+        isAurora={isAurora}
+      />
+    ),
+    video: (
+      <VideoSection
+        key="video"
+        videoUrl={videoUrl}
+        headingClass={headingClass}
+        isAurora={isAurora}
+        theme={theme}
+      />
+    ),
+    faq: (
+      <FAQSection
+        key="faq"
+        faq={faq}
+        theme={theme}
+        headingClass={headingClass}
+        isAurora={isAurora}
       />
     ),
   };
 
+  // Profile image style from customization or content
+  const profileImageStyle = customization.profileImageStyle || customization.photoShape || "circle";
   const photoShape = getPhotoShape(portfolio?.content);
-  const photoShapeClass =
-    photoShape === "circle"
-      ? "rounded-full"
-      : photoShape === "rounded"
-        ? "rounded-2xl"
-        : "rounded-none";
 
   return (
     <div className="min-h-screen bg-background">
@@ -480,84 +576,178 @@ export default function PublicPortfolio({ portfolio }) {
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
       <section
         id="hero"
-        className="px-4 sm:px-6 py-16 sm:py-24 text-center"
-        style={{ backgroundColor: theme.accentSoft }}
+        className="px-4 sm:px-6 py-20 sm:py-32 text-center relative overflow-hidden"
+        style={isAurora ? {
+          background: `linear-gradient(135deg, ${theme.accent} 0%, #4338ca 100%)`,
+        } : { backgroundColor: theme.accentSoft }}
       >
-        {personalInfo.photoUrl && (
-          <img
-            src={personalInfo.photoUrl}
-            alt={personalInfo.fullName || "Profile"}
-            className={`w-24 h-24 sm:w-28 sm:h-28 object-cover mx-auto mb-5 sm:mb-6 border-4 border-white shadow-lg ${photoShapeClass}`}
-            style={{
-              boxShadow: `0 10px 40px -10px ${theme.accent}40`,
-            }}
-          />
+        {/* Aurora Background Decoration */}
+        {isAurora && (
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400 blur-[120px]" />
+          </div>
         )}
-        <h1
-          className={`text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-3 ${headingClass}`}
-        >
-          {personalInfo.fullName || "Your Name"}
-        </h1>
-        {personalInfo.tagline && (
-          <p
-            className="text-lg md:text-xl font-medium mb-8"
-            style={{ color: theme.accent }}
+
+        <div className="relative z-10 max-w-4xl mx-auto">
+          {personalInfo.photoUrl && (
+            <ProfileImage
+              src={personalInfo.photoUrl}
+              alt={personalInfo.fullName || "Profile"}
+              style={profileImageStyle}
+              size={128}
+              accentColor={isAurora ? "#ffffff" : theme.accent}
+              className="mx-auto mb-6 sm:mb-8 shadow-2xl"
+            />
+          )}
+          <h1
+            className={`text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 ${headingClass} ${isAurora ? 'text-white' : 'text-foreground'}`}
           >
-            {personalInfo.tagline}
-          </p>
-        )}
-        {contact.email && (
-          <a
-            href="#contact"
-            onClick={(e) => {
-              e.preventDefault();
-              const el = document.querySelector("#contact");
-              if (el) {
-                const offset = 72;
-                const top =
-                  el.getBoundingClientRect().top + window.scrollY - offset;
-                window.scrollTo({ top, behavior: "smooth" });
-              }
-            }}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 hover:shadow-lg hover:shadow-accent/20"
-            style={{ backgroundColor: theme.accent }}
-          >
-            Get in Touch
-            <ArrowRightIcon className="w-4 h-4" />
-          </a>
-        )}
+            {personalInfo.fullName || "Your Name"}
+          </h1>
+          {personalInfo.tagline && (
+            <p
+              className={`text-xl md:text-2xl font-medium mb-6 ${isAurora ? 'text-indigo-100' : ''}`}
+              style={!isAurora ? { color: theme.accent } : undefined}
+            >
+              {personalInfo.tagline}
+            </p>
+          )}
+          
+          {availabilityStatus && (
+            <p className={`text-sm mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${isAurora ? 'bg-white/10 text-white backdrop-blur-md border border-white/20' : 'text-foreground/60'}`}>
+              <span
+                className={`w-2 h-2 rounded-full ${isAurora ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'animate-pulse'}`}
+                style={!isAurora ? { backgroundColor: theme.accent } : undefined}
+              />
+              {availabilityStatus}
+            </p>
+          )}
+
+          {stats.length > 0 && (
+            <div className="mb-10">
+              <StatsCounter stats={stats} accentColor={isAurora ? "#ffffff" : theme.accent} isDark={isAurora} />
+            </div>
+          )}
+
+          <div className="flex justify-center gap-4 flex-wrap">
+            {contact.email && (
+              <CTAButton
+                href="#contact"
+                variant={isAurora ? "secondary" : "primary"}
+                accentColor={isAurora ? "#ffffff" : theme.accent}
+                className={isAurora ? "!bg-white !text-indigo-600 hover:!bg-indigo-50 shadow-xl" : ""}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.querySelector("#contact");
+                  if (el) {
+                    const offset = 72;
+                    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+                    window.scrollTo({ top, behavior: "smooth" });
+                  }
+                }}
+              >
+                Get in Touch
+              </CTAButton>
+            )}
+            {resumeUrl && (
+              <CTAButton
+                href={resumeUrl}
+                variant="secondary"
+                accentColor={isAurora ? "#ffffff" : theme.accent}
+                className={isAurora ? "!border-white/40 !text-white hover:!bg-white/10" : ""}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <DownloadIcon className="w-4 h-4" />
+                Download Resume
+              </CTAButton>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* ─── Main Content ─────────────────────────────────────────────────── */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-        {/* Bio */}
-        {personalInfo.bio && (
-          <section id="about" className="mb-16 sm:mb-20">
+        {/* About — Enhanced */}
+        {(personalInfo.bio || about?.headline || about?.traits?.length > 0) && (
+          <SectionWrapper id="about" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
             <h2
               className={`text-xl sm:text-2xl font-bold tracking-tight mb-5 sm:mb-6 ${headingClass}`}
             >
-              About
+              {about.headline || "About"}
             </h2>
-            <p className="text-foreground/70 leading-relaxed whitespace-pre-line text-base sm:text-lg">
-              {personalInfo.bio}
-            </p>
-          </section>
+            {about.quote && (
+              <blockquote
+                className="border-l-2 pl-4 italic text-foreground/60 mb-5"
+                style={{ borderColor: theme.accent }}
+              >
+                &ldquo;{about.quote}&rdquo;
+              </blockquote>
+            )}
+            {personalInfo.bio && (
+              <p className="text-foreground/70 leading-relaxed whitespace-pre-line text-base sm:text-lg mb-5">
+                {personalInfo.bio}
+              </p>
+            )}
+            {about.traits?.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {about.traits.map((trait, i) => (
+                  <span
+                    key={i}
+                    className="text-sm px-3 py-1 rounded-full font-medium"
+                    style={{
+                      backgroundColor: theme.accentSoft,
+                      color: theme.accent,
+                    }}
+                  >
+                    {trait}
+                  </span>
+                ))}
+              </div>
+            )}
+          </SectionWrapper>
         )}
 
         {/* Ordered Sections */}
         {orderedSections.map((key) => sectionComponents[key])}
 
+        {/* Fallback for new sections not in old sectionOrder */}
+        {!orderedSections.includes("packages") && packages.length > 0 && sectionComponents.packages}
+        {!orderedSections.includes("video") && videoUrl && sectionComponents.video}
+        {!orderedSections.includes("faq") && faq.length > 0 && sectionComponents.faq}
+
+        {/* Social Links */}
+        {Object.keys(socialLinks).length > 0 && (
+          <SectionWrapper background="white" className="mb-16 sm:mb-20 text-center" isAurora={isAurora} accentColor={theme.accent}>
+            <h2
+              className={`text-xl sm:text-2xl font-bold tracking-tight mb-5 sm:mb-6 ${headingClass}`}
+            >
+              Connect With Me
+            </h2>
+            <SocialLinks
+              links={socialLinks}
+              variant="row"
+              accentColor={theme.accent}
+              className="justify-center"
+            />
+          </SectionWrapper>
+        )}
+
         {/* Contact */}
-        <section
+        <SectionWrapper
           id="contact"
+          background="soft"
           className="text-center pt-10 border-t border-border"
+          isAurora={isAurora}
+          accentColor={theme.accent}
         >
           <h2
             className={`text-xl sm:text-2xl font-bold tracking-tight mb-5 sm:mb-6 ${headingClass}`}
           >
             Let&apos;s Work Together
           </h2>
-          <div className="flex justify-center gap-3 flex-wrap">
+          <div className="flex justify-center gap-3 flex-wrap mb-8">
             {contact.email && (
               <CopyEmailButton
                 email={contact.email}
@@ -596,24 +786,42 @@ export default function PublicPortfolio({ portfolio }) {
               </a>
             )}
           </div>
-        </section>
+          {contact.email && (
+            <ContactForm
+              email={contact.email}
+              accentColor={theme.accent}
+              className="max-w-md mx-auto"
+            />
+          )}
+        </SectionWrapper>
       </div>
 
       {/* ─── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="border-t border-border py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex items-center justify-center gap-2 text-sm text-foreground/40">
-          <ForgeCVLogoIcon className="w-4 h-4" />
-          <span>
-            Portfolio made with{" "}
-            <a
-              href="https://forgecv.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-foreground/60 hover:text-accent transition-colors"
-            >
-              ForgeCV
-            </a>
-          </span>
+      <footer className="border-t border-border py-12 relative overflow-hidden">
+        {isAurora && (
+          <div className="absolute inset-0 pointer-events-none opacity-[0.02]">
+            <div 
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full rounded-full blur-[100px]" 
+              style={{ backgroundColor: theme.accent }}
+            />
+          </div>
+        )}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-4 text-sm text-foreground/40 relative z-10">
+          <div className="flex items-center gap-2">
+            <ForgeCVLogoIcon className="w-4 h-4" />
+            <span>
+              Portfolio made with{" "}
+              <a
+                href="https://forgecv.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground/60 hover:text-accent transition-colors"
+              >
+                ForgeCV
+              </a>
+            </span>
+          </div>
+          {isAurora && <p className="text-[10px] uppercase tracking-[0.2em] opacity-50">Aurora Premium Template</p>}
         </div>
       </footer>
     </div>

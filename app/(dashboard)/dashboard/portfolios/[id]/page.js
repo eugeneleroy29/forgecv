@@ -202,7 +202,20 @@ export default function PortfolioEditor() {
     "customSections",
     "portfolioItems",
     "testimonials",
+    "packages",
+    "video",
+    "faq",
   ]);
+  const [packages, setPackages] = useState([]);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [faq, setFaq] = useState([]);
+  const [socialLinks, setSocialLinks] = useState({});
+  const [stats, setStats] = useState([]);
+  const [availabilityStatus, setAvailabilityStatus] = useState("");
+  const [resumeUrl, setResumeUrl] = useState("");
+  const [profileImageStyle, setProfileImageStyle] = useState("");
+  const [about, setAbout] = useState({ headline: "", quote: "", traits: [] });
+
 
   useEffect(() => {
     if (user?.id) {
@@ -243,6 +256,16 @@ export default function PortfolioEditor() {
     if (data.content?.customization?.accentColor) setAccentColor(data.content.customization.accentColor);
     if (data.content?.customization?.fontStyle) setFontStyle(data.content.customization.fontStyle);
     if (data.content?.customization?.photoShape) setPhotoShape(data.content.customization.photoShape);
+    if (data.content?.packages) setPackages(data.content.packages);
+    if (data.content?.videoUrl) setVideoUrl(data.content.videoUrl);
+    if (data.content?.faq) setFaq(data.content.faq);
+    if (data.content?.socialLinks) setSocialLinks(data.content.socialLinks);
+    if (data.content?.stats) setStats(data.content.stats);
+    if (data.content?.availabilityStatus) setAvailabilityStatus(data.content.availabilityStatus);
+    if (data.content?.resumeUrl) setResumeUrl(data.content.resumeUrl);
+    if (data.content?.profileImageStyle) setProfileImageStyle(data.content.profileImageStyle);
+    if (data.content?.about) setAbout(data.content.about);
+
     setLoading(false);
   };
 
@@ -482,7 +505,65 @@ export default function PortfolioEditor() {
     setPortfolioItems(portfolioItems.filter((p) => p.id !== id));
   };
 
-  const addTestimonial = () => {
+  
+  const addPackage = () => {
+    setPackages([...packages, { id: Date.now(), name: "", price: "", billing: "", features: [""], isPopular: false, ctaText: "Get Started", ctaHref: "#contact" }]);
+  };
+
+  const updatePackage = (id, field, value) => {
+    setPackages(packages.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
+  };
+
+  const removePackage = (id) => {
+    setPackages(packages.filter((p) => p.id !== id));
+  };
+
+  const addPackageFeature = (pkgId) => {
+    setPackages(packages.map((p) => (p.id === pkgId ? { ...p, features: [...p.features, ""] } : p)));
+  };
+
+  const updatePackageFeature = (pkgId, index, value) => {
+    setPackages(packages.map((p) => {
+      if (p.id !== pkgId) return p;
+      const newFeatures = [...p.features];
+      newFeatures[index] = value;
+      return { ...p, features: newFeatures };
+    }));
+  };
+
+  const removePackageFeature = (pkgId, index) => {
+    setPackages(packages.map((p) => {
+      if (p.id !== pkgId) return p;
+      return { ...p, features: p.features.filter((_, i) => i !== index) };
+    }));
+  };
+
+  
+  const addStat = () => {
+    setStats([...stats, { id: Date.now(), value: "", label: "" }]);
+  };
+
+  const updateStat = (id, field, value) => {
+    setStats(stats.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
+  };
+
+  const removeStat = (id) => {
+    setStats(stats.filter((s) => s.id !== id));
+  };
+
+const addFaq = () => {
+    setFaq([...faq, { id: Date.now(), question: "", answer: "" }]);
+  };
+
+  const updateFaq = (id, field, value) => {
+    setFaq(faq.map((f) => (f.id === id ? { ...f, [field]: value } : f)));
+  };
+
+  const removeFaq = (id) => {
+    setFaq(faq.filter((f) => f.id !== id));
+  };
+
+const addTestimonial = () => {
     setTestimonials([
       ...testimonials,
       { id: Date.now(), name: "", role: "", quote: "" },
@@ -537,7 +618,15 @@ export default function PortfolioEditor() {
       sectionOrder,
       skillsTools,
       customSections,
-      customization: { accentColor, fontStyle, photoShape },
+      customization: { accentColor, fontStyle, photoShape, profileImageStyle },
+      packages,
+      videoUrl,
+      faq,
+      socialLinks,
+      stats,
+      availabilityStatus,
+      resumeUrl,
+      about,
     };
     await supabase
       .from("portfolios")
@@ -573,7 +662,9 @@ export default function PortfolioEditor() {
       return;
     }
 
-    if (count >= entitlements.totalPublishSlots) {
+    const isUnlimited = entitlements?.totalPublishSlots === Infinity;
+
+    if (!isUnlimited && count >= entitlements.totalPublishSlots) {
       setShowPaywallModal(true);
       return;
     }
@@ -660,7 +751,15 @@ export default function PortfolioEditor() {
       sectionOrder,
       skillsTools,
       customSections,
-      customization: { accentColor, fontStyle, photoShape },
+      customization: { accentColor, fontStyle, photoShape, profileImageStyle },
+      packages,
+      videoUrl,
+      faq,
+      socialLinks,
+      stats,
+      availabilityStatus,
+      resumeUrl,
+      about,
     },
   };
 
@@ -718,6 +817,50 @@ export default function PortfolioEditor() {
               <Input label="Tagline" type="text" placeholder="Medical Virtual Assistant | 5+ Years Experience" value={personalInfo.tagline} onChange={(e) => updatePersonalInfo("tagline", e.target.value)} />
             </div>
             <TextArea label="Bio" placeholder="Tell clients about yourself..." value={personalInfo.bio} onChange={(e) => updatePersonalInfo("bio", e.target.value)} rows={4} />
+
+            <div className="mt-4">
+              <Input label="About Headline (optional)" type="text" placeholder="e.g. Trusted Virtual Assistant for Healthcare Professionals" value={about.headline || ""} onChange={(e) => setAbout({ ...about, headline: e.target.value })} />
+            </div>
+            <div className="mt-4">
+              <TextArea label="Quote (optional)" placeholder="A short quote that represents your work ethic..." value={about.quote || ""} onChange={(e) => setAbout({ ...about, quote: e.target.value })} rows={2} />
+            </div>
+            <div className="mt-4">
+              <label className="text-sm font-medium mb-1.5 block text-foreground/80">Key Traits (press Enter to add)</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="e.g. Detail-Oriented"
+                  id="trait-input"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const val = e.target.value.trim();
+                      if (val && !(about.traits || []).includes(val)) {
+                        setAbout({ ...about, traits: [...(about.traits || []), val] });
+                        e.target.value = "";
+                      }
+                    }
+                  }}
+                  className="flex-1 border border-border rounded-xl px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(about.traits || []).map((trait, i) => (
+                  <span key={i} className="bg-accent/10 text-accent text-sm px-3 py-1.5 rounded-full flex items-center gap-2">
+                    {trait}
+                    <button onClick={() => setAbout({ ...about, traits: (about.traits || []).filter((_, idx) => idx !== i) })} className="hover:text-red-500 transition-colors">
+                      <XIcon />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4">
+              <Input label="Availability Status (optional)" type="text" placeholder="e.g. Available for Remote Work · Full Time" value={availabilityStatus} onChange={(e) => setAvailabilityStatus(e.target.value)} />
+            </div>
+            <div className="mt-4">
+              <Input label="Resume URL (optional)" type="text" placeholder="https://..." value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} />
+            </div>
 
             <label className="text-sm font-medium mb-1.5 block text-foreground/80 mt-4">Profile Photo (JPG/PNG, max 2MB)</label>
             <div className="flex flex-wrap items-center gap-3">
@@ -828,7 +971,7 @@ export default function PortfolioEditor() {
               onMoveDown={moveSectionDown}
               actionButton={null}
             >
-              <div className="flex gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-4">
                 <input
                   type="text"
                   placeholder="Type a tool or skill and press Enter"
@@ -1107,6 +1250,125 @@ export default function PortfolioEditor() {
                 {saving ? "Saving..." : "Save section"}
               </button>
             </SectionCard>
+
+            <SectionCard
+              title="Packages & Pricing"
+              sectionKey="packages"
+              sectionOrder={sectionOrder}
+              onMoveUp={moveSectionUp}
+              onMoveDown={moveSectionDown}
+              actionButton={
+                <button onClick={addPackage} className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors flex items-center gap-1">
+                  <PlusIcon /> Add Package
+                </button>
+              }
+              emptyState={packages.length === 0 && (
+                <p className="text-sm text-foreground/40 text-center py-8">No packages added yet</p>
+              )}
+            >
+              <div className="flex flex-col gap-4">
+                {packages.map((pkg) => (
+                  <div key={pkg.id} className="bg-muted/30 border border-border rounded-xl p-4 relative group">
+                    <button onClick={() => removePackage(pkg.id)} className="absolute top-3 right-3 text-foreground/30 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                      <XIcon />
+                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pr-8">
+                      <Input label="Package Name" type="text" placeholder="Starter" value={pkg.name} onChange={(e) => updatePackage(pkg.id, "name", e.target.value)} />
+                      <Input label="Price" type="text" placeholder="$120–$200" value={pkg.price} onChange={(e) => updatePackage(pkg.id, "price", e.target.value)} />
+                      <Input label="Billing Period" type="text" placeholder="per week · 20–25 hrs" value={pkg.billing} onChange={(e) => updatePackage(pkg.id, "billing", e.target.value)} />
+                      <Input label="CTA Text" type="text" placeholder="Get Started" value={pkg.ctaText} onChange={(e) => updatePackage(pkg.id, "ctaText", e.target.value)} />
+                      <div className="md:col-span-2">
+                        <Input label="CTA Link" type="text" placeholder="#contact or https://..." value={pkg.ctaHref} onChange={(e) => updatePackage(pkg.id, "ctaHref", e.target.value)} />
+                      </div>
+                      <label className="flex items-center gap-2 text-sm text-foreground/60 cursor-pointer md:col-span-2">
+                        <input type="checkbox" checked={pkg.isPopular} onChange={(e) => updatePackage(pkg.id, "isPopular", e.target.checked)} className="rounded border-border" />
+                        Mark as Most Popular
+                      </label>
+                    </div>
+                    <label className="text-sm font-medium mb-2 block text-foreground/80">Features</label>
+                    <div className="flex flex-col gap-2 mb-2">
+                      {pkg.features.map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder="Feature description"
+                            value={feature}
+                            onChange={(e) => updatePackageFeature(pkg.id, i, e.target.value)}
+                            className="flex-1 border border-border rounded-xl px-4 py-2 text-sm bg-background focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all"
+                          />
+                          <button onClick={() => removePackageFeature(pkg.id, i)} className="text-foreground/30 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                            <XIcon />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => addPackageFeature(pkg.id)} className="text-xs text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1">
+                      <PlusIcon /> Add Feature
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button onClick={savePortfolio} disabled={saving} className="mt-4 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
+                {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
+                {saving ? "Saving..." : "Save section"}
+              </button>
+            </SectionCard>
+
+            <SectionCard
+              title="Video Introduction"
+              sectionKey="video"
+              sectionOrder={sectionOrder}
+              onMoveUp={moveSectionUp}
+              onMoveDown={moveSectionDown}
+              actionButton={null}
+            >
+              <p className="text-sm text-foreground/60 mb-4">Add a YouTube video URL to introduce yourself to potential clients.</p>
+              <Input
+                label="YouTube URL"
+                type="text"
+                placeholder="https://youtube.com/watch?v=..."
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+              />
+              <button onClick={savePortfolio} disabled={saving} className="mt-4 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
+                {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
+                {saving ? "Saving..." : "Save section"}
+              </button>
+            </SectionCard>
+
+            <SectionCard
+              title="Frequently Asked Questions"
+              sectionKey="faq"
+              sectionOrder={sectionOrder}
+              onMoveUp={moveSectionUp}
+              onMoveDown={moveSectionDown}
+              actionButton={
+                <button onClick={addFaq} className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors flex items-center gap-1">
+                  <PlusIcon /> Add FAQ
+                </button>
+              }
+              emptyState={faq.length === 0 && (
+                <p className="text-sm text-foreground/40 text-center py-8">No FAQs added yet</p>
+              )}
+            >
+              <div className="flex flex-col gap-4">
+                {faq.map((f) => (
+                  <div key={f.id} className="bg-muted/30 border border-border rounded-xl p-4 relative group">
+                    <button onClick={() => removeFaq(f.id)} className="absolute top-3 right-3 text-foreground/30 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                      <XIcon />
+                    </button>
+                    <div className="pr-8 flex flex-col gap-3">
+                      <Input label="Question" type="text" placeholder="What are your working hours?" value={f.question} onChange={(e) => updateFaq(f.id, "question", e.target.value)} />
+                      <TextArea label="Answer" placeholder="I am available Monday to Friday, 9 AM to 6 PM EST..." value={f.answer} onChange={(e) => updateFaq(f.id, "answer", e.target.value)} rows={3} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={savePortfolio} disabled={saving} className="mt-4 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
+                {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
+                {saving ? "Saving..." : "Save section"}
+              </button>
+            </SectionCard>
           </div>
 
           <div className="bg-card border border-border rounded-2xl p-6 mb-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
@@ -1114,11 +1376,42 @@ export default function PortfolioEditor() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Email" type="email" placeholder="juan@example.com" value={contact.email} onChange={(e) => updateContact("email", e.target.value)} />
               <Input label="LinkedIn" type="text" placeholder="linkedin.com/in/juandelacruz" value={contact.linkedin} onChange={(e) => updateContact("linkedin", e.target.value)} />
+              <Input label="Twitter / X" type="text" placeholder="x.com/username" value={socialLinks.twitter || ""} onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })} />
+              <Input label="GitHub" type="text" placeholder="github.com/username" value={socialLinks.github || ""} onChange={(e) => setSocialLinks({ ...socialLinks, github: e.target.value })} />
+              <Input label="Calendly" type="text" placeholder="calendly.com/username" value={socialLinks.calendly || ""} onChange={(e) => setSocialLinks({ ...socialLinks, calendly: e.target.value })} />
+              <Input label="Facebook" type="text" placeholder="facebook.com/username" value={socialLinks.facebook || ""} onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })} />
+              <Input label="Instagram" type="text" placeholder="instagram.com/username" value={socialLinks.instagram || ""} onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })} />
+              <Input label="WhatsApp" type="text" placeholder="+63 912 345 6789" value={socialLinks.whatsapp || ""} onChange={(e) => setSocialLinks({ ...socialLinks, whatsapp: e.target.value })} />
               <div className="md:col-span-2">
                 <Input label="Website (optional)" type="text" placeholder="https://..." value={contact.website} onChange={(e) => updateContact("website", e.target.value)} />
               </div>
             </div>
             <button onClick={savePortfolio} disabled={saving} className="mt-5 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
+              {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
+              {saving ? "Saving..." : "Save section"}
+            </button>
+          </div>
+
+          <div className="bg-card border border-border rounded-2xl p-6 mb-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
+            <h2 className="font-semibold text-lg tracking-tight mb-5">Hero Stats</h2>
+            <p className="text-sm text-foreground/60 mb-4">Add key numbers to your hero section (e.g. years of experience, clients served).</p>
+            <div className="flex flex-col gap-4">
+              {stats.map((stat) => (
+                <div key={stat.id} className="bg-muted/30 border border-border rounded-xl p-4 relative group">
+                  <button onClick={() => removeStat(stat.id)} className="absolute top-3 right-3 text-foreground/30 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                    <XIcon />
+                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                    <Input label="Value" type="text" placeholder="5+" value={stat.value} onChange={(e) => updateStat(stat.id, "value", e.target.value)} />
+                    <Input label="Label" type="text" placeholder="Years Experience" value={stat.label} onChange={(e) => updateStat(stat.id, "label", e.target.value)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={addStat} className="mt-4 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors flex items-center gap-1">
+              <PlusIcon /> Add Stat
+            </button>
+            <button onClick={savePortfolio} disabled={saving} className="mt-4 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
               {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
               {saving ? "Saving..." : "Save section"}
             </button>
@@ -1153,26 +1446,35 @@ export default function PortfolioEditor() {
             {personalInfo.photoUrl && (
               <>
                 <label className="text-sm font-medium mb-1.5 block text-foreground/80">Photo Shape</label>
-                <div className="flex gap-2">
+                <label className="text-sm font-medium mb-1.5 block text-foreground/80 mt-4">Profile Image Style</label>
+                <div className="flex flex-wrap gap-2 mb-4">
                   {[
                     { value: "circle", label: "Circle" },
-                    { value: "rounded", label: "Rounded" },
-                    { value: "square", label: "Square" },
-                  ].map((shape) => (
+                    { value: "rounded-square", label: "Rounded" },
+                    { value: "blob", label: "Blob" },
+                    { value: "hexagon", label: "Hexagon" },
+                    { value: "squircle", label: "Squircle" },
+                    { value: "soft-diamond", label: "Diamond" },
+                    { value: "layered-frames", label: "Layered" },
+                    { value: "floating-portrait", label: "Floating" },
+                    { value: "editorial", label: "Editorial" },
+                    { value: "abstract", label: "Abstract" },
+                  ].map((style) => (
                     <button
-                      key={shape.value}
-                      onClick={() => setPhotoShape(shape.value)}
-                      className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                        photoShape === shape.value
+                      key={style.value}
+                      onClick={() => setProfileImageStyle(style.value)}
+                      className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                        profileImageStyle === style.value
                           ? "border-accent bg-accent/10 text-accent"
                           : "border-border hover:border-accent/50"
                       }`}
                     >
-                      <span className={`w-4 h-4 border-2 border-current ${shape.value === "circle" ? "rounded-full" : shape.value === "rounded" ? "rounded-md" : "rounded-none"}`} />
-                      {shape.label}
+                      {style.label}
                     </button>
                   ))}
                 </div>
+
+                
               </>
             )}
             <button onClick={savePortfolio} disabled={saving} className="mt-5 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">

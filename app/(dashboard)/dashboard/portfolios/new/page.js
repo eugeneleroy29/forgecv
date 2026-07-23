@@ -9,6 +9,7 @@ import PortfolioThumbnail from "@/app/components/portfolio/PortfolioThumbnail";
 import { getPortfolioTheme } from "@/app/components/portfolio/portfolioThemes";
 
 const TEMPLATE_IDS = [
+  "aurora",
   "medical_va",
   "social_media_manager",
   "data_entry",
@@ -70,13 +71,13 @@ export default function NewPortfolio() {
   const checkLimit = async () => {
     const [ent, { count }] = await Promise.all([
       getUserEntitlements(user.id),
-      supabase
-        .from("portfolios")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id),
+      supabase.from("portfolios").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     ]);
+    
     setEntitlements(ent);
-    if (count >= ent.totalPublishSlots) {
+    
+    // Only show limit reached if they have more than 10 drafts
+    if (ent.plan !== 'admin' && count >= 10) {
       setLimitReached(true);
     }
     setCheckingLimit(false);

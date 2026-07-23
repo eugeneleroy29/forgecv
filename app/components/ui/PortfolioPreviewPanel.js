@@ -14,8 +14,16 @@ export default function PortfolioPreviewPanel({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const [srcdoc, setSrcdoc] = useState("");
+  const [iframeHeight, setIframeHeight] = useState(800);
   const wrapperRef = useRef(null);
   const captureRef = useRef(null);
+  const iframeRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      iframeRef.current?._resizeObserver?.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (!captureRef.current) return;
@@ -24,14 +32,28 @@ export default function PortfolioPreviewPanel({
       let allCss = "";
       try {
         allCss = Array.from(document.styleSheets)
-          .map((s) => { try { return Array.from(s.cssRules).map((r) => r.cssText).join("\n"); } catch (e) { return ""; } })
+          .map((s) => {
+            try {
+              return Array.from(s.cssRules)
+                .map((r) => r.cssText)
+                .join("\n");
+            } catch (e) {
+              return "";
+            }
+          })
           .join("\n");
       } catch (e) {}
-      const inlineCss = Array.from(document.querySelectorAll("style")).map((el) => el.textContent).join("\n");
-      const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((el) => `<link rel="stylesheet" href="${el.href}" />`).join("\n");
+      const inlineCss = Array.from(document.querySelectorAll("style"))
+        .map((el) => el.textContent)
+        .join("\n");
+      const links = Array.from(
+        document.querySelectorAll('link[rel="stylesheet"]'),
+      )
+        .map((el) => `<link rel="stylesheet" href="${el.href}" />`)
+        .join("\n");
 
       setSrcdoc(
-        `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${MOBILE_WIDTH}, initial-scale=1">${links}<style>${allCss}${inlineCss}html,body{margin:0;padding:0}body{background:white}</style></head><body>${html}</body></html>`
+        `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${MOBILE_WIDTH}, initial-scale=1">${links}<style>${allCss}${inlineCss}html,body{margin:0;padding:0}body{background:white;overflow:hidden}</style></head><body>${html}</body></html>`,
       );
     }, 100);
     return () => clearTimeout(timer);
@@ -53,19 +75,31 @@ export default function PortfolioPreviewPanel({
   const toolbar = (
     <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-x border-t border-border rounded-t-xl">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-foreground/60 uppercase tracking-wider">{title}</span>
+        <span className="text-xs font-medium text-foreground/60 uppercase tracking-wider">
+          {title}
+        </span>
         <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
           <Smartphone size={10} /> Mobile
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-foreground/40">{Math.round(scale * 100)}% fit</span>
+        <span className="text-[10px] text-foreground/40">
+          {Math.round(scale * 100)}% fit
+        </span>
         {externalLink && (
-          <a href={externalLink} target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-accent hover:underline flex items-center gap-1">
+          <a
+            href={externalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-medium text-accent hover:underline flex items-center gap-1"
+          >
             Open live <ExternalLink size={10} />
           </a>
         )}
-        <button onClick={() => setIsFullscreen((v) => !v)} className="p-1 rounded-md hover:bg-background text-foreground/40 hover:text-foreground border border-border">
+        <button
+          onClick={() => setIsFullscreen((v) => !v)}
+          className="p-1 rounded-md hover:bg-background text-foreground/40 hover:text-foreground border border-border"
+        >
           {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
         </button>
       </div>
@@ -74,26 +108,68 @@ export default function PortfolioPreviewPanel({
 
   const previewBody = (
     <div
-      className="overflow-auto bg-[#e5e5e5] rounded-b-xl border-x border-b border-border flex justify-center"
-      style={{ height: isFullscreen ? "calc(100vh - 48px)" : "100%" }}
       ref={wrapperRef}
+      className="bg-[#e5e5e5] rounded-b-xl border-x border-b border-border flex justify-center overflow-auto min-h-0"
+      style={{
+        flex: 1,
+        minHeight: 0,
+        height: isFullscreen ? "calc(100vh - 48px)" : undefined,
+      }}
     >
-      <div className="py-3 px-3">
-        <div style={{ width: MOBILE_WIDTH * scale, overflow: "hidden" }}>
+      <div className="p-3">
+        <div
+          style={{
+            width: MOBILE_WIDTH * scale,
+            height: iframeHeight * scale + 12,
+            overflow: "hidden",
+          }}
+        >
           <iframe
+            ref={iframeRef}
             srcDoc={srcdoc}
-            style={{
-              width: MOBILE_WIDTH,
-              height: 1200,
-              border: "none",
-              background: "white",
-              transform: `scale(${scale})`,
-              transformOrigin: "top left",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-              display: "block",
-            }}
             title={title}
             sandbox="allow-same-origin allow-scripts"
+            onLoad={(e) => {
+              const iframe = e.currentTarget;
+
+              const resize = () => {
+                try {
+                  const doc = iframe.contentDocument;
+                  if (!doc) return;
+
+                  const height = Math.max(
+                    doc.body.scrollHeight,
+                    doc.documentElement.scrollHeight,
+                    doc.body.offsetHeight,
+                    doc.documentElement.offsetHeight,
+                  );
+
+                  setIframeHeight(height);
+                } catch {}
+              };
+
+              resize();
+
+              const doc = iframe.contentDocument;
+              if (!doc) return;
+
+              const observer = new ResizeObserver(resize);
+
+              observer.observe(doc.body);
+              observer.observe(doc.documentElement);
+
+              iframe._resizeObserver = observer;
+            }}
+            style={{
+              width: MOBILE_WIDTH,
+              height: iframeHeight,
+              border: "none",
+              background: "white",
+              display: "block",
+              transform: `scale(${scale})`,
+              transformOrigin: "top center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+            }}
           />
         </div>
       </div>
@@ -102,7 +178,16 @@ export default function PortfolioPreviewPanel({
 
   return (
     <>
-      <div ref={captureRef} style={{ position: "fixed", left: "-99999px", top: 0, visibility: "hidden", width: MOBILE_WIDTH }}>
+      <div
+        ref={captureRef}
+        style={{
+          position: "fixed",
+          left: "-99999px",
+          top: 0,
+          visibility: "hidden",
+          width: MOBILE_WIDTH,
+        }}
+      >
         {children}
       </div>
       {isFullscreen ? (

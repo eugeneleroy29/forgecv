@@ -91,7 +91,10 @@ export default function Portfolios() {
   };
 
   const createPortfolio = () => {
-    if (entitlements && portfolios.length >= entitlements.totalPublishSlots) {
+    const isAdmin = entitlements?.plan === 'admin';
+    
+    // Draft limit is 10 for everyone except admin
+    if (!isAdmin && portfolios.length >= 10) {
       setShowLimitModal(true);
       return;
     }

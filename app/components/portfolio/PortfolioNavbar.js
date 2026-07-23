@@ -92,7 +92,7 @@ export default function PortfolioNavbar({ content, theme }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const { personalInfo = {}, contact = {} } = content;
+  const { personalInfo = {}, contact = {} } = content || {};
 
   // Build nav items based on what sections actually exist
   const navItems = [];

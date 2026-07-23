@@ -51,6 +51,13 @@ export const PORTFOLIO_THEMES = {
     accentSoft: "#EDE9FE",
     headingFont: "sans",
   },
+  aurora: {
+    label: "Aurora (Premium)",
+    accent: "#6366f1", // Indigo
+    accentSoft: "#f5f3ff",
+    headingFont: "sans",
+    variant: "aurora", // Special flag for the renderer
+  },
   basic: {
     label: "General",
     accent: "#4F46E5",

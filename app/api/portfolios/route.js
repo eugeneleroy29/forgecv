@@ -31,7 +31,7 @@ export async function POST(request) {
     }
 
     // 3. Check slot limits server-side
-    const entitlements = await getUserEntitlements(user.id)
+    const entitlements = await getUserEntitlements(user.id, supabaseAdmin)
 
     const { count, error: countError } = await supabaseAdmin
       .from('portfolios')
@@ -42,9 +42,10 @@ export async function POST(request) {
       return Response.json({ error: 'Failed to check portfolio limit' }, { status: 500 })
     }
 
-    if (count >= entitlements.totalPublishSlots) {
+    // Draft limit is 10 for everyone except admin
+    if (entitlements.plan !== 'admin' && count >= 10) {
       return Response.json(
-        { error: 'Portfolio limit reached', limit: entitlements.totalPublishSlots },
+        { error: 'Draft limit reached. Please delete an old portfolio.' },
         { status: 403 }
       )
     }
