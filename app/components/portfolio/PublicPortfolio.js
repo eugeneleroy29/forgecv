@@ -599,17 +599,26 @@ export default function PublicPortfolio({ portfolio }) {
                   </p>
                 )}
 
-                <h1
-                  className={`text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3 leading-[1.15] ${headingClass}`}
-                >
-                  {about.headline || personalInfo.tagline || personalInfo.fullName || "Your Name"}
-                </h1>
-
-                {about.headline && personalInfo.tagline && (
-                  <p className="text-base sm:text-lg font-medium text-indigo-200 mb-3">
+                {about.headline ? (
+                  <>
+                    <h1
+                      className={`text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3 leading-[1.15] ${headingClass}`}
+                    >
+                      {about.headline}
+                    </h1>
+                    {personalInfo.tagline && (
+                      <p className="text-base sm:text-lg font-medium text-indigo-200 mb-3">
+                        {personalInfo.tagline}
+                      </p>
+                    )}
+                  </>
+                ) : personalInfo.tagline ? (
+                  <h1
+                    className={`text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3 leading-[1.15] ${headingClass}`}
+                  >
                     {personalInfo.tagline}
-                  </p>
-                )}
+                  </h1>
+                ) : null}
 
                 {personalInfo.bio && (
                   <p className="text-base sm:text-lg text-indigo-100/80 font-normal leading-relaxed mb-8 max-w-2xl">
@@ -624,7 +633,7 @@ export default function PublicPortfolio({ portfolio }) {
                     href="#contact"
                     variant="primary"
                     accentColor="#ffffff"
-                    className="!bg-white !text-indigo-600 hover:!bg-indigo-50 shadow-xl font-bold px-7 py-3.5 text-base rounded-xl"
+                    className="!bg-white !text-indigo-600 hover:!bg-indigo-50 shadow-xl font-bold px-7 py-3.5 text-base rounded-xl min-w-[170px] justify-center text-center"
                     onClick={(e) => {
                       e.preventDefault();
                       const el = document.querySelector("#contact");
@@ -642,7 +651,7 @@ export default function PublicPortfolio({ portfolio }) {
                       href="#services"
                       variant="secondary"
                       accentColor="#ffffff"
-                      className="!border-white/40 !text-white hover:!bg-white/10 font-semibold px-7 py-3.5 text-base rounded-xl"
+                      className="!border-white/40 !text-white hover:!bg-white/10 font-semibold px-7 py-3.5 text-base rounded-xl min-w-[170px] justify-center text-center"
                       onClick={(e) => {
                         e.preventDefault();
                         const el = document.querySelector("#services");
@@ -660,7 +669,7 @@ export default function PublicPortfolio({ portfolio }) {
 
                 {stats.length > 0 && (
                   <div className="pt-6 border-t border-white/15 w-full">
-                    <StatsCounter stats={stats} accentColor="#ffffff" isDark={true} />
+                    <StatsCounter stats={stats} accentColor="#ffffff" isDark={true} className="justify-center sm:justify-start text-center sm:text-left" />
                   </div>
                 )}
               </div>
@@ -779,6 +788,11 @@ export default function PublicPortfolio({ portfolio }) {
             >
               About
             </h2>
+            {about.text && (
+              <p className="text-foreground/70 leading-relaxed whitespace-pre-line text-base sm:text-lg mb-5">
+                {about.text}
+              </p>
+            )}
             {about.quote && (
               <blockquote
                 className="border-l-2 pl-4 italic text-foreground/60 mb-5"
@@ -786,11 +800,6 @@ export default function PublicPortfolio({ portfolio }) {
               >
                 &ldquo;{about.quote}&rdquo;
               </blockquote>
-            )}
-            {(about.text || personalInfo.bio) && (
-              <p className="text-foreground/70 leading-relaxed whitespace-pre-line text-base sm:text-lg mb-5">
-                {about.text || personalInfo.bio}
-              </p>
             )}
             {about.traits?.length > 0 && (
               <div className="flex flex-wrap gap-2">

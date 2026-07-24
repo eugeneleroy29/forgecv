@@ -828,10 +828,6 @@ const addTestimonial = () => {
 
             <TextArea label="Bio" placeholder="Tell clients about yourself..." value={personalInfo.bio} onChange={(e) => updatePersonalInfo("bio", e.target.value)} rows={4} />
 
-            <div className="mt-4">
-              <Input label="Resume URL (optional)" type="text" placeholder="https://..." value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} />
-            </div>
-
             <label className="text-sm font-medium mb-1.5 block text-foreground/80 mt-4">Profile Photo (JPG/PNG, max 2MB)</label>
             <div className="flex flex-wrap items-center gap-3">
               {personalInfo.photoUrl && (
@@ -847,6 +843,28 @@ const addTestimonial = () => {
             {uploadingPhoto && <p className="text-xs text-foreground/60 mt-2">Uploading...</p>}
             {photoError && <p className="text-xs text-red-500 mt-2">{photoError}</p>}
 
+            {/* Embedded Hero Stats inside Personal Info */}
+            <div className="mt-6 border-t border-border/60 pt-5">
+              <label className="font-semibold text-sm tracking-tight block mb-1">Hero Stats (optional)</label>
+              <p className="text-xs text-foreground/60 mb-3">Add key numbers to your hero section (e.g. years of experience, clients served).</p>
+              <div className="flex flex-col gap-3">
+                {stats.map((stat) => (
+                  <div key={stat.id} className="bg-muted/30 border border-border rounded-xl p-3 relative group">
+                    <button onClick={() => removeStat(stat.id)} className="absolute top-2 right-2 text-foreground/30 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                      <XIcon />
+                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
+                      <Input label="Value" type="text" placeholder="5+" value={stat.value} onChange={(e) => updateStat(stat.id, "value", e.target.value)} />
+                      <Input label="Label" type="text" placeholder="Years Experience" value={stat.label} onChange={(e) => updateStat(stat.id, "label", e.target.value)} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={addStat} type="button" className="mt-3 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors flex items-center gap-1">
+                <PlusIcon /> Add Stat
+              </button>
+            </div>
+
             <button onClick={savePortfolio} disabled={saving} className="mt-5 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
               {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
               {saving ? "Saving..." : "Save section"}
@@ -856,14 +874,14 @@ const addTestimonial = () => {
           {/* ── Card 2: About Me ── */}
           <div className="bg-card border border-border rounded-2xl p-6 mb-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
             <h2 className="font-semibold text-lg tracking-tight mb-5">About Me</h2>
-            <TextArea label="About Me" placeholder="Write a detailed bio or background story for your About section..." value={about.text || ""} onChange={(e) => setAbout({ ...about, text: e.target.value })} rows={4} />
+            <TextArea label="" placeholder="Write a detailed bio or background story for your About section..." value={about.text || ""} onChange={(e) => setAbout({ ...about, text: e.target.value })} rows={4} />
 
             <div className="mt-4">
               <TextArea label="Quote (optional)" placeholder="A short quote that represents your work ethic..." value={about.quote || ""} onChange={(e) => setAbout({ ...about, quote: e.target.value })} rows={2} />
             </div>
 
             <div className="mt-4">
-              <label className="text-sm font-medium mb-1.5 block text-foreground/80">Key Traits (press Enter to add)</label>
+              <label className="text-sm font-medium mb-1.5 block text-foreground/80">Key Traits</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
@@ -881,6 +899,22 @@ const addTestimonial = () => {
                   }}
                   className="flex-1 border border-border rounded-xl px-4 py-2.5 text-sm bg-background focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById("trait-input");
+                    if (input) {
+                      const val = input.value.trim();
+                      if (val && !(about.traits || []).includes(val)) {
+                        setAbout({ ...about, traits: [...(about.traits || []), val] });
+                        input.value = "";
+                      }
+                    }
+                  }}
+                  className="bg-accent text-white text-xs px-4 py-2.5 rounded-xl font-medium hover:bg-accent-hover transition-colors flex items-center gap-1 shrink-0"
+                >
+                  <PlusIcon /> Add
+                </button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {(about.traits || []).map((trait, i) => (
@@ -1404,31 +1438,6 @@ const addTestimonial = () => {
               </div>
             </div>
             <button onClick={savePortfolio} disabled={saving} className="mt-5 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
-              {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
-              {saving ? "Saving..." : "Save section"}
-            </button>
-          </div>
-
-          <div className="bg-card border border-border rounded-2xl p-6 mb-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
-            <h2 className="font-semibold text-lg tracking-tight mb-5">Hero Stats</h2>
-            <p className="text-sm text-foreground/60 mb-4">Add key numbers to your hero section (e.g. years of experience, clients served).</p>
-            <div className="flex flex-col gap-4">
-              {stats.map((stat) => (
-                <div key={stat.id} className="bg-muted/30 border border-border rounded-xl p-4 relative group">
-                  <button onClick={() => removeStat(stat.id)} className="absolute top-3 right-3 text-foreground/30 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
-                    <XIcon />
-                  </button>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
-                    <Input label="Value" type="text" placeholder="5+" value={stat.value} onChange={(e) => updateStat(stat.id, "value", e.target.value)} />
-                    <Input label="Label" type="text" placeholder="Years Experience" value={stat.label} onChange={(e) => updateStat(stat.id, "label", e.target.value)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button onClick={addStat} className="mt-4 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-medium hover:bg-accent/20 transition-colors flex items-center gap-1">
-              <PlusIcon /> Add Stat
-            </button>
-            <button onClick={savePortfolio} disabled={saving} className="mt-4 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
               {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
               {saving ? "Saving..." : "Save section"}
             </button>
