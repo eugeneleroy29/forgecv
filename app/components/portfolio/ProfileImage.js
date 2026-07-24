@@ -20,6 +20,7 @@
  */
 
 const PROFILE_IMAGE_STYLES = [
+  { id: "arch", label: "Arch Frame" },
   { id: "circle", label: "Circle" },
   { id: "rounded-square", label: "Rounded Square" },
   { id: "blob", label: "Organic Blob" },
@@ -54,6 +55,18 @@ export default function ProfileImage({
       style={{ display: "block" }}
     />
   );
+
+  // ─── Style: Arch Frame ──────────────────────────────────────────────────
+  if (style === "arch") {
+    return (
+      <div
+        className={`overflow-hidden border-4 border-white/30 shadow-2xl backdrop-blur-md rounded-t-full rounded-b-2xl ${className}`}
+        style={{ width: sizePx, height: typeof size === "number" ? `${Math.round(size * 1.22)}px` : "350px" }}
+      >
+        {baseImage}
+      </div>
+    );
+  }
 
   // ─── Style: Circle ──────────────────────────────────────────────────────
   if (style === "circle") {

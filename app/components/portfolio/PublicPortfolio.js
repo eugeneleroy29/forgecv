@@ -7,7 +7,7 @@ import { TOOLS_CATALOG } from "./toolsCatalog";
 import BrandIcon from "./BrandIcon";
 import PortfolioNavbar from "./PortfolioNavbar";
 
-// ─── NEW: Reusable Portfolio Components ─────────────────────────────────────
+// ─── Reusable Portfolio Components ─────────────────────────────────────────
 import ProfileImage from "./ProfileImage";
 import SectionWrapper from "./SectionWrapper";
 import ServiceCard from "./ServiceCard";
@@ -39,20 +39,6 @@ function ArrowRightIcon({ className }) {
     >
       <path d="M5 12h14" />
       <path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-function QuoteIcon({ className }) {
-  return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
     </svg>
   );
 }
@@ -194,7 +180,7 @@ function PackagesSection({ packages, theme, headingClass, isAurora }) {
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
-        Packages & Pricing
+        Packages &amp; Pricing
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {packages.map((pkg, i) => (
@@ -287,7 +273,7 @@ function PortfolioItemsSection({ portfolioItems, theme, headingClass, isAurora }
 function SkillsToolsSection({ skillsToolsByCategory, headingClass, isAurora, theme }) {
   if (!skillsToolsByCategory.length) return null;
   return (
-    <SectionWrapper background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
+    <SectionWrapper id="tools" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
       <h2
         className={`text-xl sm:text-2xl font-bold tracking-tight mb-6 sm:mb-8 ${headingClass}`}
       >
@@ -441,7 +427,6 @@ export default function PublicPortfolio({ portfolio }) {
     testimonials = [],
     contact = {},
     skillsTools = [],
-    // NEW fields (backward compatible — undefined if not present)
     packages = [],
     videoUrl = "",
     faq = [],
@@ -567,7 +552,6 @@ export default function PublicPortfolio({ portfolio }) {
 
   // Profile image style from customization or content
   const profileImageStyle = customization.profileImageStyle || customization.photoShape || "circle";
-  const photoShape = getPhotoShape(portfolio?.content);
 
   return (
     <div className="min-h-screen bg-background">
@@ -576,106 +560,224 @@ export default function PublicPortfolio({ portfolio }) {
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
       <section
         id="hero"
-        className="px-4 sm:px-6 py-20 sm:py-32 text-center relative overflow-hidden"
-        style={isAurora ? {
-          background: `linear-gradient(135deg, ${theme.accent} 0%, #4338ca 100%)`,
-        } : { backgroundColor: theme.accentSoft }}
+        className={`px-4 sm:px-6 relative overflow-hidden ${
+          isAurora ? "py-16 md:py-24 lg:py-28" : "py-20 sm:py-32 text-center"
+        }`}
+        style={
+          isAurora
+            ? {
+                background: `linear-gradient(135deg, ${theme.accent} 0%, #3730a3 100%)`,
+              }
+            : { backgroundColor: theme.accentSoft }
+        }
       >
-        {/* Aurora Background Decoration */}
+        {/* Aurora Background Ambient Glows */}
         {isAurora && (
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400 blur-[120px]" />
+          <div className="absolute inset-0 opacity-30 pointer-events-none overflow-hidden">
+            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white blur-[140px] opacity-40" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-400 blur-[150px] opacity-50" />
+            <div className="absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-purple-400 blur-[120px] opacity-30" />
           </div>
         )}
 
-        <div className="relative z-10 max-w-4xl mx-auto">
-          {personalInfo.photoUrl && (
-            <ProfileImage
-              src={personalInfo.photoUrl}
-              alt={personalInfo.fullName || "Profile"}
-              style={profileImageStyle}
-              size={128}
-              accentColor={isAurora ? "#ffffff" : theme.accent}
-              className="mx-auto mb-6 sm:mb-8 shadow-2xl"
-            />
-          )}
-          <h1
-            className={`text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 ${headingClass} ${isAurora ? 'text-white' : 'text-foreground'}`}
-          >
-            {personalInfo.fullName || "Your Name"}
-          </h1>
-          {personalInfo.tagline && (
-            <p
-              className={`text-xl md:text-2xl font-medium mb-6 ${isAurora ? 'text-indigo-100' : ''}`}
-              style={!isAurora ? { color: theme.accent } : undefined}
-            >
-              {personalInfo.tagline}
-            </p>
-          )}
-          
-          {availabilityStatus && (
-            <p className={`text-sm mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${isAurora ? 'bg-white/10 text-white backdrop-blur-md border border-white/20' : 'text-foreground/60'}`}>
-              <span
-                className={`w-2 h-2 rounded-full ${isAurora ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'animate-pulse'}`}
-                style={!isAurora ? { backgroundColor: theme.accent } : undefined}
-              />
-              {availabilityStatus}
-            </p>
-          )}
+        <div className="relative z-10 max-w-6xl mx-auto">
+          {isAurora ? (
+            /* ── Aurora 2-Column Split Hero ── */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center text-left">
+              {/* Left Column: Badge, Name, Headline, Tagline/Bio & Dual CTAs */}
+              <div className={`${personalInfo.photoUrl ? "lg:col-span-7" : "lg:col-span-12 max-w-3xl"} flex flex-col items-start`}>
+                {availabilityStatus && (
+                  <div className="mb-4 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/10 text-white text-xs sm:text-sm font-medium tracking-wide backdrop-blur-md border border-white/20 shadow-lg">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
+                    <span>{availabilityStatus}</span>
+                  </div>
+                )}
 
-          {stats.length > 0 && (
-            <div className="mb-10">
-              <StatsCounter stats={stats} accentColor={isAurora ? "#ffffff" : theme.accent} isDark={isAurora} />
+                {personalInfo.fullName && (
+                  <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90 mb-2">
+                    {personalInfo.fullName}
+                  </p>
+                )}
+
+                <h1
+                  className={`text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3 leading-[1.15] ${headingClass}`}
+                >
+                  {about.headline || personalInfo.tagline || personalInfo.fullName || "Your Name"}
+                </h1>
+
+                {about.headline && personalInfo.tagline && (
+                  <p className="text-base sm:text-lg font-medium text-indigo-200 mb-3">
+                    {personalInfo.tagline}
+                  </p>
+                )}
+
+                {personalInfo.bio && (
+                  <p className="text-base sm:text-lg text-indigo-100/80 font-normal leading-relaxed mb-8 max-w-2xl">
+                    {personalInfo.bio.length > 200
+                      ? personalInfo.bio.slice(0, 200) + "..."
+                      : personalInfo.bio}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-3.5 items-center mb-8 w-full sm:w-auto">
+                  <CTAButton
+                    href="#contact"
+                    variant="primary"
+                    accentColor="#ffffff"
+                    className="!bg-white !text-indigo-600 hover:!bg-indigo-50 shadow-xl font-bold px-7 py-3.5 text-base rounded-xl"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const el = document.querySelector("#contact");
+                      if (el) {
+                        const offset = 72;
+                        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+                        window.scrollTo({ top, behavior: "smooth" });
+                      }
+                    }}
+                  >
+                    Hire Me Now
+                  </CTAButton>
+                  {services.length > 0 && (
+                    <CTAButton
+                      href="#services"
+                      variant="secondary"
+                      accentColor="#ffffff"
+                      className="!border-white/40 !text-white hover:!bg-white/10 font-semibold px-7 py-3.5 text-base rounded-xl"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const el = document.querySelector("#services");
+                        if (el) {
+                          const offset = 72;
+                          const top = el.getBoundingClientRect().top + window.scrollY - offset;
+                          window.scrollTo({ top, behavior: "smooth" });
+                        }
+                      }}
+                    >
+                      View Services
+                    </CTAButton>
+                  )}
+                </div>
+
+                {stats.length > 0 && (
+                  <div className="pt-6 border-t border-white/15 w-full">
+                    <StatsCounter stats={stats} accentColor="#ffffff" isDark={true} />
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: Hero Photo Frame (Renders ONLY if photoUrl exists) */}
+              {personalInfo.photoUrl && (
+                <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                  <div className="relative group w-full max-w-[320px] sm:max-w-[380px]">
+                    {/* Decorative Background Glows */}
+                    <div className="absolute -inset-4 rounded-[48px] bg-gradient-to-r from-indigo-300/30 to-purple-300/30 blur-2xl opacity-70 group-hover:opacity-100 transition duration-500" />
+                    <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-indigo-200/20 blur-xl pointer-events-none" />
+                    <div className="absolute -bottom-6 -left-6 w-36 h-36 rounded-full bg-purple-300/20 blur-xl pointer-events-none" />
+
+                    {/* Photo Frame Container - Uses selected Profile Image Style */}
+                    <div className="relative z-10 flex justify-center items-center">
+                      <ProfileImage
+                        src={personalInfo.photoUrl}
+                        alt={personalInfo.fullName || "Profile"}
+                        style={profileImageStyle || "arch"}
+                        size={280}
+                        accentColor={theme.accent}
+                        className="mx-auto"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* ── Default Centered Hero Layout ── */
+            <div>
+              {personalInfo.photoUrl && (
+                <ProfileImage
+                  src={personalInfo.photoUrl}
+                  alt={personalInfo.fullName || "Profile"}
+                  style={profileImageStyle}
+                  size={128}
+                  accentColor={theme.accent}
+                  className="mx-auto mb-6 sm:mb-8 shadow-2xl"
+                />
+              )}
+              <h1
+                className={`text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 ${headingClass} text-foreground`}
+              >
+                {personalInfo.fullName || "Your Name"}
+              </h1>
+              {personalInfo.tagline && (
+                <p
+                  className="text-xl md:text-2xl font-medium mb-6"
+                  style={{ color: theme.accent }}
+                >
+                  {personalInfo.tagline}
+                </p>
+              )}
+              
+              {availabilityStatus && (
+                <p className="text-sm mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-foreground/60">
+                  <span
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: theme.accent }}
+                  />
+                  {availabilityStatus}
+                </p>
+              )}
+
+              {stats.length > 0 && (
+                <div className="mb-10">
+                  <StatsCounter stats={stats} accentColor={theme.accent} isDark={false} />
+                </div>
+              )}
+
+              <div className="flex justify-center gap-4 flex-wrap">
+                {contact.email && (
+                  <CTAButton
+                    href="#contact"
+                    variant="primary"
+                    accentColor={theme.accent}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const el = document.querySelector("#contact");
+                      if (el) {
+                        const offset = 72;
+                        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+                        window.scrollTo({ top, behavior: "smooth" });
+                      }
+                    }}
+                  >
+                    Get in Touch
+                  </CTAButton>
+                )}
+                {resumeUrl && (
+                  <CTAButton
+                    href={resumeUrl}
+                    variant="secondary"
+                    accentColor={theme.accent}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadIcon className="w-4 h-4" />
+                    Download Resume
+                  </CTAButton>
+                )}
+              </div>
             </div>
           )}
-
-          <div className="flex justify-center gap-4 flex-wrap">
-            {contact.email && (
-              <CTAButton
-                href="#contact"
-                variant={isAurora ? "secondary" : "primary"}
-                accentColor={isAurora ? "#ffffff" : theme.accent}
-                className={isAurora ? "!bg-white !text-indigo-600 hover:!bg-indigo-50 shadow-xl" : ""}
-                onClick={(e) => {
-                  e.preventDefault();
-                  const el = document.querySelector("#contact");
-                  if (el) {
-                    const offset = 72;
-                    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-                    window.scrollTo({ top, behavior: "smooth" });
-                  }
-                }}
-              >
-                Get in Touch
-              </CTAButton>
-            )}
-            {resumeUrl && (
-              <CTAButton
-                href={resumeUrl}
-                variant="secondary"
-                accentColor={isAurora ? "#ffffff" : theme.accent}
-                className={isAurora ? "!border-white/40 !text-white hover:!bg-white/10" : ""}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <DownloadIcon className="w-4 h-4" />
-                Download Resume
-              </CTAButton>
-            )}
-          </div>
         </div>
       </section>
 
       {/* ─── Main Content ─────────────────────────────────────────────────── */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-        {/* About — Enhanced */}
-        {(personalInfo.bio || about?.headline || about?.traits?.length > 0) && (
+        {/* About Section */}
+        {(about?.text || personalInfo.bio || about?.quote || about?.traits?.length > 0) && (
           <SectionWrapper id="about" background="white" className="mb-16 sm:mb-20" isAurora={isAurora} accentColor={theme.accent}>
             <h2
               className={`text-xl sm:text-2xl font-bold tracking-tight mb-5 sm:mb-6 ${headingClass}`}
             >
-              {about.headline || "About"}
+              About
             </h2>
             {about.quote && (
               <blockquote
@@ -685,9 +787,9 @@ export default function PublicPortfolio({ portfolio }) {
                 &ldquo;{about.quote}&rdquo;
               </blockquote>
             )}
-            {personalInfo.bio && (
+            {(about.text || personalInfo.bio) && (
               <p className="text-foreground/70 leading-relaxed whitespace-pre-line text-base sm:text-lg mb-5">
-                {personalInfo.bio}
+                {about.text || personalInfo.bio}
               </p>
             )}
             {about.traits?.length > 0 && (
@@ -712,7 +814,7 @@ export default function PublicPortfolio({ portfolio }) {
         {/* Ordered Sections */}
         {orderedSections.map((key) => sectionComponents[key])}
 
-        {/* Fallback for new sections not in old sectionOrder */}
+        {/* Fallbacks */}
         {!orderedSections.includes("packages") && packages.length > 0 && sectionComponents.packages}
         {!orderedSections.includes("video") && videoUrl && sectionComponents.video}
         {!orderedSections.includes("faq") && faq.length > 0 && sectionComponents.faq}

@@ -810,20 +810,58 @@ const addTestimonial = () => {
             </div>
           </div>
 
+          {/* ── Card 1: Personal Info ── */}
           <div className="bg-card border border-border rounded-2xl p-6 mb-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
             <h2 className="font-semibold text-lg tracking-tight mb-5">Personal Info</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Input label="Full Name" type="text" placeholder="Juan Dela Cruz" value={personalInfo.fullName} onChange={(e) => updatePersonalInfo("fullName", e.target.value)} />
               <Input label="Tagline" type="text" placeholder="Medical Virtual Assistant | 5+ Years Experience" value={personalInfo.tagline} onChange={(e) => updatePersonalInfo("tagline", e.target.value)} />
             </div>
+
+            <div className="mb-4">
+              <Input label="Headline (optional)" type="text" placeholder="e.g. Trusted Virtual Assistant for Healthcare Professionals" value={about.headline || ""} onChange={(e) => setAbout({ ...about, headline: e.target.value })} />
+            </div>
+
+            <div className="mb-4">
+              <Input label="Availability Status (optional)" type="text" placeholder="e.g. Available for Remote Work · Full Time" value={availabilityStatus} onChange={(e) => setAvailabilityStatus(e.target.value)} />
+            </div>
+
             <TextArea label="Bio" placeholder="Tell clients about yourself..." value={personalInfo.bio} onChange={(e) => updatePersonalInfo("bio", e.target.value)} rows={4} />
 
             <div className="mt-4">
-              <Input label="About Headline (optional)" type="text" placeholder="e.g. Trusted Virtual Assistant for Healthcare Professionals" value={about.headline || ""} onChange={(e) => setAbout({ ...about, headline: e.target.value })} />
+              <Input label="Resume URL (optional)" type="text" placeholder="https://..." value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} />
             </div>
+
+            <label className="text-sm font-medium mb-1.5 block text-foreground/80 mt-4">Profile Photo (JPG/PNG, max 2MB)</label>
+            <div className="flex flex-wrap items-center gap-3">
+              {personalInfo.photoUrl && (
+                <img src={personalInfo.photoUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-border shrink-0" />
+              )}
+              <input type="file" accept="image/jpeg,image/png" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="text-sm" />
+              {personalInfo.photoUrl && (
+                <button onClick={removePhoto} type="button" className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors">
+                  Remove
+                </button>
+              )}
+            </div>
+            {uploadingPhoto && <p className="text-xs text-foreground/60 mt-2">Uploading...</p>}
+            {photoError && <p className="text-xs text-red-500 mt-2">{photoError}</p>}
+
+            <button onClick={savePortfolio} disabled={saving} className="mt-5 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
+              {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
+              {saving ? "Saving..." : "Save section"}
+            </button>
+          </div>
+
+          {/* ── Card 2: About Me ── */}
+          <div className="bg-card border border-border rounded-2xl p-6 mb-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
+            <h2 className="font-semibold text-lg tracking-tight mb-5">About Me</h2>
+            <TextArea label="About Me" placeholder="Write a detailed bio or background story for your About section..." value={about.text || ""} onChange={(e) => setAbout({ ...about, text: e.target.value })} rows={4} />
+
             <div className="mt-4">
               <TextArea label="Quote (optional)" placeholder="A short quote that represents your work ethic..." value={about.quote || ""} onChange={(e) => setAbout({ ...about, quote: e.target.value })} rows={2} />
             </div>
+
             <div className="mt-4">
               <label className="text-sm font-medium mb-1.5 block text-foreground/80">Key Traits (press Enter to add)</label>
               <div className="flex gap-2 mb-2">
@@ -855,27 +893,6 @@ const addTestimonial = () => {
                 ))}
               </div>
             </div>
-            <div className="mt-4">
-              <Input label="Availability Status (optional)" type="text" placeholder="e.g. Available for Remote Work · Full Time" value={availabilityStatus} onChange={(e) => setAvailabilityStatus(e.target.value)} />
-            </div>
-            <div className="mt-4">
-              <Input label="Resume URL (optional)" type="text" placeholder="https://..." value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} />
-            </div>
-
-            <label className="text-sm font-medium mb-1.5 block text-foreground/80 mt-4">Profile Photo (JPG/PNG, max 2MB)</label>
-            <div className="flex flex-wrap items-center gap-3">
-              {personalInfo.photoUrl && (
-                <img src={personalInfo.photoUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-border shrink-0" />
-              )}
-              <input type="file" accept="image/jpeg,image/png" onChange={handlePhotoUpload} disabled={uploadingPhoto} className="text-sm" />
-              {personalInfo.photoUrl && (
-                <button onClick={removePhoto} type="button" className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors">
-                  Remove
-                </button>
-              )}
-            </div>
-            {uploadingPhoto && <p className="text-xs text-foreground/60 mt-2">Uploading...</p>}
-            {photoError && <p className="text-xs text-red-500 mt-2">{photoError}</p>}
 
             <button onClick={savePortfolio} disabled={saving} className="mt-5 text-sm text-accent hover:text-accent-hover font-medium transition-colors flex items-center gap-1.5">
               {saving ? <LoaderIcon className="animate-spin" /> : <SaveIcon />}
@@ -1445,10 +1462,10 @@ const addTestimonial = () => {
             </select>
             {personalInfo.photoUrl && (
               <>
-                <label className="text-sm font-medium mb-1.5 block text-foreground/80">Photo Shape</label>
                 <label className="text-sm font-medium mb-1.5 block text-foreground/80 mt-4">Profile Image Style</label>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {[
+                    { value: "arch", label: "Arch" },
                     { value: "circle", label: "Circle" },
                     { value: "rounded-square", label: "Rounded" },
                     { value: "blob", label: "Blob" },

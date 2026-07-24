@@ -41,24 +41,6 @@ function XIcon({ className }) {
   );
 }
 
-function ArrowUpIcon({ className }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m18 15-6-6-6 6" />
-    </svg>
-  );
-}
-
 // ─── Copy Email Button ───────────────────────────────────────────────────────
 
 function CopyEmailButton({ email, theme, className, children }) {
@@ -97,11 +79,14 @@ export default function PortfolioNavbar({ content, theme }) {
   // Build nav items based on what sections actually exist
   const navItems = [];
 
-  if (personalInfo.bio?.trim()) {
+  if (personalInfo.bio?.trim() || content.about?.headline) {
     navItems.push({ label: "About", href: "#about" });
   }
   if (content.services?.length > 0) {
     navItems.push({ label: "Services", href: "#services" });
+  }
+  if (content.packages?.length > 0) {
+    navItems.push({ label: "Packages", href: "#packages" });
   }
   if (content.experience?.length > 0) {
     navItems.push({ label: "Experience", href: "#experience" });
@@ -115,6 +100,15 @@ export default function PortfolioNavbar({ content, theme }) {
   if (content.testimonials?.length > 0) {
     navItems.push({ label: "Testimonials", href: "#testimonials" });
   }
+  if (content.videoUrl) {
+    navItems.push({ label: "Video", href: "#video" });
+  }
+  if (content.faq?.length > 0) {
+    navItems.push({ label: "FAQ", href: "#faq" });
+  }
+  if (content.resumeUrl) {
+    navItems.push({ label: "Resume", href: content.resumeUrl, isExternal: true });
+  }
   if (contact.email || contact.linkedin || contact.website) {
     navItems.push({ label: "Contact", href: "#contact" });
   }
@@ -127,10 +121,11 @@ export default function PortfolioNavbar({ content, theme }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleNavClick = (e, href) => {
+  const handleNavClick = (e, item) => {
+    if (item.isExternal) return; // Allow direct navigation for external resume links
     e.preventDefault();
     setMobileMenuOpen(false);
-    const element = document.querySelector(href);
+    const element = document.querySelector(item.href);
     if (element) {
       const offset = 72; // navbar height
       const top = element.getBoundingClientRect().top + window.scrollY - offset;
@@ -144,11 +139,11 @@ export default function PortfolioNavbar({ content, theme }) {
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-background/95 backdrop-blur-sm shadow-sm border-b border-border"
-          : "bg-background border-b border-transparent"
+          ? "bg-background/95 backdrop-blur-md shadow-sm border-b border-border"
+          : "bg-background border-b border-border/40"
       }`}
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-[72px]">
           {/* Logo / Name */}
           <a
@@ -157,20 +152,22 @@ export default function PortfolioNavbar({ content, theme }) {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="font-bold text-lg truncate max-w-[200px] transition-colors hover:opacity-80"
+            className="font-bold text-lg truncate max-w-[220px] transition-colors hover:opacity-80"
             style={{ color: theme.accent }}
           >
             {personalInfo.fullName || "Portfolio"}
           </a>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-0.5">
+          <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className="px-3 py-2 rounded-xl text-sm font-medium text-foreground/60 hover:text-foreground hover:bg-muted transition-all"
+                target={item.isExternal ? "_blank" : undefined}
+                rel={item.isExternal ? "noopener noreferrer" : undefined}
+                onClick={(e) => handleNavClick(e, item)}
+                className="px-3 py-2 rounded-xl text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-muted/80 transition-all"
               >
                 {item.label}
               </a>
@@ -207,13 +204,15 @@ export default function PortfolioNavbar({ content, theme }) {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-border py-3 pb-5 animate-fade-in">
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               {navItems.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  className="px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/60 hover:text-foreground hover:bg-muted transition-all"
+                  target={item.isExternal ? "_blank" : undefined}
+                  rel={item.isExternal ? "noopener noreferrer" : undefined}
+                  onClick={(e) => handleNavClick(e, item)}
+                  className="px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-muted transition-all"
                 >
                   {item.label}
                 </a>
