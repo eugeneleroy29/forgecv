@@ -103,6 +103,8 @@ body {
   }
   html, body {
     background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -110,23 +112,36 @@ body {
   #print-only-resume, #print-only-resume * { display: revert !important; }
   #print-only-resume .flex { display: flex !important; }
   #print-only-resume {
+    display: block !important;
     background: white !important;
-    min-height: 100vh !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   #print-only-resume #resume-preview {
     background: white !important;
     box-shadow: none !important;
-    min-height: 100vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: calc(11in - 0.8in) !important;
+    margin: 0 auto !important;
   }
   #print-only-cover-letter, #print-only-cover-letter * { display: revert !important; }
   #print-only-cover-letter .flex { display: flex !important; }
   #print-only-cover-letter {
+    display: block !important;
     background: white !important;
-    min-height: 100vh !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   @page {
     margin: 0.4in;
-    background: white;
+    size: letter portrait;
   }
   .page-break-before {
     break-before: page !important;

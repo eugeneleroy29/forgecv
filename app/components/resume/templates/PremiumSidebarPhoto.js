@@ -183,6 +183,9 @@ export default function PremiumSidebarPhoto({ content }) {
     >
       <style>{`
         @media print {
+          #resume-preview {
+            min-height: calc(11in - 0.8in) !important;
+          }
           .page-break-before {
             break-before: page !important;
             page-break-before: always !important;
